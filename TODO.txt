@@ -1,0 +1,10 @@
+- operating on the graph of artifacts
+- collapse provision context / request
+- collapse down to one resolver
+- use sisu-maven-bridge
+- make settings builder reusable
+- do i want to try and abstract aether or use it?
+- provisioning runtimes with purely maven coordinates versus the test provisioning tools
+ - these are really two entirely separate thing.. both useful but different
+- use providers for the setup of aether
+- upgrade to aether @ eclipse with guice

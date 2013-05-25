@@ -1,0 +1,53 @@
+// 
+// Tesla runtime
+//
+runtime tesla {
+
+  //
+  // Launcher
+  //
+  bin {    
+    io.tesla.maven:tesla-launch {      
+      unpack (
+        excludes => "MANIFEST.MF,.gitattributes,maven/**"
+      )      
+    }
+
+    executable (
+      includes => "**/mvn*",
+      excludes => "**/*.bat"
+    )
+  }  
+
+  //
+  // Configuration
+  //
+  conf {    
+    io.tesla.maven:tesla-configuration {      
+      unpack (
+        excludes => "MANIFEST.MF,.gitattributes,maven/**"
+      )      
+    }
+  }  
+    
+  //
+  // Binary
+  //
+  boot {
+    org.codehaus.plexus:plexus-classworlds:2.4
+  }
+
+  lib {
+    io.tesla.maven:maven-embedder:3.1.0
+    ch.qos.logback:logback-core:1.0.7
+    ch.qos.logback:logback-classic:1.0.7    
+    org.eclipse.aether:aether-connector-file:0.9.0.M2
+    io.tesla.aether:aether-connector-okhttp:0.0.1
+    org.eclipse.aether:aether-connector-wagon:0.9.0.M2
+  }      
+  
+  lib/ext {
+    io.tesla.aether:tesla-concurrent-localrepo:0.0.1
+  }
+}
+

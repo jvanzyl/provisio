@@ -1,0 +1,32 @@
+runtime tesla {
+  
+  root {    
+    io.tesla.maven:apache-maven:tar.gz:bin:3.1-SNAPSHOT {      
+      unpack (
+        useRoot => false,
+        excludes => "lib/slf4j-simple**,lib/**wagon**"
+      )      
+    }
+
+    updateJar (
+      jar => "lib/maven-core-3.1-SNAPSHOT.jar",
+      updates => {        
+        "org/apache/maven/messages/build.properties" => "src/main/proviso/tesla/build.properties",
+        "META-INF/plexus/components.xml" => "src/main/proviso/tesla/components.xml"                    
+      } 
+    ) 
+
+    executable (
+      includes => "**/mvn*",
+      excludes => "**/*.bat"
+    )
+  }
+
+  lib {
+    ch.qos.logback:logback-core:1.0.7
+    ch.qos.logback:logback-classic:1.0.7    
+    org.eclipse.aether:aether-connector-file:0.9.0.M2
+    io.tesla.aether:aether-connector-okhttp:0.0.1
+  }    
+}
+

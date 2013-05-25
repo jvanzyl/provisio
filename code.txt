@@ -1,0 +1,410 @@
+package io.tesla.proviso.internal;
+
+import io.tesla.proviso.ProvisioningRequest;
+import io.tesla.proviso.ProvisoArtifact;
+import io.tesla.proviso.assembly.model.FileSet;
+import io.tesla.proviso.spi.Provisioner;
+import io.tesla.proviso.spi.ProvisioningConfiguration;
+import io.tesla.proviso.spi.ProvisioningContext;
+import io.tesla.proviso.spi.ProvisioningException;
+import io.tesla.proviso.spi.ProvisioningTask;
+import io.tesla.proviso.util.FileCopier;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+
+import org.apache.maven.repository.internal.DefaultServiceLocator;
+import org.apache.maven.repository.internal.MavenRepositorySystemSession;
+import org.apache.maven.settings.Mirror;
+import org.apache.maven.settings.Settings;
+import org.apache.maven.settings.building.DefaultSettingsBuilderFactory;
+import org.apache.maven.settings.building.DefaultSettingsBuildingRequest;
+import org.apache.maven.settings.building.SettingsBuilder;
+import org.apache.maven.settings.building.SettingsBuildingException;
+import org.apache.maven.settings.building.SettingsBuildingRequest;
+import org.codehaus.plexus.util.dag.CycleDetectedException;
+import org.codehaus.plexus.util.dag.DAG;
+import org.codehaus.plexus.util.dag.TopologicalSorter;
+import org.slf4j.Logger;
+import org.sonatype.aether.RepositorySystem;
+import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.artifact.ArtifactType;
+import org.sonatype.aether.collection.CollectRequest;
+import org.sonatype.aether.connector.async.AsyncRepositoryConnectorFactory;
+import org.sonatype.aether.graph.Dependency;
+import org.sonatype.aether.graph.DependencyNode;
+import org.sonatype.aether.repository.Authentication;
+import org.sonatype.aether.repository.LocalRepository;
+import org.sonatype.aether.repository.Proxy;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.resolution.ArtifactRequest;
+import org.sonatype.aether.resolution.ArtifactResolutionException;
+import org.sonatype.aether.resolution.ArtifactResult;
+import org.sonatype.aether.resolution.DependencyRequest;
+import org.sonatype.aether.resolution.DependencyResolutionException;
+import org.sonatype.aether.resolution.DependencyResult;
+import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
+import org.sonatype.aether.util.artifact.DefaultArtifact;
+import org.sonatype.aether.util.artifact.DefaultArtifactType;
+import org.sonatype.aether.util.filter.ExclusionsDependencyFilter;
+import org.sonatype.aether.util.graph.PreorderNodeListGenerator;
+
+import com.google.common.io.Files;
+
+@Named
+@Singleton
+public class DefaultProvisioner implements Provisioner {
+
+  @Inject
+  private Logger logger;
+
+  @Inject
+  private List<ProvisioningTask> tasks;
+
+  public ProvisioningContext context(ProvisioningRequest request) {
+
+    Properties props = request.getProperties();
+    ProvisioningConfiguration config = new ProvisioningConfiguration(props);
+    ProvisioningContext context = new ProvisioningContext(request.getOutputDirectory(), config);
+
+    if (request.getRemoteRepositories() != null) {
+      context.setRemoteRepositories(request.getRemoteRepositories());
+    } else {
+      List<RemoteRepository> remoteRepositories = new ArrayList<RemoteRepository>();
+      remoteRepositories.add(getRemoteRepository(props));
+      context.setRemoteRepositories(remoteRepositories);
+    }
+
+    if (request.getRepositorySystem() != null) {
+      context.setRepositorySystem(request.getRepositorySystem());
+    } else {
+      context.setRepositorySystem(getRepositorySystem());
+    }
+
+    if (request.getResolutionSession() != null) {
+      context.setLocalRepository(request.getResolutionSession().getLocalRepository().getBasedir().getAbsolutePath());
+      context.setRepositorySystemSession(request.getResolutionSession());
+    } else {
+      context.setLocalRepository(getLocalRepository(props));
+      context.setRepositorySystemSession(getRepositorySystemSession(context));
+    }
+    context.setProvisioner(this);
+
+    return context;
+  }
+
+  public ProvisioningContext provision(ProvisioningRequest request) {
+
+    ProvisioningContext context = context(request);
+
+    List<ProvisioningTask> tasks = sortTasks(this.tasks);
+
+    if (logger.isInfoEnabled()) {
+      StringBuilder buffer = new StringBuilder(256);
+      for (ProvisioningTask task : tasks) {
+        if (buffer.length() > 0) {
+          buffer.append(", ");
+        }
+        buffer.append(task.getId());
+      }
+      logger.info("Provisioning tasks: {}", buffer);
+    }
+
+    for (ProvisioningTask task : tasks) {
+      task.preStart(context);
+    }
+
+    return context;
+  }
+
+  private List<ProvisioningTask> sortTasks(Collection<ProvisioningTask> tasks) {
+    Map<String, ProvisioningTask> index = new LinkedHashMap<String, ProvisioningTask>();
+    DAG dag = new DAG();
+    for (ProvisioningTask task : tasks) {
+      String id = task.getId();
+      if (index.get(id) != null) {
+        throw new ProvisioningException("Cannot sort provisioning tasks, duplicate task id '" + id + "' detected, used by " + index.get(id) + " and " + task);
+      }
+      index.put(id, task);
+      dag.addVertex(id);
+
+      Collection<String> prerequisites = task.getPrerequisites();
+      if (prerequisites != null) {
+        for (String prerequisite : prerequisites) {
+          try {
+            dag.addEdge(task.getId(), prerequisite);
+          } catch (CycleDetectedException e) {
+            throw new ProvisioningException("Cannot sort provisioning tasks, cyclic dependency detected: " + e.cycleToString(), e);
+          }
+        }
+      }
+    }
+
+    @SuppressWarnings("unchecked")
+    List<String> ids = TopologicalSorter.sort(dag);
+
+    List<ProvisioningTask> result = new ArrayList<ProvisioningTask>(tasks.size());
+    for (String id : ids) {
+      ProvisioningTask task = index.get(id);
+      if (task != null) {
+        result.add(task);
+      }
+    }
+
+    return result;
+  }
+
+  public void dispose(ProvisioningContext context) {
+    List<ProvisioningTask> tasks = sortTasks(this.tasks);
+
+    for (ProvisioningTask task : tasks) {
+      task.preStop(context);
+    }
+
+    for (ProvisioningTask task : tasks) {
+      task.postStop(context);
+    }
+
+    File tmpDir = context.resolvePath("tmp");
+    try {
+      Files.deleteDirectoryContents(tmpDir);
+    } catch (IOException e) {
+      logger.error("Error deleting " + tmpDir, e);
+    }
+  }
+
+  public void resolve(String coordinates, ProvisioningContext context) {
+    resolve(new DefaultArtifact(coordinates), context);
+  }
+
+  public void resolve(Artifact artifact, ProvisioningContext context) {
+
+    ArtifactRequest request = new ArtifactRequest();
+    request.setArtifact(artifact);
+    request.setRepositories(context.getRemoteRepositories());
+
+    try {
+      ArtifactResult result = context.getRepositorySystem().resolveArtifact(context.getRepositorySystemSession(), request);
+    } catch (ArtifactResolutionException e) {
+      throw new ProvisioningException(e.getMessage(), e);
+    }
+  }
+
+  //
+  // This resolves the root dependency and all its transitive dependences
+  //
+  public void resolveTransitively(String coordinates, ProvisioningContext context) {
+    resolveTransitively(coordinates, context, null);
+  }
+
+  public void resolveTransitively(String coordinates, ProvisioningContext context, File outputDirectory) {
+    Dependency dependency = new Dependency(new DefaultArtifact(coordinates), "runtime");
+
+    CollectRequest request = new CollectRequest();
+    request.setRoot(dependency);
+    request.setRepositories(context.getRemoteRepositories());
+
+    DependencyRequest dependencyRequest = new DependencyRequest();
+    dependencyRequest.setCollectRequest(request);
+
+    try {
+      DependencyNode rootNode = context.getRepositorySystem().resolveDependencies(context.getRepositorySystemSession(), dependencyRequest).getRoot();
+      PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
+      rootNode.accept(nlg);
+
+      for (File file : nlg.getFiles()) {
+        if (outputDirectory != null) {
+          FileCopier.copy(file, new File(outputDirectory, file.getName()));
+        } else {
+          FileCopier.copy(file, new File(context.getOutputDirectory(), file.getName()));
+        }
+      }
+    } catch (DependencyResolutionException e) {
+      throw new ProvisioningException(e.getMessage(), e);
+    }
+  }
+
+  private Map<String, ProvisoArtifact> resolveVersions(Map<String, ProvisoArtifact> artifacts, Map<String, String> versionMap) {
+    Map<String, ProvisoArtifact> list = new LinkedHashMap<String, ProvisoArtifact>();
+    for (ProvisoArtifact artifact : artifacts.values()) {
+      if (artifact.getVersion().equals("NOTSET")) {
+        String version = versionMap.get(artifact.getGroupId() + ":" + artifact.getArtifactId());
+        artifact = (ProvisoArtifact) artifact.setVersion(version);
+      }
+      list.put(artifact.getGA(), artifact);
+    }
+    return list;
+  }
+
+  public Map<String, ProvisoArtifact> resolveFileSet(FileSet fileSet, Map<String, String> versionMap, ProvisioningContext context) {
+
+    CollectRequest request = new CollectRequest();
+    request.setRepositories(context.getRemoteRepositories());
+
+    //
+    // Resolve versions
+    //
+    Map<String, ProvisoArtifact> artifacts = resolveVersions(fileSet.getArtifactMapKeyedByGA(), versionMap);
+    for (ProvisoArtifact artifact : artifacts.values()) {
+      //
+      // <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>
+      //
+      ArtifactType type;
+      if (artifact.getExtension().equals("tar.gz")) {
+        type = new DefaultArtifactType("tar.gz", "tar.gz", "", "java", false, true);
+      } else if (artifact.getExtension().equals("war")) {
+        type = new DefaultArtifactType("war", "war", "", "java", false, true);
+      } else {
+        type = new DefaultArtifactType("jar", "jar", "", "java");
+      }
+
+      artifact = (ProvisoArtifact) artifact.setProperties(type.getProperties());
+      Dependency dependency = new Dependency(artifact, "runtime");
+      request.addDependency(dependency);
+    }
+
+    //
+    // Add an exclude filter if necessary
+    //
+    DependencyRequest dependencyRequest = new DependencyRequest(request, null);
+    if (fileSet.getExcludes() != null) {
+      dependencyRequest.setFilter(new ExclusionsDependencyFilter(fileSet.getExcludes()));
+    }
+
+    //
+    // Treat the parent's resolved artifacts as set of managed dependencies for the child
+    //
+    if (fileSet.getParent() != null) {
+      for (Artifact artifact : fileSet.getParent().getResolvedArtifacts().values()) {
+        request.addManagedDependency(new Dependency(artifact, "runtime"));
+      }
+    }
+
+    DependencyResult dependencyResult;
+    try {
+      dependencyResult = context.getRepositorySystem().resolveDependencies(context.getRepositorySystemSession(), dependencyRequest);
+    } catch (DependencyResolutionException e) {
+      throw new ProvisioningException(e.getMessage(), e);
+    }
+
+    Map<String, ProvisoArtifact> artifactMapKeyedByGa = new HashMap<String, ProvisoArtifact>();
+    for (ArtifactResult artifactResult : dependencyResult.getArtifactResults()) {
+      Artifact a = artifactResult.getArtifact();
+      String ga = a.getGroupId() + ":" + a.getArtifactId();
+      if (a instanceof ProvisoArtifact) {
+        artifactMapKeyedByGa.put(ga, (ProvisoArtifact) a);
+      } else {
+        artifactMapKeyedByGa.put(ga, new ProvisoArtifact(a));
+      }
+    }
+
+    fileSet.setResolvedArtifacts(artifactMapKeyedByGa);
+
+    return artifactMapKeyedByGa;
+  }
+
+  //
+  // Aether resolver setup
+  //
+  public RepositorySystem getRepositorySystem() {
+    DefaultServiceLocator serviceLocator = new DefaultServiceLocator();
+    serviceLocator.addService(RepositoryConnectorFactory.class, AsyncRepositoryConnectorFactory.class);
+    return serviceLocator.getService(RepositorySystem.class);
+  }
+
+  private RepositorySystemSession getRepositorySystemSession(ProvisioningContext context) {
+    final MavenRepositorySystemSession repoSession = new MavenRepositorySystemSession();
+    repoSession.setLocalRepositoryManager(context.getRepositorySystem().newLocalRepositoryManager(new LocalRepository(context.getLocalRepository())));
+    repoSession.setTransferListener(new AetherTransferListener());
+    return repoSession;
+  }
+
+  public String getLocalRepository(Properties properties) {
+
+    String localRepository = properties.getProperty("repo.local");
+    if (localRepository == null || localRepository.length() <= 0) {
+      Settings settings = readMavenSettings();
+      localRepository = settings.getLocalRepository();
+      if (localRepository == null || localRepository.length() <= 0) {
+        localRepository = new File(System.getProperty("user.home"), ".m2/repository").getAbsolutePath();
+      }
+    }
+
+    return localRepository;
+  }
+
+  public RemoteRepository getRemoteRepository(Properties properties) {
+    String user = System.getProperty("user.name");
+    String repoUrl = properties.getProperty("repo.url", "http://repo1.maven.org/maven2/");
+    String repoUser = properties.getProperty("repo.username", user);
+    String repoPass = properties.getProperty("repo.password");
+    //
+    // Proxy
+    //
+    String proxyHost = properties.getProperty("proxy.host", "");
+    String proxyPort = properties.getProperty("proxy.port", "80");
+    String proxyUser = properties.getProperty("proxy.username", user);
+    String proxyPass = properties.getProperty("proxy.password");
+
+    String repositoryId = "proviso";
+
+    Settings settings = readMavenSettings();
+    //
+    // If there is a mirrorOf in the settings settings
+    if (settings.getMirrors() != null && settings.getMirrors().size() == 1) {
+      Mirror mirror = settings.getMirrors().get(0);
+      repoUrl = mirror.getUrl();
+      repositoryId = mirror.getId();
+      //
+      // account for having no username or password
+      //
+      if (settings.getServer(repositoryId) != null) {
+        repoUser = settings.getServer(repositoryId).getUsername();
+        repoPass = settings.getServer(repositoryId).getPassword();
+      }
+    }
+
+    RemoteRepository remoteRepository = new RemoteRepository(repositoryId, "default", repoUrl);
+    remoteRepository.setAuthentication(new Authentication(repoUser, repoPass));
+    if (proxyHost.length() > 0) {
+      int port;
+      try {
+        port = Integer.parseInt(proxyPort);
+      } catch (NumberFormatException e) {
+        throw new ProvisioningException("Invalid proxy port " + proxyPort + ": " + e.getMessage(), e);
+      }
+      remoteRepository.setProxy(new Proxy(Proxy.TYPE_HTTP, proxyHost, port, new Authentication(proxyUser, proxyPass)));
+    }
+    return remoteRepository;
+  }
+
+  public Settings readMavenSettings() {
+    SettingsBuilder settingsBuilder = new DefaultSettingsBuilderFactory().newInstance();
+
+    SettingsBuildingRequest request = new DefaultSettingsBuildingRequest();
+    request.setSystemProperties(System.getProperties());
+    request.setUserSettingsFile(new File(System.getProperty("user.home"), ".m2/settings.xml"));
+
+    Settings settings;
+    try {
+      settings = settingsBuilder.build(request).getEffectiveSettings();
+    } catch (SettingsBuildingException e) {
+      settings = new Settings();
+    }
+
+    return settings;
+  }
+}
+
