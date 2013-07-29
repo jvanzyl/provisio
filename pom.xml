@@ -34,7 +34,8 @@
     <surefire.mem>-Xmx256m</surefire.mem>
     <mavenVersion>3.1.2</mavenVersion>
     <aetherVersion>0.9.0.M2</aetherVersion>
-    <sisuInjectVersion>0.0.0.M2a</sisuInjectVersion>    
+    <sisuInjectVersion>0.0.0.M2a</sisuInjectVersion>  
+    <teslaPluginApiVersion>0.0.4</teslaPluginApiVersion>  
   </properties>
 
   <scm>
