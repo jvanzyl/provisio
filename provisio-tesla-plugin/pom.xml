@@ -67,7 +67,6 @@
     <dependency>
       <groupId>io.tesla.maven.plugin</groupId>
       <artifactId>tesla-plugin-api</artifactId>
-      <version>0.0.5-SNAPSHOT</version>
     </dependency>
     <!-- Test -->
     <dependency>
