@@ -119,7 +119,7 @@
         <version>${mavenVersion}</version>
       </dependency>
       <dependency>
-        <groupId>org.eclipse.tesla.plugin</groupId>
+        <groupId>io.tesla.maven.plugin</groupId>
         <artifactId>tesla-plugin-api</artifactId>
         <version>${teslaPluginApiVersion}</version>
       </dependency>
