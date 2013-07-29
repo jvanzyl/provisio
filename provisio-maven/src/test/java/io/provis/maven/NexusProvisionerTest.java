@@ -40,7 +40,7 @@ public class NexusProvisionerTest extends ProvisioningTestCase {
     context.setVersion("2.5.0-01");
     context.setInstallationDirectory(new File(baseDirectory,"installation"));
     context.setWorkDirectory(new File(baseDirectory,"work"));
-    context.addPlugin("io.tesla.nexus.plugins:nexus-github-plugin:zip:bundle:0.0.2-SNAPSHOT");
+    context.addPlugin("com.sonatype.nexus.github:nexus-github-plugin:zip:bundle:0.0.3");
     context.addRealm("GithubRealm");
     context.addUser("userA","admin123");
     context.setPort(9005);    
