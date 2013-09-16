@@ -1,6 +1,7 @@
 package io.provis.parser;
 
 import io.provis.Lookup;
+import io.provis.model.ArtifactSet;
 import io.provis.model.ProvisioModel;
 import io.provis.parser.antlr.ProvisioLexer;
 import io.provis.parser.antlr.ProvisioModelGenerator;
@@ -9,6 +10,9 @@ import io.provis.parser.antlr.ProvisioParser;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -50,7 +54,30 @@ public class ProvisioModelParser {
     TreeNodeStream stream = new BufferedTreeNodeStream(tree);
     ProvisioModelGenerator generator = new ProvisioModelGenerator(stream, lookup, versionMap, outputDirectory);
     try {
-      return generator.runtime().value;
+      // A hack to set the parent artifact set
+      // root
+      // bin
+      // lib
+      // lib/ext
+      ProvisioModel model = generator.runtime().value;
+      Map<String,ArtifactSet> names = new HashMap<String,ArtifactSet>();
+      for(ArtifactSet as : model.getFileSets()) {
+        names.put(as.getDirectory(), as);
+      }
+      for(ArtifactSet as : model.getFileSets()) {
+        for(String name : names.keySet()) {
+          if(!name.equals(as.getDirectory()) && name.startsWith(as.getDirectory())) {
+            System.out.println("!!!! setting " + name + " to have the parent of " + as.getDirectory());
+            ArtifactSet child = names.get(name);
+            System.out.println(as.getDirectory());
+            System.out.println(name);
+            child.setDirectory(name.substring(as.getDirectory().length() + 1));
+            child.setParent(as);
+          }
+        }
+      }
+      
+      return model;
     } catch (RecognitionException e) {
       throw new IllegalArgumentException(e);
     }

@@ -1,3 +1,4 @@
+- right now i'm using new DefaultTeslaAether() because Maven is not providing default bindings for Aether when running under Maven. That will be a refactor that is required. But it allows me to use Provisio to create the Tesla distribution for now.
 - operating on the graph of artifacts
 - collapse provision context / request
 - collapse down to one resolver

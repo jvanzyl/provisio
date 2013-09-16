@@ -10,7 +10,6 @@ import java.util.Properties;
 
 public class MavenRequest {
 
-  private String mavenVersion;
   private File mavenHome;
   private File workDir;
   private File pomFile;
@@ -31,15 +30,6 @@ public class MavenRequest {
     if (mlr.length() > 0) {
       localRepo = new File(mlr).getAbsoluteFile();
     }
-  }
-
-  public String getMavenVersion() {
-    return mavenVersion;
-  }
-
-  public MavenRequest setMavenVersion(String mavenVersion) {
-    this.mavenVersion = mavenVersion;
-    return this;
   }
 
   public File getWorkDir() {

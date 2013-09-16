@@ -47,7 +47,7 @@ public class TeslaFromMavenAssemblyTest extends AssemblyTestCase {
     assertNotNull(lib.artifact("ch.qos.logback:logback-core:1.0.7"));
     assertNotNull(lib.artifact("ch.qos.logback:logback-classic:1.0.7"));
     assertNotNull(lib.artifact("org.eclipse.aether:aether-connector-file:0.9.0.M2"));
-    assertNotNull(lib.artifact("io.tesla.aether:aether-connector-okhttp:0.0.4"));
+    assertNotNull(lib.artifact("io.tesla.aether:aether-connector-okhttp:0.0.5"));
   }
 
   @Override

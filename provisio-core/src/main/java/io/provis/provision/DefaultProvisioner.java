@@ -8,6 +8,7 @@ import io.provis.provision.action.artifact.ArtifactMetadataGleaner;
 import io.provis.provision.action.artifact.WriteToDiskAction;
 import io.provis.provision.model.ProvisoArtifactMetadata;
 import io.tesla.aether.TeslaAether;
+import io.tesla.aether.internal.DefaultTeslaAether;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.util.filter.ExclusionsDependencyFilter;
+import org.eclipse.sisu.Nullable;
 
 import com.google.common.collect.Maps;
 
@@ -40,8 +42,8 @@ public class DefaultProvisioner implements Provisioner {
   private ArtifactMetadataGleaner artifactMetadataGleaner;
 
   @Inject
-  public DefaultProvisioner(TeslaAether aether, VersionMapFromPom versionMapFromPom, ArtifactMetadataGleaner artifactMetadataGleaner) {
-    this.aether = aether;
+  public DefaultProvisioner(/*TeslaAether aether, */ VersionMapFromPom versionMapFromPom, ArtifactMetadataGleaner artifactMetadataGleaner) {
+    this.aether = new DefaultTeslaAether();
     this.versionMapFromPom = versionMapFromPom;
     this.artifactMetadataGleaner = artifactMetadataGleaner;
   }
@@ -262,7 +264,7 @@ public class DefaultProvisioner implements Provisioner {
     //
     // Treat the parent's resolved artifacts as set of managed dependencies for the child
     //
-    if (fileSet.getParent() != null) {
+    if (fileSet.getParent() != null && fileSet.getParent().getResolvedArtifacts() != null) {
       for (Artifact artifact : fileSet.getParent().getResolvedArtifacts().values()) {
         request.addManagedDependency(new Dependency(artifact, "runtime"));
       }

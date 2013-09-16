@@ -36,7 +36,6 @@ public class MavenInvokerTest extends ProvisioningTestCase {
     MavenRequest request = new MavenRequest()
      .setMavenHome(mavenHome)
      .addGoals("validate")
-     .setMavenVersion("3.0.4")
      .setWorkDir(System.getProperty("user.dir"));
     
     MavenResult result = maven.invoke(request);    

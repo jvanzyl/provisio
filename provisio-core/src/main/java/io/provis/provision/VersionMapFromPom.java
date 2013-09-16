@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.tesla.aether.TeslaAether;
+import io.tesla.aether.internal.DefaultTeslaAether;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -21,8 +22,8 @@ public class VersionMapFromPom {
   private TeslaAether aether;
   
   @Inject
-  public VersionMapFromPom(TeslaAether aether) {
-    this.aether = aether;
+  public VersionMapFromPom(/*TeslaAether aether */) {
+    this.aether = new DefaultTeslaAether();
   }
   
   //

@@ -1,4 +1,4 @@
-package io.provis.maven.execute;
+package io.provis.ant;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -13,33 +13,31 @@ import org.codehaus.plexus.util.cli.Commandline;
 import org.codehaus.plexus.util.cli.StreamConsumer;
 
 @Named("forked")
-public class ForkedMavenInvoker implements MavenInvoker {
+public class ForkedAntInvoker implements AntInvoker {
 
-  public MavenResult invoke(MavenRequest request) {
-    MavenResult result = new MavenResult();
+  public AntResult invoke(AntRequest request) {
+    AntResult result = new AntResult();
 
     File javaHome = new File(System.getProperty("java.home")).getAbsoluteFile();
     if (javaHome.getName().equals("jre")) {
       javaHome = javaHome.getParentFile();
     }
 
-    File mavenHome = request.getMavenHome();
+    File antHome = request.getAntHome();
     Commandline cli = new Commandline();
 
-    cli.setExecutable(new File(mavenHome, "bin/mvn").getAbsolutePath());
+    cli.setExecutable(new File(antHome, "bin/ant").getAbsolutePath());
 
-    cli.addEnvironment("M2_HOME", mavenHome.getAbsolutePath());
+    cli.addEnvironment("ANT_HOME", antHome.getAbsolutePath());
     cli.addEnvironment("JAVA_HOME", javaHome.getAbsolutePath());
-    cli.addEnvironment("MAVEN_TERMINATE_CMD", "on");
 
     cli.setWorkingDirectory(request.getWorkDir());
 
-    cli.createArg().setValue("-e");
-    cli.createArg().setValue("-B");
+    cli.createArg().setValue("-d");
 
-    if (request.getPomFile() != null) {
+    if (request.getBuildXml() != null) {
       cli.createArg().setValue("-f");
-      cli.createArg().setValue(request.getPomFile().getPath());
+      cli.createArg().setValue(request.getBuildXml().getPath());
     }
 
     for (Map.Entry<Object, Object> entry : request.getUserProperties().entrySet()) {
@@ -47,34 +45,19 @@ public class ForkedMavenInvoker implements MavenInvoker {
       cli.createArg().setValue(entry.getKey() + "=" + entry.getValue());
     }
 
-    if (request.getLocalRepo() != null) {
-      cli.createArg().setValue("-D");
-      cli.createArg().setValue("maven.repo.local=" + request.getLocalRepo().getAbsolutePath());
-    }
-
-    if (request.getGlobalSettings() != null) {
-      cli.createArg().setValue("-gs");
-      cli.createArg().setFile(request.getGlobalSettings());
-    }
-
-    if (request.getUserSettings() != null) {
-      cli.createArg().setValue("-s");
-      cli.createArg().setFile(request.getUserSettings());
-    }
-
-    for (String goal : request.getGoals()) {
+    for (String goal : request.getTargets()) {
       cli.createArg().setValue(goal);
     }
 
     StringWriter sw = new StringWriter(128 * 1024);
 
     try {
-      MavenStreamConsumer consumer = new MavenStreamConsumer(new PrintWriter(sw));
+      AntStreamConsumer consumer = new AntStreamConsumer(new PrintWriter(sw));
       int exitCode = CommandLineUtils.executeCommandLine(cli, consumer, consumer);
       result.setOutput(sw.toString());
       System.out.println(sw);
       if (exitCode != 0) {
-        throw new CommandLineException("Maven invocation failed with exit code " + exitCode);
+        throw new CommandLineException("Ant invocation failed with exit code " + exitCode);
       }
     } catch (CommandLineException e) {
       result.getErrors().add(e);
@@ -83,11 +66,11 @@ public class ForkedMavenInvoker implements MavenInvoker {
     return result;
   }
 
-  private class MavenStreamConsumer implements StreamConsumer {
+  private class AntStreamConsumer implements StreamConsumer {
 
     private final PrintWriter pw;
 
-    public MavenStreamConsumer(PrintWriter pw) {
+    public AntStreamConsumer(PrintWriter pw) {
       this.pw = pw;
     }
 

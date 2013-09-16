@@ -1,4 +1,4 @@
-package io.provis.maven.execute;
+package io.provis.ant;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -7,7 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
-public class MavenResult {
+public class AntResult {
 
   private String output;
   private Map<String, List<String>> executedGoals;
@@ -70,5 +70,5 @@ public class MavenResult {
   public boolean hasErrors() {
     return errors != null;
   }
-  
+
 }
