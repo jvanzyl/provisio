@@ -4,6 +4,7 @@ import io.provis.model.ProvisioModel;
 import io.provis.parser.ProvisioModelParser;
 import io.provis.provision.Provisioner;
 import io.provis.provision.ProvisioningRequest;
+import io.provis.provision.ProvisioningResult;
 import io.tesla.aether.TeslaAether;
 import io.tesla.aether.internal.DefaultTeslaAether;
 
@@ -21,6 +22,7 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectHelper;
 import org.codehaus.plexus.util.FileUtils;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
@@ -58,8 +60,7 @@ public class ProvisioMojo extends AbstractMojo {
    * @parameter expression="${project}"
    */
   private MavenProject project;
-  
-  
+
   @Configuration
   @DefaultsTo("${project.dependencyManagement}")
   /**
@@ -103,6 +104,13 @@ public class ProvisioMojo extends AbstractMojo {
    */
   private RepositorySystemSession repositorySystemSession;
 
+  /** @component */
+  private MavenProjectHelper projectHelper;
+
+  /**  @parameter expression=${archive}" */
+  private File archive;
+
+  
   public void execute() throws MojoExecutionException, MojoFailureException {
 
     TeslaAether aether = new DefaultTeslaAether(remoteRepositories, repositorySystemSession);
@@ -132,7 +140,7 @@ public class ProvisioMojo extends AbstractMojo {
 
     ProvisioModel assembly;
     try {
-      assembly = parser.read(runtimeDescriptor, outputDirectory, (Map)project.getProperties());
+      assembly = parser.read(runtimeDescriptor, outputDirectory, (Map) project.getProperties());
     } catch (Exception e) {
       throw new MojoFailureException("Cannot read assembly descriptor file " + runtimeDescriptor, e);
     }
@@ -140,8 +148,11 @@ public class ProvisioMojo extends AbstractMojo {
     ProvisioningRequest request = new ProvisioningRequest();
     request.setOutputDirectory(outputDirectory);
     request.setRuntimeAssembly(assembly);
-    provisioner.provision(request);
+    ProvisioningResult result = provisioner.provision(request);
 
+    // So the distribution is made now but it's in the descriptor so we need a good way to know. We need to augment the result with
+    // archives that are created.
+    projectHelper.attachArtifact(project, "tar.gz", archive);
   }
 
   // I don't really need this in a non-reactor build. In a separate assembly project I would pull the version map from another source like a POM
