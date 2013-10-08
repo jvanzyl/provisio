@@ -3,9 +3,6 @@ package io.provis.assembly;
 import io.provis.model.ArtifactSet;
 import io.provis.model.ProvisioArtifact;
 import io.provis.model.ProvisioModel;
-import io.provis.provision.action.artifact.UnpackAction;
-import io.provis.provision.action.fileset.MakeExecutableAction;
-import io.provis.provision.action.fileset.UpdateJarAction;
 
 import java.io.File;
 
