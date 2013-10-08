@@ -6,7 +6,7 @@
   <parent>
     <groupId>io.provis</groupId>
     <artifactId>provisio</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.5-SNAPSHOT</version>
   </parent>
 
   <artifactId>provisio-parser</artifactId>
@@ -18,12 +18,12 @@
     <dependency>
       <groupId>io.provis</groupId>
       <artifactId>provisio-archive</artifactId>
-      <version>0.0.4</version>
+      <version>0.0.5-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>io.provis</groupId>
       <artifactId>provisio-model</artifactId>
-      <version>0.0.4</version>
+      <version>0.0.5-SNAPSHOT</version>
     </dependency>
     <!-- JSR330 -->
     <dependency>
