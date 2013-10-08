@@ -1,4 +1,4 @@
-package org.eclipse.tesla.plugins.proviso;
+package io.tesla.maven.plugins.provisio;
 
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;

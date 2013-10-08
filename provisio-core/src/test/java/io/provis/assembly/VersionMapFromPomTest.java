@@ -7,7 +7,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import org.eclipse.sisu.containers.InjectedTestCase;
+import org.eclipse.sisu.launch.InjectedTestCase;
 
 import com.google.inject.Binder;
 
@@ -22,7 +22,7 @@ public class VersionMapFromPomTest extends InjectedTestCase {
   private VersionMapFromPom versionMapFromPom;
   
   public void testVersionMapFromPom() throws Exception {
-    Map<String,String> versionMap = versionMapFromPom.versionMap("io.tesla.maven:maven:3.1.0");
+    Map<String,String> versionMap = versionMapFromPom.versionMap("org.apache.maven:maven:pom:3.1.1");
     for(String ga : versionMap.keySet()) {
       System.out.println(ga + " => " + versionMap.get(ga));
     }

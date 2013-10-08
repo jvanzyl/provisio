@@ -30,7 +30,7 @@ public class TeslaAssemblyTest extends AssemblyTestCase {
     //
     // bin
     //
-    ArtifactSet bin = model.fileSet("bin");    
+    ArtifactSet bin = model.artifactSet("bin");    
     MakeExecutableAction me = (MakeExecutableAction) bin.action("executable");
     assertNotNull(me);
     assertEquals("**/mvn*", me.getIncludes());
@@ -39,7 +39,7 @@ public class TeslaAssemblyTest extends AssemblyTestCase {
     //
     // lib
     //
-    ArtifactSet lib = model.fileSet("lib");
+    ArtifactSet lib = model.artifactSet("lib");
     assertNotNull(lib);
     assertNotNull(lib.artifact("ch.qos.logback:logback-core:1.0.7"));
     assertNotNull(lib.artifact("ch.qos.logback:logback-classic:1.0.7"));

@@ -41,7 +41,7 @@
     </dependency>
     <dependency>
       <groupId>org.eclipse.sisu</groupId>
-      <artifactId>org.eclipse.sisu.inject</artifactId>
+      <artifactId>org.eclipse.sisu.inject.tests</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

@@ -10,7 +10,6 @@ import java.io.File;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.maven.repository.internal.MavenAetherModule;
 import org.codehaus.plexus.util.FileUtils;
 import org.junit.Test;
 

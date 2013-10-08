@@ -65,7 +65,7 @@
     </dependency>
     <dependency>
       <groupId>org.eclipse.sisu</groupId>
-      <artifactId>org.eclipse.sisu.inject</artifactId>
+      <artifactId>org.eclipse.sisu.inject.tests</artifactId>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>

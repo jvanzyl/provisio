@@ -255,7 +255,6 @@ public class DefaultArchiver implements Archiver {
       // Preserve the executable bit on the way out
       if(FileMode.EXECUTABLE_FILE.equals(mode)) {
         outputFile.setExecutable(true);
-        System.out.println(entryName);
       }
       
       entries.put(entryName, new RuntimeEntry(entryName,mode));      

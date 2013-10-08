@@ -57,13 +57,6 @@ public class UnpackAction implements Action {
     File archive = artifact.getFile();
         
     try {
-      System.out.println(archiver);
-      System.out.println(outputDirectory);
-      System.out.println(includes);
-      System.out.println(excludes);
-      System.out.println(useRoot);
-      System.out.println(flatten);
-      
       Map<String,RuntimeEntry> fileEntries = archiver.unarchive(archive, outputDirectory, includes, excludes, useRoot, flatten);
       context.getFileEntries().putAll(fileEntries);
     } catch (IOException e) {

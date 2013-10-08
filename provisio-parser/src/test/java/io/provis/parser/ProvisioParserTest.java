@@ -15,7 +15,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import org.eclipse.sisu.containers.InjectedTestCase;
+import org.eclipse.sisu.launch.InjectedTestCase;
 
 public class ProvisioParserTest extends InjectedTestCase {
 
@@ -29,7 +29,7 @@ public class ProvisioParserTest extends InjectedTestCase {
     assertEquals("tesla", m.getId());
 
     // bin
-    ArtifactSet bin = m.fileSet("bin");
+    ArtifactSet bin = m.artifactSet("bin");
     assertNotNull(bin);
     ProvisioArtifact artifact0 = bin.artifact("g0:a0:1.0");
     assertNotNull(artifact0);
@@ -43,7 +43,7 @@ public class ProvisioParserTest extends InjectedTestCase {
     assertArtifact(bin.artifact("g1:a1:1.0"), "g1:a1:1.0");
 
     // root
-    ArtifactSet root = m.fileSet("root");
+    ArtifactSet root = m.artifactSet("root");
     ProvisioArtifact b = root.artifact("org.apache.maven:apache-maven:tar.gz:bin:3.1-SNAPSHOT");
     Unpack unpack = (Unpack) b.action("unpack");
     assertNotNull(unpack);
@@ -61,7 +61,7 @@ public class ProvisioParserTest extends InjectedTestCase {
     assertEquals("**/*.bat", me.getExcludes().get(0));
 
     // lib
-    ArtifactSet lib = m.fileSet("lib");
+    ArtifactSet lib = m.artifactSet("lib");
     assertNotNull(lib);
     assertNotNull(lib.artifact("ch.qos.logback:logback-core:1.0.7"));
     assertNotNull(lib.artifact("ch.qos.logback:logback-classic:1.0.7"));
@@ -82,12 +82,12 @@ public class ProvisioParserTest extends InjectedTestCase {
     assertEquals("tesla", m.getId());
 
     // etc
-    ArtifactSet etc = m.fileSet("etc");
+    ArtifactSet etc = m.artifactSet("etc");
     ProvisioArtifact noVersion = etc.artifact("groupId:artifactId:5.0.0");
     assertNotNull(noVersion);
     
     // bin
-    ArtifactSet bin = m.fileSet("bin");
+    ArtifactSet bin = m.artifactSet("bin");
     assertNotNull(bin);
     ProvisioArtifact artifact0 = bin.artifact("g0:a0:1.0");
     assertNotNull(artifact0);
@@ -101,7 +101,7 @@ public class ProvisioParserTest extends InjectedTestCase {
     assertArtifact(bin.artifact("g1:a1:1.0"), "g1:a1:1.0");
 
     // root
-    ArtifactSet root = m.fileSet("root");
+    ArtifactSet root = m.artifactSet("root");
     ProvisioArtifact b = root.artifact("org.apache.maven:apache-maven:tar.gz:bin:3.1-SNAPSHOT");
     Unpack unpack = (Unpack) b.action("unpack");
     assertNotNull(unpack);
@@ -119,7 +119,7 @@ public class ProvisioParserTest extends InjectedTestCase {
     assertEquals("**/*.bat", me.getExcludes().get(0));
 
     // lib
-    ArtifactSet lib = m.fileSet("lib");
+    ArtifactSet lib = m.artifactSet("lib");
     assertNotNull(lib);
     assertNotNull(lib.artifact("ch.qos.logback:logback-core:1.0.7"));
     assertNotNull(lib.artifact("ch.qos.logback:logback-classic:1.0.7"));

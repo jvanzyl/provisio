@@ -29,7 +29,6 @@ import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.util.filter.ExclusionsDependencyFilter;
-import org.eclipse.sisu.Nullable;
 
 import com.google.common.collect.Maps;
 
@@ -42,22 +41,39 @@ public class DefaultProvisioner implements Provisioner {
   private ArtifactMetadataGleaner artifactMetadataGleaner;
 
   @Inject
-  public DefaultProvisioner(/*TeslaAether aether, */ VersionMapFromPom versionMapFromPom, ArtifactMetadataGleaner artifactMetadataGleaner) {
-    this.aether = new DefaultTeslaAether();
-    this.versionMapFromPom = versionMapFromPom;
+  // Eventually we want to inject TeslaAether, but Maven needs to provide a binding for the RepositorySystemSession which is 
+  // current does not.
+  public DefaultProvisioner(/* VersionMapFromPom versionMapFromPom, */ArtifactMetadataGleaner artifactMetadataGleaner) {
     this.artifactMetadataGleaner = artifactMetadataGleaner;
+  }
+
+  //
+  // This is a hack because right now Maven's RepositorySystemSession is not injectable due to the way Maven starts up so after the
+  // provisioner is made in a Maven plugin I want to manually set TeslaAether that is constructed with Maven's RepositorySystemSession
+  //
+  public TeslaAether getAether() {
+    return aether;
+  }
+
+  public void setAether(TeslaAether aether) {
+    this.aether = aether;
+    this.versionMapFromPom = new VersionMapFromPom(aether);
   }
 
   public ProvisioningResult provision(ProvisioningRequest request) {
 
+    if (this.aether == null) {
+      setAether(new DefaultTeslaAether());
+    }
+
     ProvisioContext context = new ProvisioContext();
-    
+
     //
     // We probably want to make sure all the operations can be done first
     //
 
-    for (ArtifactSet fileSet : request.getRuntimeAssembly().getFileSets()) {
-      try {       
+    for (ArtifactSet fileSet : request.getRuntimeAssembly().getArtifactSets()) {
+      try {
         processFileSet(request, context, fileSet);
       } catch (Exception e) {
         throw new RuntimeException(e);
@@ -75,10 +91,10 @@ public class DefaultProvisioner implements Provisioner {
 
   private void processFileSet(ProvisioningRequest request, ProvisioContext context, ArtifactSet fileSet) throws Exception {
 
-    if(!fileSet.getActualOutputDirectory().exists()) {
+    if (!fileSet.getActualOutputDirectory().exists()) {
       fileSet.getActualOutputDirectory().mkdirs();
     }
-        
+
     resolveFileSetOutputDirectory(request, context, fileSet);
     resolveFileSetArtifacts(request, context, fileSet);
     processArtifactsWithActions(context, fileSet.getResolvedArtifacts().values(), fileSet.getActualOutputDirectory());
@@ -100,7 +116,7 @@ public class DefaultProvisioner implements Provisioner {
         fileSet.setActualOutputDirectory(request.getOutputDirectory());
       } else {
         fileSet.setActualOutputDirectory(new File(request.getOutputDirectory(), fileSet.getDirectory()));
-      }      
+      }
     }
   }
 
@@ -193,12 +209,12 @@ public class DefaultProvisioner implements Provisioner {
 
     return actions;
   }
-  
+
   //
   // Resolving artifact sets
   //
   public Map<String, ProvisioArtifact> resolveFileSet(ProvisioningRequest provisioningRequest, ArtifactSet fileSet) {
-    
+
     CollectRequest request = new CollectRequest();
     //
     // Resolve versions
@@ -206,12 +222,12 @@ public class DefaultProvisioner implements Provisioner {
     Map<String, ProvisioArtifact> artifacts;
 
     artifacts = fileSet.getArtifactMap();
-    
+
     for (ProvisioArtifact artifact : artifacts.values()) {
       //
       // <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>
       //
-      
+
       // ArtifactType
       //
       // String id 
@@ -220,23 +236,30 @@ public class DefaultProvisioner implements Provisioner {
       // String language
       // boolean constitutesBuildPath
       // boolean includesDependencies (self-contained so don't attempt to download anything described in the dependency descriptor (POM)
-      
-      if(aether.getArtifactType(artifact.getExtension()) == null) {
+      //
+      ArtifactType type = null;
+
+      if (artifact.getExtension().equals("tar.gz")) {
+        type = new DefaultArtifactType("tar.gz", "tar.gz", "", "packaging", false, true);
+      } else if (artifact.getExtension().equals("zip")) {
+        type = new DefaultArtifactType("zip", "zip", "", "packaging", false, true);
+      }
+
+      //
+      //TODO: Inside Maven this is not null but it should be ??? There is nothing in the type registry for it.
+      //
+      if (aether.getArtifactType(artifact.getExtension()) == null) {
         //
         // We are dealing with artifacts that have no entry in the default artifact type registry. These are typically
         // archive types and we only want to retrieve the artifact itself so we set the artifact type accordingly.
         //
-        ArtifactType type;
-        if (artifact.getExtension().equals("tar.gz")) {
-          type = new DefaultArtifactType("tar.gz", "tar.gz", "", "packaging", false, true);
-        } else if (artifact.getExtension().equals("zip")) {
-          type = new DefaultArtifactType("zip", "zip", "", "packaging", false, true);        
-        } else {
-          type = new DefaultArtifactType(artifact.getExtension(), artifact.getExtension(), "", "unknown", false, true);        
-        }
+        type = new DefaultArtifactType(artifact.getExtension(), artifact.getExtension(), "", "unknown", false, true);
+      }
+
+      if (type != null) {
         artifact.setProperties(type.getProperties());
       }
-      
+
       Dependency dependency = new Dependency(artifact, "runtime");
       request.addDependency(dependency);
     }
@@ -249,18 +272,18 @@ public class DefaultProvisioner implements Provisioner {
       dependencyRequest.setFilter(new ExclusionsDependencyFilter(fileSet.getExcludes()));
     }
 
-    if(provisioningRequest.getRuntimeAssembly().getVersionMap() != null) {
+    if (provisioningRequest.getRuntimeAssembly().getVersionMap() != null) {
       try {
-        Map<String,String> versionMap = versionMapFromPom.versionMap(provisioningRequest.getRuntimeAssembly().getVersionMap());
-        for(String key : versionMap.keySet()) {
+        Map<String, String> versionMap = versionMapFromPom.versionMap(provisioningRequest.getRuntimeAssembly().getVersionMap());
+        for (String key : versionMap.keySet()) {
           Artifact artifact = new ProvisioArtifact(key + ":" + versionMap.get(key));
-          request.addManagedDependency(new Dependency(artifact, "runtime"));              
+          request.addManagedDependency(new Dependency(artifact, "runtime"));
         }
       } catch (Exception e) {
         throw new RuntimeException(e);
-      }      
+      }
     }
-        
+
     //
     // Treat the parent's resolved artifacts as set of managed dependencies for the child
     //
@@ -269,7 +292,7 @@ public class DefaultProvisioner implements Provisioner {
         request.addManagedDependency(new Dependency(artifact, "runtime"));
       }
     }
-    
+
     List<Artifact> resultArtifacts;
     try {
       resultArtifacts = aether.resolveArtifacts(dependencyRequest);

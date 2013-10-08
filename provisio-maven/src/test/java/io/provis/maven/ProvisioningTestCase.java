@@ -1,10 +1,10 @@
 package io.provis.maven;
 
-import io.tesla.aether.guice.maven.MavenBehaviourModule;
-
-import org.eclipse.sisu.containers.InjectedTestCase;
+import org.eclipse.sisu.launch.InjectedTestCase;
 
 import com.google.inject.Binder;
+
+import io.tesla.aether.guice.maven.MavenBehaviourModule;
 
 public abstract class ProvisioningTestCase extends InjectedTestCase {
 

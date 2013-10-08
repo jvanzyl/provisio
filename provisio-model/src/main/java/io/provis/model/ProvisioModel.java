@@ -41,15 +41,15 @@ public class ProvisioModel {
   //
   // ArtifactSets
   //
-  public ArtifactSet fileSet(String name) {
+  public ArtifactSet artifactSet(String name) {
     return artifactSetMap.get(name);
   }
 
-  public Collection<ArtifactSet> getFileSets() {
+  public Collection<ArtifactSet> getArtifactSets() {
     return artifactSetMap.values();
   }
 
-  public void addFileSet(ArtifactSet artifactSet) {
+  public void addArtifactSet(ArtifactSet artifactSet) {
     artifactSetMap.put(artifactSet.getDirectory(), artifactSet);
   }
   

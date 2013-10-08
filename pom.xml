@@ -31,10 +31,11 @@
     <surefire.redirectTestOutputToFile>true</surefire.redirectTestOutputToFile>
     <surefire.runOrder>alphabetical</surefire.runOrder>
     <surefire.mem>-Xmx256m</surefire.mem>
-    <mavenVersion>3.1.2</mavenVersion>
+    <mavenVersion>3.1.1</mavenVersion>
     <aetherVersion>0.9.0.M2</aetherVersion>
-    <sisuInjectVersion>0.0.0.M2a</sisuInjectVersion>  
+    <sisuInjectVersion>0.0.0.M5</sisuInjectVersion>  
     <teslaPluginApiVersion>0.0.4</teslaPluginApiVersion>  
+    <teslaAetherVersion>0.0.3</teslaAetherVersion>
   </properties>
 
   <scm>
@@ -48,7 +49,7 @@
       <dependency>
         <groupId>io.tesla.aether</groupId>
         <artifactId>tesla-aether</artifactId>
-        <version>0.0.1</version>
+        <version>${teslaAetherVersion}</version>
       </dependency>
       <dependency>
         <groupId>io.provis</groupId>
@@ -68,7 +69,7 @@
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-utils</artifactId>
-        <version>2.0.7</version>
+        <version>3.0.15</version>
       </dependency>
       <!-- Aether for org.eclipse.provisoprovisioning -->
       <dependency>
@@ -88,32 +89,32 @@
       </dependency>
       <!-- Maven -->
       <dependency>
-        <groupId>io.tesla.maven</groupId>
+        <groupId>org.apache.maven</groupId>
         <artifactId>maven-aether-provider</artifactId>
         <version>${mavenVersion}</version>
       </dependency>
       <dependency>
-        <groupId>io.tesla.maven</groupId>
+        <groupId>org.apache.maven</groupId>
         <artifactId>maven-settings-builder</artifactId>
         <version>${mavenVersion}</version>
       </dependency>
       <dependency>
-        <groupId>io.tesla.maven</groupId>
+        <groupId>org.apache.maven</groupId>
         <artifactId>maven-settings</artifactId>
         <version>${mavenVersion}</version>
       </dependency>
       <dependency>
-        <groupId>io.tesla.maven</groupId>
+        <groupId>org.apache.maven</groupId>
         <artifactId>maven-core</artifactId>
         <version>${mavenVersion}</version>
       </dependency>
       <dependency>
-        <groupId>io.tesla.maven</groupId>
+        <groupId>org.apache.maven</groupId>
         <artifactId>maven-model</artifactId>
         <version>${mavenVersion}</version>
       </dependency>
       <dependency>
-        <groupId>io.tesla.maven</groupId>
+        <groupId>org.apache.maven</groupId>
         <artifactId>maven-plugin-api</artifactId>
         <version>${mavenVersion}</version>
       </dependency>
@@ -125,13 +126,14 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>14.0-rc1</version>
+        <version>14.0.1</version>
       </dependency>
       <!-- Guice -->
       <dependency>
         <groupId>org.eclipse.sisu</groupId>
-        <artifactId>org.eclipse.sisu.inject</artifactId>
-        <version>0.0.0.M2a</version>
+        <artifactId>org.eclipse.sisu.inject.tests</artifactId>
+        <version>0.0.0.M3</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>junit</groupId>

@@ -15,7 +15,7 @@ import javax.inject.Named;
 import junit.framework.Assert;
 
 import org.codehaus.plexus.util.FileUtils;
-import org.eclipse.sisu.containers.InjectedTestCase;
+import org.eclipse.sisu.launch.InjectedTestCase;
 
 public class ArchiveTest extends InjectedTestCase {
 

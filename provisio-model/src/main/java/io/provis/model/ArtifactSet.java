@@ -122,6 +122,9 @@ public class ArtifactSet {
   }
 
   public Map<String, ProvisioArtifact> getArtifactMapKeyedByGA() {
+    if(artifactMapKeyedByGA == null) {
+      
+    }
     return artifactMapKeyedByGA;
   }
 

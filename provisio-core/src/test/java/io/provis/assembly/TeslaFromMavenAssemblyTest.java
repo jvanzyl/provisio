@@ -23,7 +23,7 @@ public class TeslaFromMavenAssemblyTest extends AssemblyTestCase {
   protected void validateAssembly(ProvisioModel model) {
     
     // root
-    ArtifactSet root = model.fileSet("root");
+    ArtifactSet root = model.artifactSet("root");
     ProvisioArtifact b = root.artifact("io.tesla.maven:apache-maven:tar.gz:bin:3.1.2");
 //    UnpackAction unpack = (UnpackAction) b.action("unpack");
 //    assertNotNull(unpack);
@@ -42,7 +42,7 @@ public class TeslaFromMavenAssemblyTest extends AssemblyTestCase {
     //assertEquals("**/*.bat", me.getExcludes());
 
     // lib
-    ArtifactSet lib = model.fileSet("lib");
+    ArtifactSet lib = model.artifactSet("lib");
 //    assertNotNull(lib);
 //    assertNotNull(lib.artifact("ch.qos.logback:logback-core:1.0.7"));
 //    assertNotNull(lib.artifact("ch.qos.logback:logback-classic:1.0.7"));

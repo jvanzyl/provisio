@@ -1,8 +1,19 @@
-package org.eclipse.tesla.plugins.proviso;
+package io.tesla.maven.plugins.provisio;
 
+import io.provis.model.ArtifactSet;
+import io.provis.model.ProvisioArtifact;
+import io.provis.model.ProvisioModel;
+import io.provis.parser.ProvisioModelParser;
+
+import java.io.File;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 
 import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.MavenExecutionException;
@@ -12,15 +23,16 @@ import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 
-public abstract class DependencyContributingLifecycleParticipant extends AbstractMavenLifecycleParticipant {
+@Singleton
+@Named("ProvisioLifecycleParticipant")
+public class ProvisioLifecycleParticipant extends AbstractMavenLifecycleParticipant {
 
-  protected abstract String getPluginId();
+  @Inject
+  private ProvisioModelParser parser;
 
-  protected String getMojoConfigurationElementName() {
-    return null;
+  protected String getPluginId() {
+    return "provisio-tesla-plugin";
   }
-
-  protected abstract Set<String> process(MavenProject project, Plugin plugin);
 
   @Override
   public void afterProjectsRead(MavenSession session) throws MavenExecutionException {
@@ -29,7 +41,7 @@ public abstract class DependencyContributingLifecycleParticipant extends Abstrac
     for (MavenProject project : session.getProjects()) {
       projectMap.put(project.getGroupId() + ":" + project.getArtifactId(), project);
     }
-
+    
     for (MavenProject project : session.getProjects()) {
       for (Plugin plugin : project.getBuild().getPlugins()) {
         if (plugin.getArtifactId().equals(getPluginId())) {
@@ -54,7 +66,33 @@ public abstract class DependencyContributingLifecycleParticipant extends Abstrac
         }
       }
     }
-    super.afterProjectsRead(session);
+  }
+
+  protected Set<String> process(MavenProject project, Plugin plugin) {
+    Xpp3Dom configuration = getMojoConfiguration(plugin);
+    File runtimeDescriptor = new File(project.getBasedir(), configuration.getChild("runtimeDescriptor").getValue());
+    ProvisioModel assembly = null;
+    try {
+      assembly = parser.read(runtimeDescriptor, new File("."), (Map)project.getProperties());
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    }
+
+    Set<String> dependenciesInGAForm = new HashSet<String>();
+    for (ArtifactSet fileSet : assembly.getArtifactSets()) {
+      for (ProvisioArtifact gaDependency : fileSet.getArtifactMap().values()) {
+        dependenciesInGAForm.add(gaDependency.getGA());
+      }
+      if (fileSet.getFileSets() != null) {
+        for (ArtifactSet childFileSet : fileSet.getFileSets()) {
+          for (ProvisioArtifact gaDependency : childFileSet.getArtifactMap().values()) {
+            dependenciesInGAForm.add(gaDependency.getGA());
+          }
+        }
+      }
+    }
+    return dependenciesInGAForm;
   }
 
   protected Xpp3Dom getMojoConfiguration(Plugin plugin) {
@@ -66,18 +104,9 @@ public abstract class DependencyContributingLifecycleParticipant extends Abstrac
     if (configuration == null) {
       configuration = (Xpp3Dom) plugin.getExecutions().get(0).getConfiguration();
     }
-
-    //
-    // We are assuming this plugin is in the form where the configuration consists of something that
-    // will map to a single object.
-    //
-    int childCount = configuration.getChildCount();
-    if (childCount == 1) {
-      return configuration.getChild(0);
-    } else if (getMojoConfigurationElementName() != null) {
-      return configuration.getChild(getMojoConfigurationElementName());
-    } else {
-      throw new RuntimeException("The mojo configuration must either have a single element, or you must specify the element that is mapped.");
-    }
+    return configuration;
   }
+  //
+  // DefaultMavenPluginManager.populatePluginFields, this is what we want the same behaviour from
+  //
 }

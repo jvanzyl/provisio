@@ -28,7 +28,6 @@ public class Lookup {
   // ----------------------------------------------------------------------
 
   public Action lookupAction(String key) {   
-    System.out.println("'" + key + "'");
     return actions.get(key).get();
   }
   
@@ -68,12 +67,12 @@ public class Lookup {
     if (m != null) {
       try {
         invokeMethod(m, o, value);
-        System.out.println("for object " + o + " set " + propertyName + " --> " + value);        
+        //System.out.println("for object " + o + " set " + propertyName + " --> " + value);        
       } catch (Exception e) {
-        System.out.println("Can't set property " + propertyName + " using method set" + methodSuffix + " from " + c.getName() + " instance: " + e);
+        //System.out.println("Can't set property " + propertyName + " using method set" + methodSuffix + " from " + c.getName() + " instance: " + e);
       }
     } else {
-      System.out.println(">>>>>> There is no property " + propertyName + " " + type + " using method set" + methodSuffix + " from " + c.getName() + " instance");      
+      //System.out.println(">>>>>> There is no property " + propertyName + " " + type + " using method set" + methodSuffix + " from " + c.getName() + " instance");      
     }
   }
 
@@ -82,7 +81,7 @@ public class Lookup {
     try {
       o = Class.forName(name).newInstance();
     } catch (Exception e) {
-      System.out.println("can't make instance of " + name);
+      //System.out.println("can't make instance of " + name);
     }
     return o;
   }

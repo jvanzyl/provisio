@@ -9,6 +9,7 @@ import io.provis.parser.antlr.ProvisioParser;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,7 +51,8 @@ public class ProvisioModelParser {
   }
 
   public ProvisioModel read(InputSupplier<? extends Reader> input, File outputDirectory, Map<String, String> versionMap) throws IOException {
-    Tree tree = parseTree(input);
+    System.out.println("!!!!! " + versionMap);
+    Tree tree = parseTree(new InterpolationFilterReader(input.getInput(), versionMap));
     TreeNodeStream stream = new BufferedTreeNodeStream(tree);
     ProvisioModelGenerator generator = new ProvisioModelGenerator(stream, lookup, versionMap, outputDirectory);
     try {
@@ -61,16 +63,13 @@ public class ProvisioModelParser {
       // lib/ext
       ProvisioModel model = generator.runtime().value;
       Map<String,ArtifactSet> names = new HashMap<String,ArtifactSet>();
-      for(ArtifactSet as : model.getFileSets()) {
+      for(ArtifactSet as : model.getArtifactSets()) {
         names.put(as.getDirectory(), as);
       }
-      for(ArtifactSet as : model.getFileSets()) {
+      for(ArtifactSet as : model.getArtifactSets()) {
         for(String name : names.keySet()) {
           if(!name.equals(as.getDirectory()) && name.startsWith(as.getDirectory())) {
-            System.out.println("!!!! setting " + name + " to have the parent of " + as.getDirectory());
             ArtifactSet child = names.get(name);
-            System.out.println(as.getDirectory());
-            System.out.println(name);
             child.setDirectory(name.substring(as.getDirectory().length() + 1));
             child.setParent(as);
           }
@@ -83,8 +82,8 @@ public class ProvisioModelParser {
     }
   }
 
-  private Tree parseTree(InputSupplier<? extends Reader> input) throws IOException {
-    ProvisioLexer lexer = new ProvisioLexer(new ANTLRReaderStream(input.getInput()));
+  private Tree parseTree(Reader reader) throws IOException {
+    ProvisioLexer lexer = new ProvisioLexer(new ANTLRReaderStream(reader));
     ProvisioParser parser = new ProvisioParser(new CommonTokenStream(lexer));
     try {
       Tree tree = (Tree) parser.runtime().getTree();
