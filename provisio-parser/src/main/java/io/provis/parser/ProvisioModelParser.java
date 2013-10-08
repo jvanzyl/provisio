@@ -51,7 +51,6 @@ public class ProvisioModelParser {
   }
 
   public ProvisioModel read(InputSupplier<? extends Reader> input, File outputDirectory, Map<String, String> versionMap) throws IOException {
-    System.out.println("!!!!! " + versionMap);
     Tree tree = parseTree(new InterpolationFilterReader(input.getInput(), versionMap));
     TreeNodeStream stream = new BufferedTreeNodeStream(tree);
     ProvisioModelGenerator generator = new ProvisioModelGenerator(stream, lookup, versionMap, outputDirectory);

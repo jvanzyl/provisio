@@ -132,7 +132,6 @@ public class ProvisioMojo extends AbstractMojo {
 
     ProvisioModel assembly;
     try {
-      System.out.println(">> " + project.getProperties());
       assembly = parser.read(runtimeDescriptor, outputDirectory, (Map)project.getProperties());
     } catch (Exception e) {
       throw new MojoFailureException("Cannot read assembly descriptor file " + runtimeDescriptor, e);
