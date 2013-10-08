@@ -4,7 +4,7 @@
   <parent>
     <groupId>io.provis</groupId>
     <artifactId>provisio</artifactId>
-    <version>0.0.6</version>
+    <version>0.0.7-SNAPSHOT</version>
   </parent>
   <artifactId>provisio-archive</artifactId>
   <name>Provisio :: Archiver</name>
@@ -12,7 +12,7 @@
     <dependency>
       <groupId>io.provis</groupId>
       <artifactId>provisio-model</artifactId>
-      <version>0.0.6</version>
+      <version>0.0.7-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
