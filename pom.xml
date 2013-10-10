@@ -35,7 +35,7 @@
     <aetherVersion>0.9.0.M2</aetherVersion>
     <sisuInjectVersion>0.0.0.M5</sisuInjectVersion>  
     <teslaPluginApiVersion>0.0.4</teslaPluginApiVersion>  
-    <teslaAetherVersion>0.0.3</teslaAetherVersion>
+    <teslaAetherVersion>0.0.4</teslaAetherVersion>
   </properties>
 
   <scm>
