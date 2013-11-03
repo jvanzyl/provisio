@@ -2,6 +2,7 @@ package io.provis.ant;
 
 import io.tesla.aether.internal.DefaultTeslaAether;
 import io.tesla.proviso.archive.Archiver;
+import io.tesla.proviso.archive.UnArchiver;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,9 +19,15 @@ public class AntProvisioner {
   @Inject
   private DefaultTeslaAether artifactResolver;
 
-  @Inject
-  private Archiver archiver;
+  private UnArchiver unarchiver;
 
+  public AntProvisioner() {
+    unarchiver = UnArchiver.builder()
+      .useRoot(false)
+      .flatten(false)
+      .build();
+  }
+  
   public File provision(String antVersion, File installDir) throws IOException, ArtifactResolutionException {    
     if (antVersion == null || antVersion.length() <= 0) {
       throw new IllegalArgumentException("Ant version not specified");
@@ -33,7 +40,7 @@ public class AntProvisioner {
       throw new IllegalStateException("Could not create Ant install directory " + installDir);
     }
 
-    archiver.unarchive(binZip, installDir, null, null, false, false);
+    unarchiver.unarchive(binZip, installDir);
 
     File ant = new File(installDir, "bin/ant");
     if (!ant.isFile()) {

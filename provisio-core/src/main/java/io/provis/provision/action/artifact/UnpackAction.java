@@ -3,13 +3,12 @@ package io.provis.provision.action.artifact;
 import io.provis.model.Action;
 import io.provis.model.ProvisioContext;
 import io.provis.model.RuntimeEntry;
-import io.tesla.proviso.archive.Archiver;
+import io.tesla.proviso.archive.UnArchiver;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.eclipse.aether.artifact.Artifact;
@@ -34,20 +33,7 @@ public class UnpackAction implements Action {
   //
   private Artifact artifact;
   private File outputDirectory;
-  
-  //
-  // Components
-  //
-  private Archiver archiver;
-
-  public UnpackAction() {    
-  }
-    
-  @Inject
-  public UnpackAction(Archiver archiver) {
-    this.archiver = archiver;
-  }
-  
+        
   public void execute(ProvisioContext context) {
     
     if (!outputDirectory.exists()) {
@@ -57,7 +43,15 @@ public class UnpackAction implements Action {
     File archive = artifact.getFile();
         
     try {
-      Map<String,RuntimeEntry> fileEntries = archiver.unarchive(archive, outputDirectory, includes, excludes, useRoot, flatten);
+      
+      UnArchiver unarchiver = UnArchiver.builder()
+        .includes(includes)
+        .excludes(excludes)
+        .useRoot(useRoot)
+        .flatten(flatten)
+        .build();
+
+      Map<String,RuntimeEntry> fileEntries = unarchiver.unarchive(archive, outputDirectory);
       context.getFileEntries().putAll(fileEntries);
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -110,13 +104,5 @@ public class UnpackAction implements Action {
 
   public void setOutputDirectory(File outputDirectory) {
     this.outputDirectory = outputDirectory;
-  }
-
-  public Archiver getArchiver() {
-    return archiver;
-  }
-
-  public void setArchiver(Archiver archiver) {
-    this.archiver = archiver;
   }
 }

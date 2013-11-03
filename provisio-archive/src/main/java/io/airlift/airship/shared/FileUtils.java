@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.airlift.units.Duration;
+import io.airlift.units.MyDuration;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -32,7 +32,7 @@ public class FileUtils
                 .execute(executor);
     }
 
-    public static void extractTar(File tarFile, File targetDirectory, Duration timeLimit)
+    public static void extractTar(File tarFile, File targetDirectory, MyDuration timeLimit)
             throws CommandFailedException
     {
         Preconditions.checkNotNull(tarFile, "tarFile is null");

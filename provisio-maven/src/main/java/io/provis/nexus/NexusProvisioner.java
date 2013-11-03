@@ -1,7 +1,7 @@
 package io.provis.nexus;
 
 import io.tesla.aether.TeslaAether;
-import io.tesla.proviso.archive.Archiver;
+import io.tesla.proviso.archive.UnArchiver;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -39,9 +39,16 @@ public class NexusProvisioner {
   @Inject
   private TeslaAether artifactResolver;
 
-  @Inject
-  private Archiver archiver;
+  private UnArchiver unarchiver;
 
+  public NexusProvisioner() {
+    
+    unarchiver = UnArchiver.builder()
+      .useRoot(false)
+      .flatten(false)
+      .build();
+  }
+  
   public File provision(NexusProvisioningContext context) throws IOException, ArtifactResolutionException {
 
     String version = context.getVersion();
@@ -67,8 +74,8 @@ public class NexusProvisioner {
 
     //
     // Unpack Nexus into the installation directory
-    //
-    archiver.unarchive(nexusDistribution, installationDirectory, null, null, false, false);
+    //    
+    unarchiver.unarchive(nexusDistribution, installationDirectory);
 
     if(context.isPro()) {
       File testLicenseJar = artifactResolver.resolveArtifact("com.sonatype.nexus.pluginkit:nexus-pluginkit-testlm:1.3.2").getArtifact().getFile();   
@@ -155,7 +162,7 @@ public class NexusProvisioner {
   public void addPlugin(String coord, File workDirectory) throws IOException, ArtifactResolutionException {
     File pluginsDirectory = new File(workDirectory, "plugin-repository");
     File pluginZip = artifactResolver.resolveArtifact(coord).getArtifact().getFile();
-    archiver.unarchive(pluginZip, pluginsDirectory);
+    unarchiver.unarchive(pluginZip, pluginsDirectory);
   }
 
   private void writeResource(File pom, Document document) throws IOException {

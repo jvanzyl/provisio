@@ -3,7 +3,6 @@ package io.provis.provision.action.runtime;
 import io.provis.model.Action;
 import io.provis.model.ProvisioContext;
 import io.tesla.proviso.archive.Archiver;
-import io.tesla.proviso.archive.DefaultArchiver;
 
 import java.io.File;
 
@@ -16,7 +15,7 @@ public class ArchiveAction implements Action {
   private String name;
   
   public void execute(ProvisioContext context) {
-    Archiver archiver = new DefaultArchiver();
+    Archiver archiver = Archiver.builder().build();
     try {
       archiver.archive(new File(runtimeDirectory, "../" + name), runtimeDirectory, context);
     } catch (Exception e) {

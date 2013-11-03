@@ -1,6 +1,6 @@
 package io.airlift.airship.shared;
 
-import io.airlift.units.Duration;
+import io.airlift.units.MyDuration;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,20 +33,20 @@ public class Command
 {
     private static final ImmutableSet<Integer> DEFAULT_SUCCESSFUL_EXIT_CODES = ImmutableSet.of(0);
     private static final File DEFAULT_DIRECTORY = new File(".").getAbsoluteFile();
-    private static final Duration DEFAULT_TIME_LIMIT = new Duration(365, TimeUnit.DAYS);
+    private static final MyDuration DEFAULT_TIME_LIMIT = new MyDuration(365, TimeUnit.DAYS);
 
     private final List<String> command;
     private final Set<Integer> successfulExitCodes;
     private final File directory;
     private final Map<String, String> environment;
-    private final Duration timeLimit;
+    private final MyDuration timeLimit;
 
     public Command(String... command)
     {
         this(ImmutableList.copyOf(command), DEFAULT_SUCCESSFUL_EXIT_CODES, DEFAULT_DIRECTORY, ImmutableMap.<String, String>of(), DEFAULT_TIME_LIMIT);
     }
 
-    public Command(List<String> command, Set<Integer> successfulExitCodes, File directory, Map<String, String> environment, Duration timeLimit)
+    public Command(List<String> command, Set<Integer> successfulExitCodes, File directory, Map<String, String> environment, MyDuration timeLimit)
     {
         Preconditions.checkNotNull(command, "command is null");
         Preconditions.checkArgument(!command.isEmpty(), "command is empty");
@@ -137,17 +137,17 @@ public class Command
         return new Command(command, successfulExitCodes, directory, environment, timeLimit);
     }
 
-    public Duration getTimeLimit()
+    public MyDuration getTimeLimit()
     {
         return timeLimit;
     }
 
     public Command setTimeLimit(double value, TimeUnit timeUnit)
     {
-        return setTimeLimit(new Duration(value, timeUnit));
+        return setTimeLimit(new MyDuration(value, timeUnit));
     }
 
-    public Command setTimeLimit(Duration timeLimit)
+    public Command setTimeLimit(MyDuration timeLimit)
     {
         Preconditions.checkNotNull(timeLimit, "timeLimit is null");
         return new Command(command, successfulExitCodes, directory, environment, timeLimit);

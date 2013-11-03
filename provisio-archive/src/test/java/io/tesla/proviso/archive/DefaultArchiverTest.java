@@ -13,9 +13,6 @@ import org.junit.Test;
 public class DefaultArchiverTest extends InjectedTestCase {
 
   @Inject
-  private Archiver archiver;
-  
-  @Inject
   @Named("${basedir}/src/test/archives")
   private File archives;
   
@@ -32,6 +29,7 @@ public class DefaultArchiverTest extends InjectedTestCase {
   public void testUnarchiver() throws Exception {
     FileUtils.deleteDirectory(outputDirectory);
     File mavenTgz = new File(archives, "apache-maven-3.0.4-bin.tar.gz");
+    UnArchiver archiver = UnArchiver.builder().build();
     archiver.unarchive(mavenTgz, outputDirectory);
     assertTrue("We expected to find the root directory name of apache-maven-3.0.4", new File(outputDirectory, "apache-maven-3.0.4").exists());
   }

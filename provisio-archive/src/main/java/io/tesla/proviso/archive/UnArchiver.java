@@ -1,7 +1,7 @@
 package io.tesla.proviso.archive;
 
-import io.provis.model.RuntimeEntry;
 import io.provis.model.ProvisioContext;
+import io.provis.model.RuntimeEntry;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -18,21 +18,16 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
-import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
-import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
-import org.apache.commons.compress.utils.IOUtils;
-import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.SelectorUtils;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
 
@@ -42,103 +37,29 @@ import com.google.common.io.Closeables;
 //   excludes
 
 // There should be a full inventory of what has gone into the archive
+// make a fluent interface
 
 @Named
 @Singleton
-public class DefaultArchiver implements Archiver {
+public class UnArchiver {
 
-  public void archive(File archive, File sourceDirectory, ProvisioContext context) throws ArchiveException, IOException {
-    archive(archive, sourceDirectory, context, null, null, true, false);
+  private final List<String> includes;
+  private final List<String> excludes;
+  private final boolean useRoot;
+  private final boolean flatten;
+  
+  public UnArchiver(List<String> includes, List<String> excludes, boolean useRoot, boolean flatten) {
+    this.includes = includes;
+    this.excludes = excludes;
+    this.useRoot = useRoot;
+    this.flatten = flatten;
   }
-
-  public void archive(File archive, File sourceDirectory, ProvisioContext context, String includes, String excludes, boolean useRoot, boolean flatten) throws ArchiveException, IOException {
-
-    String type = "";
-    String archiveBaseDirectory = sourceDirectory.getName();
-    OutputStream out = new FileOutputStream(archive);
-    ArchiveOutputStream aos = null;
-
-    if (archive.getName().endsWith(".zip") || archive.getName().endsWith(".jar")) {
-      aos = new ZipArchiveOutputStream(new FileOutputStream(archive));
-      type = "zip";
-    } else if (archive.getName().endsWith(".tgz") || archive.getName().endsWith("tar.gz")) {
-      aos = new TarArchiveOutputStream(new GzipCompressorOutputStream(new FileOutputStream(archive)));
-      ((TarArchiveOutputStream) aos).setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
-      type = "targz";
-    }
-
-    if (aos == null) {
-      throw new IOException("Cannot detect how to read " + archive.getName());
-    }
-
-    //TarArchiveOutputStream aos = (TarArchiveOutputStream) new ArchiveStreamFactory().createArchiveOutputStream("tar", out);
-
-    String[] includePatterns = null;
-    String[] excludePatterns = null;
-
-    if (includes != null) {
-      includePatterns = includes.split(",");
-    }
-
-    if (excludes != null) {
-      excludePatterns = excludes.split(",");
-    }
-
-    DirectoryScanner ds = new DirectoryScanner();
-    ds.setIncludes(includePatterns);
-    ds.setExcludes(excludePatterns);
-    ds.setBasedir(sourceDirectory);
-    ds.setCaseSensitive(true);
-    ds.scan();
-
-    if (type.equals("targz")) {
-      for (String filePath : ds.getIncludedFiles()) {
-        File file = new File(sourceDirectory, filePath);
-        String entryName = archiveBaseDirectory + "/" + filePath;
-        if (useRoot == false) {
-          entryName = entryName.substring(entryName.indexOf('/') + 1);
-        }
-        TarArchiveEntry entry = new TarArchiveEntry(entryName);
-        entry.setSize(file.length());
-        if(context.getFileEntries().get(entryName) != null) {
-          entry.setMode(context.getFileEntries().get(entryName).getMode());
-        }        
-        aos.putArchiveEntry(entry);
-        IOUtils.copy(new FileInputStream(file), aos);
-        aos.closeArchiveEntry();
-      }
-    } else if (type.equals("zip")) {
-      for (String filePath : ds.getIncludedFiles()) {
-        File file = new File(sourceDirectory, filePath);
-        String entryName = archiveBaseDirectory + "/" + filePath;
-        if (useRoot == false) {
-          entryName = entryName.substring(entryName.indexOf('/') + 1);
-        }
-        ZipArchiveEntry entry = new ZipArchiveEntry(entryName);
-        entry.setSize(file.length());
-        if(context.getFileEntries().get(entryName) != null) {
-          entry.setUnixMode(context.getFileEntries().get(entryName).getMode());
-        }        
-        aos.putArchiveEntry(entry);
-        IOUtils.copy(new FileInputStream(file), aos);
-        aos.closeArchiveEntry();
-      }
-    }
-
-    aos.finish();
-    aos.close();
-    out.close();
-  }
-
-  //
-  //
-  //
 
   public Map<String,RuntimeEntry> unarchive(File archive, File outputDirectory) throws IOException {
-    return unarchive(archive, outputDirectory, null, null, true, false);
+    return unarchive(archive, outputDirectory, null);
   }
-
-  public Map<String,RuntimeEntry> unarchive(File archive, File outputDirectory, String includes, String excludes, boolean useRoot, boolean flatten) throws IOException {
+  
+  public Map<String,RuntimeEntry> unarchive(File archive, File outputDirectory, ProvisioContext context) throws IOException {
     //
     // These are the contributions that unpacking this archive is providing
     //
@@ -146,17 +67,6 @@ public class DefaultArchiver implements Archiver {
 
     if (outputDirectory.exists() == false) {
       outputDirectory.mkdirs();
-    }
-
-    String[] includePatterns = null;
-    String[] excludePatterns = null;
-
-    if (includes != null) {
-      includePatterns = includes.split(",");
-    }
-
-    if (excludes != null) {
-      excludePatterns = excludes.split(",");
     }
 
     ArchiveInputStream ais = null;
@@ -180,36 +90,36 @@ public class DefaultArchiver implements Archiver {
       //
       // If we get an exclusion that matches then just carry on.
       //
-      boolean excludeFromExtraction = false;
-      if (excludePatterns != null) {
-        for (String excludePattern : excludePatterns) {
+      boolean exclude = false;
+      if (!excludes.isEmpty()) {
+        for (String excludePattern : excludes) {
           if (isExcluded(excludePattern, entryName)) {
-            excludeFromExtraction = true;
+            exclude = true;
             break;
           }
         }
       }
 
-      if (excludeFromExtraction) {
+      if (exclude) {
         continue;
       }
 
       //
       // need useRoot = false and step in so just truncate the beginning of the name entry
       //
-      boolean includeExtraction = false;
-      if (includePatterns != null) {
-        for (String includePattern : includePatterns) {
+      boolean include = false;
+      if (!includes.isEmpty()) {
+        for (String includePattern : includes) {
           if (isIncluded(includePattern, entryName)) {
-            includeExtraction = true;
+            include = true;
             break;
           }
         }
       } else {
-        includeExtraction = true;
+        include = true;
       }
 
-      if (includeExtraction == false) {
+      if (include == false) {
         continue;
       }
 
@@ -281,4 +191,62 @@ public class DefaultArchiver implements Archiver {
   private boolean isIncluded(String includePattern, String entry) {
     return SelectorUtils.match(includePattern, entry);
   }
+  
+  //  
+  //    Archiver archiver = Archiver.builder()
+  //        .includes("**/*.java")
+  //        .includes(Iterable<String>)
+  //        .excludes("**/*.properties")
+  //        .excludes(Iterable<String>)
+  //        .flatten(true)
+  //        .useRoot(false)
+  //        .build();
+  
+  
+  public static UnArchiverBuilder builder() {
+    return new UnArchiverBuilder();
+  }
+  
+  public static class UnArchiverBuilder {
+
+    private List<String> includes = new ArrayList<String>();
+    private List<String> excludes = new ArrayList<String>();
+    private boolean useRoot = true;
+    private boolean flatten = false;
+    
+    public UnArchiverBuilder includes(String... includes) {
+      return includes(ImmutableList.copyOf(includes));
+    }
+
+    public UnArchiverBuilder includes(Iterable<String> includes) {
+      Iterables.addAll(this.includes, includes);
+      return this;
+    }
+
+    public UnArchiverBuilder excludes(String... excludes) {
+      return excludes(ImmutableList.copyOf(excludes));
+    }
+
+    public UnArchiverBuilder excludes(Iterable<String> excludes) {
+      Iterables.addAll(this.excludes, excludes);
+      return this;
+    }
+
+    public UnArchiverBuilder useRoot(boolean useRoot) {
+      this.useRoot = useRoot;
+      return this;
+    }
+
+    public UnArchiverBuilder flatten(boolean flatten) {
+      this.flatten = flatten;
+      return this;
+    }
+
+    public UnArchiver build() {
+      return new UnArchiver(includes, excludes, useRoot, flatten);
+    }
+    
+  }
+  
+  
 }

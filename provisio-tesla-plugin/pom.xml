@@ -64,7 +64,7 @@
       <artifactId>slf4j-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.tesla.maven.plugin</groupId>
+      <groupId>io.tesla.maven.plugins</groupId>
       <artifactId>tesla-plugin-api</artifactId>
     </dependency>
     <!-- Test -->

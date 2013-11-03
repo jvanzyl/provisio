@@ -26,7 +26,7 @@ public class ArchiveTest extends InjectedTestCase {
   @Inject
   @Named("${basedir}/target/output")
   private File archiveOutputDirectory;
-  
+
   @Inject
   @Named("${basedir}/src/test/sources")
   private File archiveResources;
@@ -35,51 +35,52 @@ public class ArchiveTest extends InjectedTestCase {
   @Named("${basedir}/src/test/archives")
   private File archives;
 
-  private Archiver archiver;
-  
-  protected void setUp() throws Exception {
-    super.setUp();
-    
-    archiver = new DefaultArchiver();
-  }
-
   public void testPreservationOfFileModes() throws Exception {
+
+    Archiver archiver = Archiver.builder()
+      .build();
+
+    UnArchiver unarchiver = UnArchiver.builder()
+      .build();
     
     FileUtils.deleteDirectory(archiveOutputDirectory);
-    
+
     // Unpack a tar.gz
+    ProvisioContext context = new ProvisioContext();
     File archive = new File(archives, "apache-maven-3.0.4-bin.tar.gz");
-    Map<String, RuntimeEntry> fileEntries = archiver.unarchive(archive, archiveOutputDirectory);
+    Map<String, RuntimeEntry> fileEntries = unarchiver.unarchive(archive, archiveOutputDirectory, context);
     assertTrue(FileMode.EXECUTABLE_FILE.equals(fileEntries.get("apache-maven-3.0.4/bin/mvn").getMode()));
     assertTrue(FileMode.EXECUTABLE_FILE.equals(fileEntries.get("apache-maven-3.0.4/bin/mvnDebug").getMode()));
     assertTrue(FileMode.EXECUTABLE_FILE.equals(fileEntries.get("apache-maven-3.0.4/bin/mvnyjp").getMode()));
     
     // Pack a tar.gz
-    ProvisioContext context = new ProvisioContext();
     context.setFileEntries(fileEntries);
     File sourceDirectory = new File(archiveOutputDirectory, "apache-maven-3.0.4");
     File reArchive = new File(archiveOutputDirectory, "apache-maven-3.0.4.tar.gz");
     archiver.archive(reArchive, sourceDirectory, context);
     
     FileUtils.deleteDirectory(sourceDirectory);
-    
+
     File archive1 = new File(archiveOutputDirectory, "apache-maven-3.0.4.tar.gz");
-    Map<String, RuntimeEntry> fileEntries1 = archiver.unarchive(archive1, archiveOutputDirectory);
+    Map<String, RuntimeEntry> fileEntries1 = unarchiver.unarchive(archive1, archiveOutputDirectory);
     assertTrue(FileMode.EXECUTABLE_FILE.equals(fileEntries1.get("apache-maven-3.0.4/bin/mvn").getMode()));
     assertTrue(FileMode.EXECUTABLE_FILE.equals(fileEntries1.get("apache-maven-3.0.4/bin/mvnDebug").getMode()));
     assertTrue(FileMode.EXECUTABLE_FILE.equals(fileEntries1.get("apache-maven-3.0.4/bin/mvnyjp").getMode()));
+  }
 
+  protected void assertPresenceOfEntryInTargz(String entryName, File archive) throws IOException {
     
   }
+  
   
   protected void assertPresenceOfEntryInJar(String entryName, File archive) throws IOException {
     boolean returnValue;
     JarFile jarFile = new JarFile(archive);
     JarEntry entry = jarFile.getJarEntry(entryName);
-    if(entry != null) {
+    if (entry != null) {
       returnValue = true;
     } else {
-      returnValue = false;      
+      returnValue = false;
     }
     Assert.assertTrue("The jarEntry '" + entryName + "' is expected to be present, but is not.", returnValue);
   }
