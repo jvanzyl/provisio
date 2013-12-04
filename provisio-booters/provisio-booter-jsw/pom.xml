@@ -11,7 +11,7 @@
   <parent>                                                                                                                    
     <groupId>io.provis</groupId>                                                                                      
     <artifactId>provisio-booters</artifactId>
-    <version>0.0.9-SNAPSHOT</version>
+    <version>0.0.9</version>
   </parent>
   <artifactId>provisio-booter-jsw</artifactId>
   <name>Provisio :: Booter :: JSW</name>
