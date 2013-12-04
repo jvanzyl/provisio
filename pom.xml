@@ -39,9 +39,9 @@
   </properties>
 
   <scm>
-    <connection>scm:git:git@github.com/tesla/provisio.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/tesla/provisio.git</developerConnection>
-    <url>http://github.com/tesla/provisio</url>
+    <connection>scm:git:git@github.com/takari/provisio.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/takari/provisio.git</developerConnection>
+    <url>http://github.com/takari/provisio</url>
   </scm>
 
   <dependencyManagement>
