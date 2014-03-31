@@ -6,7 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +21,7 @@ import org.codehaus.plexus.util.DirectoryScanner;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.io.Closer;
 
 // There should be a full inventory of what has gone into the archive, so that we can capture the contents.
 //  
@@ -53,8 +54,10 @@ public class Archiver {
 
     String type = "";
     String archiveBaseDirectory = sourceDirectory.getName();
-    OutputStream out = new FileOutputStream(archive);
-    ArchiveOutputStream aos = null;
+    Closer outputCloser = Closer.create();
+    try {
+      ArchiveOutputStream aos = null;
+
 
     if (archive.getName().endsWith(".zip") || archive.getName().endsWith(".jar")) {
       aos = new ZipArchiveOutputStream(new FileOutputStream(archive));
@@ -95,7 +98,13 @@ public class Archiver {
           entry.setMode(context.getFileEntries().get(entryName).getMode());
         }
         aos.putArchiveEntry(entry);
-        IOUtils.copy(new FileInputStream(file), aos);
+        Closer inputCloser = Closer.create();
+        try {
+          InputStream entryInputStream = inputCloser.register(new FileInputStream(file));
+          IOUtils.copy(entryInputStream, aos);
+        } finally {
+          inputCloser.close();
+        }
         aos.closeArchiveEntry();
       }
     } else if (type.equals("zip")) {
@@ -111,14 +120,20 @@ public class Archiver {
           entry.setUnixMode(context.getFileEntries().get(entryName).getMode());
         }
         aos.putArchiveEntry(entry);
-        IOUtils.copy(new FileInputStream(file), aos);
+        Closer inputCloser = Closer.create();
+        try {
+          InputStream entryInputStream = inputCloser.register(new FileInputStream(file));
+          IOUtils.copy(entryInputStream, aos);
+        } finally {
+          inputCloser.close();
+        }
         aos.closeArchiveEntry();
       }
     }
-
     aos.finish();
-    aos.close();
-    out.close();
+    } finally {
+      outputCloser.close();
+    }
   }
 
   public static ArchiverBuilder builder() {
