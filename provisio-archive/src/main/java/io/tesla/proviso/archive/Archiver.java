@@ -4,23 +4,17 @@ import io.provis.model.ProvisioContext;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
-import org.apache.commons.compress.utils.IOUtils;
 import org.codehaus.plexus.util.DirectoryScanner;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.io.ByteStreams;
 import com.google.common.io.Closer;
 
 // There should be a full inventory of what has gone into the archive, so that we can capture the contents.
@@ -51,29 +45,7 @@ public class Archiver {
   }
 
   public void archive(File archive, File sourceDirectory, ProvisioContext context) throws IOException {
-
-    String type = "";
-    String archiveBaseDirectory = sourceDirectory.getName();
-    Closer outputCloser = Closer.create();
-    try {
-      ArchiveOutputStream aos = null;
-
-
-    if (archive.getName().endsWith(".zip") || archive.getName().endsWith(".jar")) {
-      aos = new ZipArchiveOutputStream(new FileOutputStream(archive));
-      type = "zip";
-    } else if (archive.getName().endsWith(".tgz") || archive.getName().endsWith("tar.gz")) {
-      aos = new TarArchiveOutputStream(new GzipCompressorOutputStream(new FileOutputStream(archive)));
-      ((TarArchiveOutputStream) aos).setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
-      type = "targz";
-    }
-
-    if (aos == null) {
-      throw new IOException("Cannot detect how to read " + archive.getName());
-    }
-
-    //TarArchiveOutputStream aos = (TarArchiveOutputStream) new ArchiveStreamFactory().createArchiveOutputStream("tar", out);
-
+    ArchiveHandler archiveHandler = ArchiverHelper.getArchiveHandler(archive);
     DirectoryScanner ds = new DirectoryScanner();
     if (!includes.isEmpty()) {
       ds.setIncludes(includes.toArray(new String[includes.size()]));
@@ -84,55 +56,27 @@ public class Archiver {
     ds.setBasedir(sourceDirectory);
     ds.setCaseSensitive(true);
     ds.scan();
-
-    if (type.equals("targz")) {
+    Closer closer = Closer.create();
+    try {
+      ArchiveOutputStream aos = closer.register(archiveHandler.getOutputStream());
       for (String filePath : ds.getIncludedFiles()) {
         File file = new File(sourceDirectory, filePath);
-        String entryName = archiveBaseDirectory + "/" + filePath;
+        String archiveEntryName = sourceDirectory.getName() + "/" + filePath;
         if (useRoot == false) {
-          entryName = entryName.substring(entryName.indexOf('/') + 1);
+          archiveEntryName = archiveEntryName.substring(archiveEntryName.indexOf('/') + 1);
         }
-        TarArchiveEntry entry = new TarArchiveEntry(entryName);
-        entry.setSize(file.length());
-        if (context != null && context.getFileEntries().get(entryName) != null) {
-          entry.setMode(context.getFileEntries().get(entryName).getMode());
-        }
-        aos.putArchiveEntry(entry);
+        aos.putArchiveEntry(archiveHandler.createEntryFor(archiveEntryName, file, context));
         Closer inputCloser = Closer.create();
         try {
           InputStream entryInputStream = inputCloser.register(new FileInputStream(file));
-          IOUtils.copy(entryInputStream, aos);
+          ByteStreams.copy(entryInputStream, aos);
         } finally {
           inputCloser.close();
         }
         aos.closeArchiveEntry();
       }
-    } else if (type.equals("zip")) {
-      for (String filePath : ds.getIncludedFiles()) {
-        File file = new File(sourceDirectory, filePath);
-        String entryName = archiveBaseDirectory + "/" + filePath;
-        if (useRoot == false) {
-          entryName = entryName.substring(entryName.indexOf('/') + 1);
-        }
-        ZipArchiveEntry entry = new ZipArchiveEntry(entryName);
-        entry.setSize(file.length());
-        if (context != null && context.getFileEntries().get(entryName) != null) {
-          entry.setUnixMode(context.getFileEntries().get(entryName).getMode());
-        }
-        aos.putArchiveEntry(entry);
-        Closer inputCloser = Closer.create();
-        try {
-          InputStream entryInputStream = inputCloser.register(new FileInputStream(file));
-          IOUtils.copy(entryInputStream, aos);
-        } finally {
-          inputCloser.close();
-        }
-        aos.closeArchiveEntry();
-      }
-    }
-    aos.finish();
     } finally {
-      outputCloser.close();
+      closer.close();
     }
   }
 
@@ -172,7 +116,5 @@ public class Archiver {
     public Archiver build() {
       return new Archiver(includes, excludes, useRoot);
     }
-
   }
-
 }

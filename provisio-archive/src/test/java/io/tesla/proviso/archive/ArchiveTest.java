@@ -68,12 +68,11 @@ public class ArchiveTest extends InjectedTestCase {
     assertTrue(FileMode.EXECUTABLE_FILE.equals(fileEntries1.get("apache-maven-3.0.4/bin/mvnyjp").getMode()));
   }
 
-  protected void assertPresenceOfEntryInTargz(String entryName, File archive) throws IOException {
-    
+  protected void assertPresenceOfEntryInTargz(String entryName, File archive) throws IOException {    
   }
   
   
-  protected void assertPresenceOfEntryInJar(String entryName, File archive) throws IOException {
+  protected void assertPresenceOfEntryInZip(String entryName, File archive) throws IOException {
     boolean returnValue;
     JarFile jarFile = new JarFile(archive);
     JarEntry entry = jarFile.getJarEntry(entryName);
