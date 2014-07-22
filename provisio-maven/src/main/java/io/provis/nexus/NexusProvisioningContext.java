@@ -4,10 +4,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.common.collect.Lists;
+
 public class NexusProvisioningContext {
   private String version;
   private File installationDirectory;
   private File workDirectory;
+  private List<String> pluginRepositories;
   private List<String> plugins;
   private List<String> realms;
   private List<User> users;
@@ -15,9 +18,10 @@ public class NexusProvisioningContext {
   private boolean pro = false;
   
   public NexusProvisioningContext() {
-    this.plugins = new ArrayList<String>();
-    this.realms = new ArrayList<String>();
-    this.users = new ArrayList<User>();
+    this.plugins = Lists.newArrayList();
+    this.pluginRepositories = Lists.newArrayList();
+    this.realms = Lists.newArrayList();
+    this.users = Lists.newArrayList();
   }
 
   public String getVersion() {
@@ -42,6 +46,14 @@ public class NexusProvisioningContext {
 
   public void setWorkDirectory(File workDirectory) {
     this.workDirectory = workDirectory;
+  }
+
+  public List<String> getPluginRepositories() {
+    return pluginRepositories;
+  }
+  
+  public void addPluginRepository(String pluginRepository) {
+    pluginRepositories.add(pluginRepository);
   }
   
   public List<String> getPlugins() {

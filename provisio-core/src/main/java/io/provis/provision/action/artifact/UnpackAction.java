@@ -2,12 +2,10 @@ package io.provis.provision.action.artifact;
 
 import io.provis.model.Action;
 import io.provis.model.ProvisioContext;
-import io.provis.model.RuntimeEntry;
 import io.tesla.proviso.archive.UnArchiver;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 
 import javax.inject.Named;
 
@@ -51,8 +49,7 @@ public class UnpackAction implements Action {
         .flatten(flatten)
         .build();
 
-      Map<String,RuntimeEntry> fileEntries = unarchiver.unarchive(archive, outputDirectory);
-      context.getFileEntries().putAll(fileEntries);
+      unarchiver.unarchive(archive, outputDirectory);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

@@ -1,39 +1,28 @@
 package io.provis.ant;
 
-import io.tesla.aether.internal.DefaultTeslaAether;
-import io.tesla.proviso.archive.Archiver;
+import io.provis.Provisioner;
 import io.tesla.proviso.archive.UnArchiver;
 
 import java.io.File;
 import java.io.IOException;
 
-import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.eclipse.aether.resolution.ArtifactResolutionException;
-
-
 @Named
-public class AntProvisioner {
-
-  @Inject
-  private DefaultTeslaAether artifactResolver;
+public class AntProvisioner extends Provisioner {
 
   private UnArchiver unarchiver;
 
   public AntProvisioner() {
-    unarchiver = UnArchiver.builder()
-      .useRoot(false)
-      .flatten(false)
-      .build();
+    unarchiver = UnArchiver.builder().useRoot(false).flatten(false).build();
   }
-  
-  public File provision(String antVersion, File installDir) throws IOException, ArtifactResolutionException {    
+
+  public File provision(String antVersion, File installDir) throws IOException {
     if (antVersion == null || antVersion.length() <= 0) {
       throw new IllegalArgumentException("Ant version not specified");
     }
-   
-    File binZip = artifactResolver.resolveArtifact("org.apache.ant:apache-ant:zip:bin:" + antVersion).getArtifact().getFile();
+
+    File binZip = resolveFromServer(String.format("http://archive.apache.org/dist/ant/binaries/apache-ant-%s-bin.zip", antVersion), "org.apache.ant:apache-ant:zip:bin:" + antVersion);
 
     installDir.mkdirs();
     if (!installDir.isDirectory()) {

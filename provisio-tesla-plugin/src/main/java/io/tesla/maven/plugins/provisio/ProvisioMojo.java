@@ -5,6 +5,8 @@ import io.provis.parser.ProvisioModelParser;
 import io.provis.provision.Provisioner;
 import io.provis.provision.ProvisioningRequest;
 import io.provis.provision.ProvisioningResult;
+import io.takari.incrementalbuild.Incremental;
+import io.takari.incrementalbuild.Incremental.Configuration;
 import io.tesla.aether.TeslaAether;
 import io.tesla.aether.internal.DefaultTeslaAether;
 
@@ -20,31 +22,21 @@ import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.slf4j.Logger;
-import org.sonatype.maven.plugin.Configuration;
-import org.sonatype.maven.plugin.DefaultPhase;
-import org.sonatype.maven.plugin.DefaultsTo;
-import org.sonatype.maven.plugin.Goal;
-import org.sonatype.maven.plugin.LifecyclePhase;
-import org.sonatype.maven.plugin.Required;
-import org.sonatype.maven.plugin.RequiresDependencyResolution;
+import org.slf4j.LoggerFactory;
 
-@Goal("provision")
-@DefaultPhase(LifecyclePhase.PACKAGE)
-@RequiresDependencyResolution
-/**
- * @goal provision
- * @phase package
- * @author Jason van Zyl
- */
+@Mojo(name = "provision", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class ProvisioMojo extends AbstractMojo {
 
-  @Inject
-  private Logger logger;
+  protected final Logger logger = LoggerFactory.getLogger(getClass());
 
   @Inject
   private Provisioner provisioner;
@@ -52,46 +44,27 @@ public class ProvisioMojo extends AbstractMojo {
   @Inject
   private ProvisioModelParser parser;
 
-  @Configuration
-  @DefaultsTo("${project}")
-  /**
-   * @parameter expression="${project}"
-   */
-  private MavenProject project;
+  @Inject
+  private MavenProjectHelper projectHelper;
 
-  @Configuration
-  @DefaultsTo("${project.dependencyManagement}")
-  /**
-   * @parameter expression="${project.dependencyManagement}"
-   */
+  @Parameter(defaultValue = "${project}")
+  @Incremental(configuration = Configuration.ignore)
+  protected MavenProject project;
+
+  @Parameter(defaultValue = "${project.dependencyManagement}")
+  @Incremental(configuration = Configuration.ignore)
   private DependencyManagement dependencyManagement;
 
-  @Configuration
-  @DefaultsTo("${project.build.directory}/proviso/runtime")
-  /**
-   * @parameter expression="${outputDirectory}" default-value="${project.build.directory}/${project.artifactId}-${project.version}"
-   */
+  @Parameter(defaultValue = "${project.build.directory}/${project.artifactId}-${project.version}")
   private File outputDirectory;
 
-  @Configuration
-  @Required
-  @DefaultsTo("${basedir}/src/main/provisio")
-  /**
-   * @parameter expression="${descriptorDirectory}" default-value="${basedir}/src/main/provisio"
-   */
+  @Parameter(required = true, defaultValue = "${basedir}/src/main/provisio")
   private File descriptorDirectory;
 
-  /**
-   * @parameter expression="${runtimeDescriptor}" default-value="${basedir}/src/main/provisio/runtime.provisio"
-   */
+  @Parameter(defaultValue = "${basedir}/src/main/provisio/runtime.provisio")
   private File runtimeDescriptor;
 
-  @Configuration
-  @Required
-  @DefaultsTo("${project.remoteProjectRepositories")
-  /**
-   * @parameter expression="${project.remoteProjectRepositories}"
-   */
+  @Parameter(required = true, defaultValue = "${project.remoteProjectRepositories")
   private List<RemoteRepository> remoteRepositories;
 
   /**
@@ -102,13 +75,9 @@ public class ProvisioMojo extends AbstractMojo {
    */
   private RepositorySystemSession repositorySystemSession;
 
-  /** @component */
-  private MavenProjectHelper projectHelper;
-
   /**  @parameter expression=${archive}" */
   private File archive;
 
-  
   public void execute() throws MojoExecutionException, MojoFailureException {
 
     TeslaAether aether = new DefaultTeslaAether(remoteRepositories, repositorySystemSession);

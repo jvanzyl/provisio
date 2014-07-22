@@ -1,4 +1,4 @@
-package io.provis.maven.execute;
+package io.provis.maven;
 
 import java.io.File;
 import java.io.PrintWriter;

@@ -1,17 +1,12 @@
 package io.tesla.proviso.archive;
 
-import io.provis.model.ProvisioContext;
-import io.provis.model.RuntimeEntry;
-
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -51,15 +46,10 @@ public class UnArchiver {
     this.flatten = flatten;
   }
 
-  public Map<String, RuntimeEntry> unarchive(File archive, File outputDirectory) throws IOException {
-    return unarchive(archive, outputDirectory, null);
-  }
-
-  public Map<String, RuntimeEntry> unarchive(File archive, File outputDirectory, ProvisioContext context) throws IOException {
+  public void unarchive(File archive, File outputDirectory) throws IOException {
     //
     // These are the contributions that unpacking this archive is providing
     //
-    Map<String, RuntimeEntry> entries = new HashMap<String, RuntimeEntry>();
     if (outputDirectory.exists() == false) {
       outputDirectory.mkdirs();
     }
@@ -135,6 +125,7 @@ public class UnArchiver {
         } finally {
           outputCloser.close();
         }
+                
         int mode = 0;
         if (archiveEntry instanceof ZipArchiveEntry) {
           mode = ((ZipArchiveEntry) archiveEntry).getUnixMode();
@@ -146,13 +137,10 @@ public class UnArchiver {
         if (FileMode.EXECUTABLE_FILE.equals(mode)) {
           outputFile.setExecutable(true);
         }
-        entries.put(entryName, new RuntimeEntry(entryName, mode));
       }
     } finally {
       inputCloser.close();
     }
-
-    return entries;
   }
 
   private void createDir(File dir) {

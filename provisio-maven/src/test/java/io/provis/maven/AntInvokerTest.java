@@ -1,5 +1,6 @@
 package io.provis.maven;
 
+import static org.junit.Assert.fail;
 import io.provis.ant.AntInvoker;
 import io.provis.ant.AntProvisioner;
 import io.provis.ant.AntRequest;
@@ -11,9 +12,10 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.codehaus.plexus.util.FileUtils;
+import org.eclipse.sisu.launch.InjectedTest;
 import org.junit.Test;
 
-public class AntInvokerTest extends ProvisioningTestCase {
+public class AntInvokerTest extends InjectedTest {
 
   @Inject
   @Named("forked")

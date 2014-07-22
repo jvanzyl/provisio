@@ -1,6 +1,6 @@
 package io.provis.nexus;
 
-import io.tesla.aether.TeslaAether;
+import io.provis.Provisioner;
 import io.tesla.proviso.archive.UnArchiver;
 
 import java.io.File;
@@ -11,14 +11,10 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.List;
 
-import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.IOUtil;
-import org.eclipse.aether.resolution.ArtifactResolutionException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sonatype.nexus.util.StringDigester;
 
 import com.google.common.io.ByteStreams;
@@ -29,27 +25,18 @@ import de.pdark.decentxml.XMLParser;
 import de.pdark.decentxml.XMLWriter;
 
 @Named(NexusProvisioner.ID)
-public class NexusProvisioner {
+public class NexusProvisioner extends Provisioner {
 
   static final String ID = "nexus";
-
-  //@Inject
-  private Logger logger = LoggerFactory.getLogger(NexusProvisioner.class);
-
-  @Inject
-  private TeslaAether artifactResolver;
 
   private UnArchiver unarchiver;
 
   public NexusProvisioner() {
-    
-    unarchiver = UnArchiver.builder()
-      .useRoot(false)
-      .flatten(false)
-      .build();
+
+    unarchiver = UnArchiver.builder().useRoot(false).flatten(false).build();
   }
-  
-  public File provision(NexusProvisioningContext context) throws IOException, ArtifactResolutionException {
+
+  public File provision(NexusProvisioningContext context) throws IOException {
 
     String version = context.getVersion();
     File installationDirectory = context.getInstallationDirectory();
@@ -59,13 +46,8 @@ public class NexusProvisioner {
       throw new IllegalArgumentException("Nexus version not specified");
     }
 
-    File nexusDistribution;
-
-    if (context.isPro()) {
-      nexusDistribution = artifactResolver.resolveArtifact("com.sonatype.nexus:nexus-professional:tar.gz:bundle:" + version).getArtifact().getFile();
-    } else {
-      nexusDistribution = artifactResolver.resolveArtifact("org.sonatype.nexus:nexus-oss-webapp:tar.gz:bundle:" + version).getArtifact().getFile();
-    }
+    File nexusDistribution = resolveFromServer(String.format("http://www.sonatype.org/downloads/nexus-%s-bundle.zip", version), "org.sonatype.nexus:nexus-bundle:zip:bin:" + context.getVersion()); 
+        
     //
     // Create the installation and work directories
     //
@@ -77,17 +59,11 @@ public class NexusProvisioner {
     //    
     unarchiver.unarchive(nexusDistribution, installationDirectory);
 
-    if(context.isPro()) {
-      File testLicenseJar = artifactResolver.resolveArtifact("com.sonatype.nexus.pluginkit:nexus-pluginkit-testlm:1.3.2").getArtifact().getFile();   
-      File webInfLib = new File(installationDirectory, "nexus/WEB-INF/lib");
-      FileUtils.copyFileToDirectory(testLicenseJar, webInfLib);
-    }
-    
     //
     // Provision any Nexus plugin required
     //
     for (String plugin : context.getPlugins()) {
-      addPlugin(plugin, workDirectory);
+      addPlugin(context.getPluginRepositories().get(0), plugin, workDirectory);
     }
 
     File securityConfigurationXml = SetUpNexusConfigFile(workDirectory, "security-configuration.xml");
@@ -159,22 +135,19 @@ public class NexusProvisioner {
   //
   // Add a plugin to the Nexus installation
   //
-  public void addPlugin(String coord, File workDirectory) throws IOException, ArtifactResolutionException {
+  public void addPlugin(String repositoryUrl, String coord, File workDirectory) throws IOException {
     File pluginsDirectory = new File(workDirectory, "plugin-repository");
-    File pluginZip = artifactResolver.resolveArtifact(coord).getArtifact().getFile();
+    File pluginZip = resolveFromRepository(repositoryUrl, coord);
     unarchiver.unarchive(pluginZip, pluginsDirectory);
   }
 
   private void writeResource(File pom, Document document) throws IOException {
-
     String encoding = document.getEncoding();
     XMLWriter writer = new XMLWriter(encoding != null ? new OutputStreamWriter(new FileOutputStream(pom), encoding) : new OutputStreamWriter(new FileOutputStream(pom)));
-
     try {
       document.toXML(writer);
     } finally {
       IOUtil.close(writer);
     }
   }
-
 }

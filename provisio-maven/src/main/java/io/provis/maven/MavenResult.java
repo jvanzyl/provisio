@@ -1,4 +1,4 @@
-package io.provis.maven.execute;
+package io.provis.maven;
 
 import java.util.ArrayList;
 import java.util.Collection;

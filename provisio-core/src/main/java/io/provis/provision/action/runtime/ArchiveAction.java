@@ -17,7 +17,7 @@ public class ArchiveAction implements Action {
   public void execute(ProvisioContext context) {
     Archiver archiver = Archiver.builder().build();
     try {
-      archiver.archive(new File(runtimeDirectory, "../" + name), runtimeDirectory, context);
+      archiver.archive(new File(runtimeDirectory, "../" + name), runtimeDirectory);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

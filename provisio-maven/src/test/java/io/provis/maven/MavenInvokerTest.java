@@ -1,19 +1,15 @@
 package io.provis.maven;
 
-import io.provis.maven.execute.MavenInvoker;
-import io.provis.maven.execute.MavenRequest;
-import io.provis.maven.execute.MavenResult;
-import io.provis.maven.provision.MavenProvisioner;
-
 import java.io.File;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.codehaus.plexus.util.FileUtils;
+import org.eclipse.sisu.launch.InjectedTest;
 import org.junit.Test;
 
-public class MavenInvokerTest extends ProvisioningTestCase {
+public class MavenInvokerTest extends InjectedTest {
 
   @Inject
   @Named("forked")
