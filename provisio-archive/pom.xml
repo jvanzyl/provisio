@@ -4,7 +4,7 @@
   <parent>
     <groupId>io.provis</groupId>
     <artifactId>provisio</artifactId>
-    <version>0.0.10</version>
+    <version>0.1.0-SNAPSHOT</version>
   </parent>
   <artifactId>provisio-archive</artifactId>
   <name>Provisio :: Archiver</name>
