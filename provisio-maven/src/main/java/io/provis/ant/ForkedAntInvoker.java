@@ -1,5 +1,9 @@
 package io.provis.ant;
 
+import io.provis.ant.AntInvoker;
+import io.provis.ant.AntRequest;
+import io.provis.ant.AntResult;
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -12,10 +16,6 @@ import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.Commandline;
 import org.codehaus.plexus.util.cli.StreamConsumer;
 
-//
-// This fixes the specification of properties on the command line, but the newer version of tesla-aether is causing problems with the
-// HostNameVerifier since HeartBleed and I'll sort it out later
-//
 @Named("forked")
 public class ForkedAntInvoker implements AntInvoker {
 
@@ -37,16 +37,13 @@ public class ForkedAntInvoker implements AntInvoker {
 
     cli.setWorkingDirectory(request.getWorkDir());
 
-    cli.createArg().setValue("-d");
-
     if (request.getBuildXml() != null) {
       cli.createArg().setValue("-f");
       cli.createArg().setValue(request.getBuildXml().getPath());
     }
 
     for (Map.Entry<Object, Object> entry : request.getUserProperties().entrySet()) {
-      String value = (String) entry.getValue();
-      cli.createArg().setValue(String.format("-D%s=%s", entry.getKey(), value));
+      cli.createArg().setValue(String.format("-D%s=%s", entry.getKey(), entry.getValue()));
     }
 
     for (String goal : request.getTargets()) {
@@ -57,7 +54,6 @@ public class ForkedAntInvoker implements AntInvoker {
 
     try {
       AntStreamConsumer consumer = new AntStreamConsumer(new PrintWriter(sw));
-      System.out.println(cli);
       int exitCode = CommandLineUtils.executeCommandLine(cli, consumer, consumer);
       result.setOutput(sw.toString());
       System.out.println(sw);

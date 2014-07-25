@@ -45,7 +45,8 @@ public class NexusProvisioner extends Provisioner {
     if (version.length() <= 0) {
       throw new IllegalArgumentException("Nexus version not specified");
     }
-
+    
+    // http://central.maven.org/maven2/org/sonatype/nexus/assemblies/nexus-bundle-template/
     File nexusDistribution = resolveFromServer(String.format("http://www.sonatype.org/downloads/nexus-%s-bundle.zip", version), "org.sonatype.nexus:nexus-bundle:zip:bin:" + context.getVersion()); 
         
     //
