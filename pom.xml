@@ -16,15 +16,12 @@
   <name>Provisio</name>
 
   <modules>
-    <module>provisio-archive</module>
     <module>provisio-booters</module>
     <module>provisio-core</module>
     <module>provisio-parser</module>
     <module>provisio-maven</module>
     <module>provisio-model</module>
-    <!--
-    <module>provisio-tesla-plugin</module>
-    -->
+    <module>provisio-maven-plugin</module>
   </modules>
 
   <properties>

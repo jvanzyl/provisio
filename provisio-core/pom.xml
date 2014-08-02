@@ -60,9 +60,9 @@
     </dependency>
     <!-- Archive -->
     <dependency>
-      <groupId>io.provis</groupId>
-      <artifactId>provisio-archive</artifactId>
-      <version>0.1.0-SNAPSHOT</version>
+      <groupId>io.takari</groupId>
+      <artifactId>takari-archiver</artifactId>
+      <version>0.1.2</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
