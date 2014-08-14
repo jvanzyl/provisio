@@ -1,4 +1,4 @@
-package io.provis.model.v2;
+package io.provis.model;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

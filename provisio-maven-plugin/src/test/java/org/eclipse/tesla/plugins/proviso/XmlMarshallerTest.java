@@ -1,18 +1,6 @@
 package org.eclipse.tesla.plugins.proviso;
 
-import io.provis.model.ArtifactSet;
-import io.provis.model.v2.ProvisioModel;
-
-import java.io.InputStream;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.List;
-
 import junit.framework.TestCase;
-
-import org.codehaus.plexus.util.ReaderFactory;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
-import org.codehaus.plexus.util.xml.Xpp3DomBuilder;
 
 public class XmlMarshallerTest extends TestCase {
   

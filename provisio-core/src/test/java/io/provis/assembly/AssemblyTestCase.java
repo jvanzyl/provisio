@@ -1,8 +1,8 @@
 package io.provis.assembly;
 
 import io.provis.model.ProvisioArtifact;
-import io.provis.model.v2.Runtime;
-import io.provis.model.v2.RuntimeReader;
+import io.provis.model.Runtime;
+import io.provis.model.io.RuntimeReader;
 import io.provis.provision.MavenProvisioner;
 import io.provis.provision.ProvisioningRequest;
 import io.provis.provision.ProvisioningResult;

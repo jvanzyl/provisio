@@ -1,7 +1,7 @@
 package io.provis.action;
 
 import io.provis.model.ProvisioningAction;
-import io.provis.model.ProvisioContext;
+import io.provis.model.ProvisioningContext;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ public class MakeExecutable implements ProvisioningAction {
   private List<String> excludes;
   
   @Override
-  public void execute(ProvisioContext context) throws Exception {
+  public void execute(ProvisioningContext context) throws Exception {
   }
 
   public List<String> getIncludes() {

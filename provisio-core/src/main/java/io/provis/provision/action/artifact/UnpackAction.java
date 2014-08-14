@@ -2,7 +2,7 @@ package io.provis.provision.action.artifact;
 
 import io.provis.model.ProvisioningAction;
 import io.provis.model.ProvisioningContext;
-import io.provis.model.v2.InterpolatingInputStream;
+import io.provis.model.io.InterpolatingInputStream;
 import io.tesla.proviso.archive.UnArchiver;
 import io.tesla.proviso.archive.UnarchivingEntryProcessor;
 
@@ -118,8 +118,6 @@ public class UnpackAction implements ProvisioningAction {
   public void setFilter(boolean filter) {
     this.filter = filter;
   }
-
-
 
   class FilteringProcessor implements UnarchivingEntryProcessor {
 

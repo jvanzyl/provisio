@@ -1,6 +1,6 @@
 package io.provis.provision;
 
-import io.provis.model.v2.Runtime;
+import io.provis.model.Runtime;
 
 import java.io.File;
 import java.util.Collections;

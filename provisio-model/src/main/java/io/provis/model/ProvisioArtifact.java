@@ -1,15 +1,18 @@
 package io.provis.model;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.aether.artifact.AbstractArtifact;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 
+import com.google.common.collect.Lists;
+
 public class ProvisioArtifact extends AbstractArtifact {
 
-  private io.provis.model.v2.Artifact modelArtifact;
+  private List<ProvisioningAction> actions;
   private Artifact delegate;
   private String coordinate;
 
@@ -18,22 +21,9 @@ public class ProvisioArtifact extends AbstractArtifact {
     this.coordinate = coordinate;
   }
 
-  public ProvisioArtifact(io.provis.model.v2.Artifact modelArtifact) {
-    this.delegate = new DefaultArtifact(modelArtifact.getId());
-    this.coordinate = modelArtifact.getId();
-    this.modelArtifact = modelArtifact;
-  }
-
-  public ProvisioArtifact(String coordinate, io.provis.model.v2.Artifact modelArtifact) {
-    this.delegate = new DefaultArtifact(coordinate);
-    this.coordinate = coordinate;
-    this.modelArtifact = modelArtifact;
-  }
-
   public ProvisioArtifact(Artifact a) {
     this.delegate = a;
   }
-
 
   public String getCoordinate() {
     return coordinate;
@@ -46,17 +36,22 @@ public class ProvisioArtifact extends AbstractArtifact {
   public String getGAV() {
     return getGroupId() + ":" + getArtifactId() + ":" + getVersion();
   }
-     
-  
-  
-  //
-  //
-  //
-  
-  public io.provis.model.v2.Artifact getModelArtifact() {
-    return modelArtifact;
+       
+  public List<ProvisioningAction> getActions() {
+    return actions;
   }
-
+  
+  public void addAction(ProvisioningAction action) {
+    if(actions == null) {
+      actions = Lists.newArrayList();
+    }
+    actions.add(action);
+  }
+  
+  //
+  //
+  //  
+  
   public String getGroupId() {
     return delegate.getGroupId();
   }

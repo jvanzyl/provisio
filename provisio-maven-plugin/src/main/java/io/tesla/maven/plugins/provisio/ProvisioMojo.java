@@ -1,18 +1,21 @@
 package io.tesla.maven.plugins.provisio;
 
+import io.provis.model.ActionDescriptor;
 import io.provis.model.ProvisioningAction;
-import io.provis.model.v2.Runtime;
-import io.provis.model.v2.RuntimeReader;
+import io.provis.model.Runtime;
+import io.provis.model.io.RuntimeReader;
 import io.provis.provision.DefaultMavenProvisioner;
 import io.provis.provision.MavenProvisioner;
 import io.provis.provision.ProvisioningRequest;
 import io.provis.provision.ProvisioningResult;
+import io.provis.provision.action.artifact.UnpackAction;
 import io.takari.incrementalbuild.Incremental;
 import io.takari.incrementalbuild.Incremental.Configuration;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -33,23 +36,22 @@ import org.eclipse.aether.RepositorySystemSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
+
 @Mojo(name = "provision", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class ProvisioMojo extends AbstractMojo {
 
   protected final Logger logger = LoggerFactory.getLogger(getClass());
 
   @Inject
-  private RuntimeReader parser;
-
-  @Inject
   private MavenProjectHelper projectHelper;
 
   @Inject
   private RepositorySystem repositorySystem;
-  
+
   @Inject
-  private Map<String,ProvisioningAction> actions;
-  
+  private Map<String, ProvisioningAction> actions;
+
   @Parameter(defaultValue = "${project}")
   @Incremental(configuration = Configuration.ignore)
   protected MavenProject project;
@@ -74,39 +76,44 @@ public class ProvisioMojo extends AbstractMojo {
   private File archive;
 
   public void execute() throws MojoExecutionException, MojoFailureException {
-        
-    MavenProvisioner provisioner = new DefaultMavenProvisioner(actions, repositorySystem, repositorySystemSession, project.getRemoteProjectRepositories());
-    
-    Runtime model;
+    RuntimeReader parser = new RuntimeReader(actionDescriptors());
+    MavenProvisioner provisioner = new DefaultMavenProvisioner(repositorySystem, repositorySystemSession, project.getRemoteProjectRepositories());
+    Runtime runtime;
     try {
-      model = parser.read(new FileInputStream(runtimeDescriptor));
+      runtime = parser.read(new FileInputStream(runtimeDescriptor), (Map) project.getProperties());
     } catch (Exception e) {
       throw new MojoFailureException("Cannot read assembly descriptor file " + runtimeDescriptor, e);
     }
-
     ProvisioningRequest request = new ProvisioningRequest();
     request.setOutputDirectory(outputDirectory);
-    request.setModel(model);
-    request.setVariables((Map)project.getProperties());
+    request.setModel(runtime);
+    request.setVariables((Map) project.getProperties());
     ProvisioningResult result = provisioner.provision(request);
-
     // So the distribution is made now but it's in the descriptor so we need a good way to know. We need to augment the result with
     // archives that are created.
     projectHelper.attachArtifact(project, "tar.gz", archive);
   }
 
-  // I don't really need this in a non-reactor build. In a separate assembly project I would pull the version map from another source like a POM
-  private Map<String, String> getVersionMap() {
-    Map<String, String> versionMap = new HashMap<String, String>();
-    if (dependencyManagement.getDependencies().isEmpty() == false) {
-      for (Dependency managedDependency : dependencyManagement.getDependencies()) {
-        String ga = managedDependency.getGroupId() + ":" + managedDependency.getArtifactId();
-        if (getLog().isDebugEnabled()) {
-          getLog().debug("Adding " + ga + " to dependencyVersionMap ==> ");
-        }
-        versionMap.put(ga, managedDependency.getVersion());
+  private List<ActionDescriptor> actionDescriptors() {
+    List<ActionDescriptor> actionDescriptors = Lists.newArrayList();
+    actionDescriptors.add(new ActionDescriptor() {
+      @Override
+      public String getName() {
+        return "unpack";
       }
-    }
-    return versionMap;
+
+      @Override
+      public Class<?> getImplementation() {
+        return UnpackAction.class;
+      }
+
+      @Override
+      public String[] attributes() {
+        return new String[] {
+            "filter", "includes", "excludes", "flatten", "useRoot"
+        };
+      }
+    });
+    return actionDescriptors;
   }
 }

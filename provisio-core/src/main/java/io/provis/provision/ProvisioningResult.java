@@ -1,6 +1,6 @@
 package io.provis.provision;
 
-import io.provis.model.v2.Runtime;
+import io.provis.model.Runtime;
 
 // The provisioning result should carry with it:
 // what artifacts have been resolved and where they live

@@ -11,6 +11,7 @@ import javax.inject.Named;
 import org.eclipse.aether.artifact.Artifact;
 
 import com.google.common.base.Preconditions;
+import com.google.common.io.Files;
 
 @Named("write")
 public class WriteToDiskAction implements ProvisioningAction {

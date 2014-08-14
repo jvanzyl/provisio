@@ -1,3 +1,9 @@
+- how to structure provisioning action, what to use for populating configuration
+  - here i think that using xstream and passing it information to instantiate and configure new actions would be cool
+- separate model from runtime model
+- use mustache for filtering
+- make TDM 
+
 ## Maven
 
 - need to create a binding for the repository system session in Maven to make this work ideally

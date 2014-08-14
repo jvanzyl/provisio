@@ -1,11 +1,10 @@
 package io.provis.provision;
 
+import io.provis.model.ArtifactSet;
+import io.provis.model.Lookup;
 import io.provis.model.ProvisioArtifact;
 import io.provis.model.ProvisioningAction;
 import io.provis.model.ProvisioningContext;
-import io.provis.model.v2.Action;
-import io.provis.model.v2.ArtifactSet;
-import io.provis.model.v2.Lookup;
 import io.provis.provision.action.artifact.WriteToDiskAction;
 
 import java.io.File;
@@ -37,13 +36,11 @@ import com.google.common.collect.Sets;
 
 public class DefaultMavenProvisioner implements MavenProvisioner {
 
-  private Map<String, ProvisioningAction> actions;
   private RepositorySystem repositorySystem;
   private RepositorySystemSession repositorySystemSession;
   private List<RemoteRepository> remoteRepositories;
 
-  public DefaultMavenProvisioner(Map<String, ProvisioningAction> actions, RepositorySystem repositorySystem, RepositorySystemSession repositorySystemSession, List<RemoteRepository> remoteRepositories) {
-    this.actions = actions;
+  public DefaultMavenProvisioner(RepositorySystem repositorySystem, RepositorySystemSession repositorySystemSession, List<RemoteRepository> remoteRepositories) {
     this.repositorySystem = repositorySystem;
     this.repositorySystemSession = repositorySystemSession;
     this.remoteRepositories = remoteRepositories;
@@ -83,7 +80,7 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
     resolveFileSetOutputDirectory(request, context, artifactSet);
     resolveFileSetArtifacts(request, context, artifactSet);
     processArtifactsWithActions(context, artifactSet);
-    processFileSetActions(context, artifactSet.getOutputDirectory(), artifactSet);
+    processArtifactSetActions(context, artifactSet.getOutputDirectory(), artifactSet);
 
     if (artifactSet.getArtifactSets() != null) {
       for (ArtifactSet childFileSet : artifactSet.getArtifactSets()) {
@@ -139,12 +136,7 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
   //
   // Process actions that apply across filesets
   //
-  private void processFileSetActions(ProvisioningContext context, File outputDirectory, ArtifactSet fileSet) throws Exception {
-    for (Action action : fileSet.getActions()) {
-      ProvisioningAction pa = actions.get(action.getId());
-      configureArtifactSetAction(pa, outputDirectory, fileSet.getDirectory());
-      pa.execute(context);
-    }
+  private void processArtifactSetActions(ProvisioningContext context, File outputDirectory, ArtifactSet artifactSet) throws Exception {
   }
 
   //
@@ -152,20 +144,14 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
   //
   private void processArtifactsWithActions(ProvisioningContext context, ArtifactSet artifactSet) throws Exception {
     for (ProvisioArtifact artifact : artifactSet.getResolvedArtifacts()) {
-      if (artifact.getModelArtifact() != null) {
-        if (artifact.getModelArtifact().getActions() != null) {
-          for (Action action : artifact.getModelArtifact().getActions()) {
-            ProvisioningAction provisioningAction = actions.get(action.getId());
-            configureArtifactAction(artifact, action, provisioningAction, artifactSet.getOutputDirectory(), artifactSet.getDirectory());
-            provisioningAction.execute(context);
-          }
-        } else {
-          ProvisioningAction provisioningAction = new WriteToDiskAction(artifact, artifactSet.getOutputDirectory());
-          provisioningAction.execute(context);
+      if (artifact.getActions() != null) {
+        for (ProvisioningAction action : artifact.getActions()) {
+          configureArtifactAction(artifact, action, artifactSet.getOutputDirectory());
+          action.execute(context);
         }
       } else {
-        ProvisioningAction provisioningAction = new WriteToDiskAction(artifact, artifactSet.getOutputDirectory());
-        provisioningAction.execute(context);
+        ProvisioningAction action = new WriteToDiskAction(artifact, artifactSet.getOutputDirectory());
+        action.execute(context);
       }
     }
   }
@@ -176,20 +162,11 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
     lookup.setObjectProperty(action, "runtimeDirectory", outputDirectory);
   }
 
-  private void configureArtifactAction(ProvisioArtifact artifact, Action action, ProvisioningAction provisioningAction, File outputDirectory, String directory) {
+  private void configureArtifactAction(ProvisioArtifact artifact, ProvisioningAction provisioningAction, File outputDirectory) {
     lookup.setObjectProperty(provisioningAction, "artifact", artifact);
     lookup.setObjectProperty(provisioningAction, "fileSetDirectory", outputDirectory);
     lookup.setObjectProperty(provisioningAction, "outputDirectory", outputDirectory);
     lookup.setObjectProperty(provisioningAction, "runtimeDirectory", outputDirectory);
-    if (action.getParameters() != null) {
-      for (Map.Entry<String, String> entry : action.getParameters().entrySet()) {
-        Object value = entry.getValue();
-        if(entry.getValue().equals("true") || entry.getValue().equals("false")) {
-          value = Boolean.valueOf(entry.getValue());
-        }        
-        lookup.setObjectProperty(provisioningAction, entry.getKey(), value);
-      }
-    }
   }
 
   //
@@ -277,7 +254,6 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
     Set<ProvisioArtifact> resolvedArtifacts = Sets.newHashSet();
     for (Artifact a : resultArtifacts) {
       String ga = a.getGroupId() + ":" + a.getArtifactId();
-      System.out.println(">> " + ga);
       if (a instanceof ProvisioArtifact) {
         artifactMapKeyedByGa.put(ga, (ProvisioArtifact) a);
         resolvedArtifacts.add((ProvisioArtifact) a);

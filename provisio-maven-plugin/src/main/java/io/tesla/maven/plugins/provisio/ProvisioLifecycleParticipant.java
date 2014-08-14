@@ -1,9 +1,9 @@
 package io.tesla.maven.plugins.provisio;
 
+import io.provis.model.ArtifactSet;
 import io.provis.model.ProvisioArtifact;
-import io.provis.model.v2.ArtifactSet;
-import io.provis.model.v2.Runtime;
-import io.provis.model.v2.RuntimeReader;
+import io.provis.model.Runtime;
+import io.provis.model.io.RuntimeReader;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,7 +32,7 @@ public class ProvisioLifecycleParticipant extends AbstractMavenLifecycleParticip
   private RuntimeReader parser;
 
   protected String getPluginId() {
-    return "provisio-tesla-plugin";
+    return "provisio-maven-plugin";
   }
 
   @Override
