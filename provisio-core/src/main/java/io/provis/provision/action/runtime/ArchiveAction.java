@@ -1,7 +1,7 @@
 package io.provis.provision.action.runtime;
 
-import io.provis.model.Action;
-import io.provis.model.ProvisioContext;
+import io.provis.model.ProvisioningAction;
+import io.provis.model.ProvisioningContext;
 import io.tesla.proviso.archive.Archiver;
 
 import java.io.File;
@@ -9,12 +9,12 @@ import java.io.File;
 import javax.inject.Named;
 
 @Named("archive")
-public class ArchiveAction implements Action {
+public class ArchiveAction implements ProvisioningAction {
 
   private File runtimeDirectory;
   private String name;
   
-  public void execute(ProvisioContext context) {
+  public void execute(ProvisioningContext context) {
     Archiver archiver = Archiver.builder().build();
     try {
       archiver.archive(new File(runtimeDirectory, "../" + name), runtimeDirectory);

@@ -1,18 +1,18 @@
 package io.tesla.maven.plugins.provisio;
 
-import io.provis.model.ProvisioModel;
-import io.provis.parser.ProvisioModelParser;
-import io.provis.provision.Provisioner;
+import io.provis.model.ProvisioningAction;
+import io.provis.model.v2.Runtime;
+import io.provis.model.v2.RuntimeReader;
+import io.provis.provision.DefaultMavenProvisioner;
+import io.provis.provision.MavenProvisioner;
 import io.provis.provision.ProvisioningRequest;
 import io.provis.provision.ProvisioningResult;
 import io.takari.incrementalbuild.Incremental;
 import io.takari.incrementalbuild.Incremental.Configuration;
-import io.tesla.aether.TeslaAether;
-import io.tesla.aether.internal.DefaultTeslaAether;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -28,8 +28,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
+import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
-import org.eclipse.aether.repository.RemoteRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,14 +39,17 @@ public class ProvisioMojo extends AbstractMojo {
   protected final Logger logger = LoggerFactory.getLogger(getClass());
 
   @Inject
-  private Provisioner provisioner;
-
-  @Inject
-  private ProvisioModelParser parser;
+  private RuntimeReader parser;
 
   @Inject
   private MavenProjectHelper projectHelper;
 
+  @Inject
+  private RepositorySystem repositorySystem;
+  
+  @Inject
+  private Map<String,ProvisioningAction> actions;
+  
   @Parameter(defaultValue = "${project}")
   @Incremental(configuration = Configuration.ignore)
   protected MavenProject project;
@@ -64,57 +67,27 @@ public class ProvisioMojo extends AbstractMojo {
   @Parameter(defaultValue = "${basedir}/src/main/provisio/runtime.provisio")
   private File runtimeDescriptor;
 
-  @Parameter(required = true, defaultValue = "${project.remoteProjectRepositories")
-  private List<RemoteRepository> remoteRepositories;
-
-  /**
-   * The current repository/network configuration of Maven.
-   * 
-   * @parameter default-value="${repositorySystemSession}"
-   * @readonly
-   */
+  @Parameter(defaultValue = "${repositorySystemSession}")
   private RepositorySystemSession repositorySystemSession;
 
   /**  @parameter expression=${archive}" */
   private File archive;
 
   public void execute() throws MojoExecutionException, MojoFailureException {
-
-    TeslaAether aether = new DefaultTeslaAether(remoteRepositories, repositorySystemSession);
-    provisioner.setAether(aether);
-
-    //    List<File> descriptors;
-    //    try {
-    //      descriptors = FileUtils.getFiles(descriptorDirectory, "**/*.provisio", null);
-    //    } catch (IOException e) {
-    //      throw new MojoExecutionException("Failed to find to provisio descriptors.", e);
-    //    }
-    //
-    //    for (File descriptor : descriptors) {
-    //
-    //      ProvisioModel assembly;
-    //      try {
-    //        assembly = parser.read(descriptor, outputDirectory, new HashMap<String, String>());
-    //      } catch (Exception e) {
-    //        throw new MojoFailureException("Cannot read assembly descriptor file " + descriptor, e);
-    //      }
-    //
-    //      ProvisioningRequest request = new ProvisioningRequest();
-    //      request.setOutputDirectory(outputDirectory);
-    //      request.setRuntimeAssembly(assembly);
-    //      provisioner.provision(request);
-    //    }
-
-    ProvisioModel assembly;
+        
+    MavenProvisioner provisioner = new DefaultMavenProvisioner(actions, repositorySystem, repositorySystemSession, project.getRemoteProjectRepositories());
+    
+    Runtime model;
     try {
-      assembly = parser.read(runtimeDescriptor, outputDirectory, (Map) project.getProperties());
+      model = parser.read(new FileInputStream(runtimeDescriptor));
     } catch (Exception e) {
       throw new MojoFailureException("Cannot read assembly descriptor file " + runtimeDescriptor, e);
     }
 
     ProvisioningRequest request = new ProvisioningRequest();
     request.setOutputDirectory(outputDirectory);
-    request.setRuntimeAssembly(assembly);
+    request.setModel(model);
+    request.setVariables((Map)project.getProperties());
     ProvisioningResult result = provisioner.provision(request);
 
     // So the distribution is made now but it's in the descriptor so we need a good way to know. We need to augment the result with

@@ -1,6 +1,6 @@
 package io.provis.action;
 
-import io.provis.model.Action;
+import io.provis.model.ProvisioningAction;
 import io.provis.model.ProvisioContext;
 
 import java.util.Map;
@@ -8,7 +8,7 @@ import java.util.Map;
 import javax.inject.Named;
 
 @Named("updateJar")
-public class UpdateJar implements Action {
+public class UpdateJar implements ProvisioningAction {
 
   private String jar;
   private Map<String,String> updates;

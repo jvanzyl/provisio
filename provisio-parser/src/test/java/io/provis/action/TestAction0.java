@@ -1,6 +1,6 @@
 package io.provis.action;
 
-import io.provis.model.Action;
+import io.provis.model.ProvisioningAction;
 import io.provis.model.ProvisioContext;
 
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.Map;
 import javax.inject.Named;
 
 @Named("testAction0")
-public class TestAction0 implements Action {
+public class TestAction0 implements ProvisioningAction {
 
   private String scalar;
   private String literal;

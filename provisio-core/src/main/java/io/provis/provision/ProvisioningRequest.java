@@ -1,12 +1,12 @@
 package io.provis.provision;
 
-import io.provis.model.ProvisioModel;
+import io.provis.model.v2.Runtime;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 
@@ -14,8 +14,13 @@ public class ProvisioningRequest {
   
   private File outputDirectory;
   private String localRepository;
-  private ProvisioModel runtimeAssembly;
+  private Runtime model;
   private Map<String, String> versionMap;
+  private List<String> managedDependencies = Collections.emptyList();
+  private Map<String,String> variables;
+  //
+  private RepositorySystemSession repositorySystemSession;
+  private List<RemoteRepository> remoteRepositories;
   
   public File getOutputDirectory() {
     return outputDirectory;
@@ -38,12 +43,12 @@ public class ProvisioningRequest {
     this.localRepository = localRepository;
   }
 
-  public ProvisioModel getRuntimeAssembly() {
-    return runtimeAssembly;
+  public Runtime getModel() {
+    return model;
   }
 
-  public ProvisioningRequest setRuntimeAssembly(ProvisioModel runtimeAssembly) {
-    this.runtimeAssembly = runtimeAssembly;
+  public ProvisioningRequest setModel(Runtime runtime) {
+    this.model = runtime;
     return this;
   }
   
@@ -61,5 +66,43 @@ public class ProvisioningRequest {
   
   public void addVersionMap(Map<String, String> versionMap) {
     this.versionMap = versionMap;
+  }
+
+  public List<String> getManagedDependencies() {
+    return managedDependencies;
+  }
+
+  public void setManagedDependencies(List<String> dependencyManagement) {
+    this.managedDependencies = dependencyManagement;
+  }
+
+  public RepositorySystemSession getRepositorySystemSession() {
+    return repositorySystemSession;
+  }
+
+  public void setRepositorySystemSession(RepositorySystemSession repositorySystemSession) {
+    this.repositorySystemSession = repositorySystemSession;
+  }
+
+  public List<RemoteRepository> getRemoteRepositories() {
+    return remoteRepositories;
+  }
+
+  public void setRemoteRepositories(List<RemoteRepository> remoteRepositories) {
+    this.remoteRepositories = remoteRepositories;
+  }
+
+  public Runtime getRuntime() {
+    return model;
+  }
+
+  public Map<String, String> getVariables() {
+    return variables;
+  }
+
+  public void setVariables(Map<String, String> variables) {
+    this.variables = variables;
   }  
+  
+  
 }

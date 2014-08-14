@@ -1,6 +1,6 @@
 package io.provis.model;
 
-public abstract class AbstractAction implements Action {
+public abstract class AbstractAction implements ProvisioningAction {
 
   private String name;
 

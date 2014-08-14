@@ -1,9 +1,7 @@
 package io.provis.provision.action.fileset;
 
-import io.provis.model.Action;
-import io.provis.model.ProvisioContext;
-import io.provis.model.RuntimeEntry;
-import io.tesla.proviso.archive.FileMode;
+import io.provis.model.ProvisioningAction;
+import io.provis.model.ProvisioningContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,14 +12,14 @@ import javax.inject.Named;
 import org.codehaus.plexus.util.FileUtils;
 
 @Named("executable")
-public class MakeExecutableAction implements Action {
+public class MakeExecutableAction implements ProvisioningAction {
 
   private String includes;
   private String excludes;  
   private File fileSetDirectory;
   private File runtimeDirectory;
   
-  public void execute(ProvisioContext context) throws Exception {
+  public void execute(ProvisioningContext context) throws Exception {
 
     if (fileSetDirectory.exists()) {
       try {
@@ -29,8 +27,6 @@ public class MakeExecutableAction implements Action {
         for (String filePath : filePaths) {
           File file = new File(filePath);
           file.setExecutable(true);
-          String pathInRuntime = filePath.substring(runtimeDirectory.getParentFile().getAbsolutePath().length() + 1);
-          context.getFileEntries().put(pathInRuntime, new RuntimeEntry(pathInRuntime,FileMode.EXECUTABLE_FILE.getBits()));
         }
       } catch (IOException e) {
         throw new RuntimeException(e);

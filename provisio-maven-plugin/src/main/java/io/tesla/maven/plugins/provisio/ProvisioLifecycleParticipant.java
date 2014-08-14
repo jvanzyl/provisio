@@ -1,11 +1,12 @@
 package io.tesla.maven.plugins.provisio;
 
-import io.provis.model.ArtifactSet;
 import io.provis.model.ProvisioArtifact;
-import io.provis.model.ProvisioModel;
-import io.provis.parser.ProvisioModelParser;
+import io.provis.model.v2.ArtifactSet;
+import io.provis.model.v2.Runtime;
+import io.provis.model.v2.RuntimeReader;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -28,7 +29,7 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 public class ProvisioLifecycleParticipant extends AbstractMavenLifecycleParticipant {
 
   @Inject
-  private ProvisioModelParser parser;
+  private RuntimeReader parser;
 
   protected String getPluginId() {
     return "provisio-tesla-plugin";
@@ -71,9 +72,9 @@ public class ProvisioLifecycleParticipant extends AbstractMavenLifecycleParticip
   protected Set<String> process(MavenProject project, Plugin plugin) {
     Xpp3Dom configuration = getMojoConfiguration(plugin);
     File runtimeDescriptor = new File(project.getBasedir(), configuration.getChild("runtimeDescriptor").getValue());
-    ProvisioModel assembly = null;
+    Runtime assembly = null;
     try {
-      assembly = parser.read(runtimeDescriptor, new File("."), (Map)project.getProperties());
+      assembly = parser.read(new FileInputStream(runtimeDescriptor));
     } catch (Exception e) {
       e.printStackTrace();
       return null;
@@ -84,8 +85,8 @@ public class ProvisioLifecycleParticipant extends AbstractMavenLifecycleParticip
       for (ProvisioArtifact gaDependency : fileSet.getArtifactMap().values()) {
         dependenciesInGAForm.add(gaDependency.getGA());
       }
-      if (fileSet.getFileSets() != null) {
-        for (ArtifactSet childFileSet : fileSet.getFileSets()) {
+      if (fileSet.getArtifactSets() != null) {
+        for (ArtifactSet childFileSet : fileSet.getArtifactSets()) {
           for (ProvisioArtifact gaDependency : childFileSet.getArtifactMap().values()) {
             dependenciesInGAForm.add(gaDependency.getGA());
           }

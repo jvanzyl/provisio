@@ -1,12 +1,7 @@
 package io.provis.model;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-
-import javax.inject.Named;
 
 import org.eclipse.aether.artifact.AbstractArtifact;
 import org.eclipse.aether.artifact.Artifact;
@@ -14,49 +9,31 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 
 public class ProvisioArtifact extends AbstractArtifact {
 
+  private io.provis.model.v2.Artifact modelArtifact;
   private Artifact delegate;
-  private Map<String, Action> actionMap;
   private String coordinate;
-
-  public ProvisioArtifact(String coordinate, List<Action> actions) {
-    this(coordinate);
-    this.coordinate = coordinate;
-    setup(actions);
-  }
 
   public ProvisioArtifact(String coordinate) {
     this.delegate = new DefaultArtifact(coordinate);
     this.coordinate = coordinate;
-    setup(null);
   }
 
-  protected ProvisioArtifact(Artifact a, List<Action> actions) {
-    this.delegate = a;
-    setup(actions);
+  public ProvisioArtifact(io.provis.model.v2.Artifact modelArtifact) {
+    this.delegate = new DefaultArtifact(modelArtifact.getId());
+    this.coordinate = modelArtifact.getId();
+    this.modelArtifact = modelArtifact;
+  }
+
+  public ProvisioArtifact(String coordinate, io.provis.model.v2.Artifact modelArtifact) {
+    this.delegate = new DefaultArtifact(coordinate);
+    this.coordinate = coordinate;
+    this.modelArtifact = modelArtifact;
   }
 
   public ProvisioArtifact(Artifact a) {
     this.delegate = a;
-    setup(null);
   }
 
-  private void setup(List<Action> actions) {
-    actionMap = new LinkedHashMap<String, Action>();
-    if (actions != null) {
-      for (Action action : actions) {
-        Named javaxNamed = action.getClass().getAnnotation(Named.class);
-        actionMap.put(javaxNamed.value(), action);
-      }
-    }
-  }
-
-  public Action action(String name) {
-    return actionMap.get(name);
-  }
-
-  public Collection<Action> getActions() {
-    return actionMap.values();
-  }
 
   public String getCoordinate() {
     return coordinate;
@@ -69,11 +46,17 @@ public class ProvisioArtifact extends AbstractArtifact {
   public String getGAV() {
     return getGroupId() + ":" + getArtifactId() + ":" + getVersion();
   }
-                                                                                                                                                      
+     
+  
+  
   //
   //
   //
   
+  public io.provis.model.v2.Artifact getModelArtifact() {
+    return modelArtifact;
+  }
+
   public String getGroupId() {
     return delegate.getGroupId();
   }

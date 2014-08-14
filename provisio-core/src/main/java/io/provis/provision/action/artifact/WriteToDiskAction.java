@@ -1,21 +1,19 @@
 package io.provis.provision.action.artifact;
 
-import io.provis.model.Action;
-import io.provis.model.ProvisioContext;
+import io.provis.model.ProvisioningAction;
+import io.provis.model.ProvisioningContext;
 import io.provis.util.FileCopier;
 
 import java.io.File;
 
 import javax.inject.Named;
-import javax.inject.Singleton;
 
 import org.eclipse.aether.artifact.Artifact;
 
 import com.google.common.base.Preconditions;
 
-@Singleton
 @Named("write")
-public class WriteToDiskAction implements Action {
+public class WriteToDiskAction implements ProvisioningAction {
   
   private Artifact artifact;
   private File outputDirectory;
@@ -28,7 +26,7 @@ public class WriteToDiskAction implements Action {
     this.outputDirectory = outputDirectory;
   }
   
-  public void execute(ProvisioContext context) {
+  public void execute(ProvisioningContext context) {
     File file = artifact.getFile();
     if (file != null) {
       FileCopier.copy(file, new File(outputDirectory, file.getName()));

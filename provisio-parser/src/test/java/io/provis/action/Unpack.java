@@ -1,6 +1,6 @@
 package io.provis.action;
 
-import io.provis.model.Action;
+import io.provis.model.ProvisioningAction;
 import io.provis.model.ProvisioContext;
 
 import java.util.List;
@@ -8,7 +8,7 @@ import java.util.List;
 import javax.inject.Named;
 
 @Named("unpack")
-public class Unpack implements Action {
+public class Unpack implements ProvisioningAction {
 
   private boolean useRoot;
   private List<String> excludes;

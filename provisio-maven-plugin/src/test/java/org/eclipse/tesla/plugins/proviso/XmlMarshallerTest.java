@@ -1,7 +1,7 @@
 package org.eclipse.tesla.plugins.proviso;
 
 import io.provis.model.ArtifactSet;
-import io.provis.model.ProvisioModel;
+import io.provis.model.v2.ProvisioModel;
 
 import java.io.InputStream;
 import java.io.Reader;

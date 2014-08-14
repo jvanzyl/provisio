@@ -14,16 +14,13 @@
   <description>Parser for Thrift IDL</description>
 
   <dependencies>
-    <!-- Complete hack! -->
     <dependency>
       <groupId>io.takari</groupId>
       <artifactId>takari-archiver</artifactId>
-      <version>0.1.2</version>
     </dependency>
     <dependency>
       <groupId>io.provis</groupId>
       <artifactId>provisio-model</artifactId>
-      <version>0.1.0-SNAPSHOT</version>
     </dependency>
     <!-- JSR330 -->
     <dependency>

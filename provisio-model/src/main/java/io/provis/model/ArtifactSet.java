@@ -15,13 +15,13 @@ public class ArtifactSet {
   private String directory;
   private String description;
   private Map<String, ProvisioArtifact> artifactMap;
-  private Map<String, Action> actionMap;
+  private Map<String, ProvisioningAction> actionMap;
   private Collection<String> excludes;
   private Map<String, ProvisioArtifact> resolvedArtifacts;
   private Map<String, ProvisioArtifact> artifactMapKeyedByGA;
   private File outputDirectory;
 
-  public ArtifactSet(String directory, List<ProvisioArtifact> artifacts, List<Action> actions, File outputDirectory) {
+  public ArtifactSet(String directory, List<ProvisioArtifact> artifacts, List<ProvisioningAction> actions, File outputDirectory) {
     this.directory = directory;
     this.outputDirectory = outputDirectory;
     //
@@ -34,8 +34,8 @@ public class ArtifactSet {
     //
     // Actions
     //
-    actionMap = new LinkedHashMap<String, Action>();
-    for (Action action : actions) {
+    actionMap = new LinkedHashMap<String, ProvisioningAction>();
+    for (ProvisioningAction action : actions) {
       Named javaxNamed = action.getClass().getAnnotation(Named.class);
       actionMap.put(javaxNamed.value(), action);
     }
@@ -45,11 +45,11 @@ public class ArtifactSet {
     return artifactMap.get(coordinate);
   }
 
-  public Action action(String name) {
+  public ProvisioningAction action(String name) {
     return actionMap.get(name);
   }
 
-  public Collection<Action> getActions() {
+  public Collection<ProvisioningAction> getActions() {
     return actionMap.values();
   }
 
@@ -97,11 +97,11 @@ public class ArtifactSet {
     this.artifactMap = artifactMap;
   }
 
-  public Map<String, Action> getActionMap() {
+  public Map<String, ProvisioningAction> getActionMap() {
     return actionMap;
   }
 
-  public void setActionMap(Map<String, Action> actionMap) {
+  public void setActionMap(Map<String, ProvisioningAction> actionMap) {
     this.actionMap = actionMap;
   }
 

@@ -7,7 +7,7 @@ import io.provis.action.UpdateJar;
 import io.provis.action.Validate;
 import io.provis.model.ArtifactSet;
 import io.provis.model.ProvisioArtifact;
-import io.provis.model.ProvisioModel;
+import io.provis.model.v2.ProvisioModel;
 
 import java.io.File;
 import java.util.HashMap;

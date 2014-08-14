@@ -1,6 +1,6 @@
 package io.provis.maven;
 
-import io.provis.Provisioner;
+import io.provis.SimpleProvisioner;
 import io.tesla.proviso.archive.UnArchiver;
 
 import java.io.File;
@@ -9,7 +9,7 @@ import java.io.IOException;
 import javax.inject.Named;
 
 @Named
-public class MavenProvisioner extends Provisioner {
+public class MavenProvisioner extends SimpleProvisioner {
 
   private UnArchiver unarchiver;
 
@@ -22,8 +22,12 @@ public class MavenProvisioner extends Provisioner {
       throw new IllegalArgumentException("Maven version not specified");
     }
 
+    File mvn = new File(installDirectory, "bin/mvn");
+    if(mvn.exists()) {
+      return installDirectory;
+    }
+    
     File archive = resolveFromRepository("http://repo1.maven.org/maven2", "org.apache.maven:apache-maven:zip:bin:" + mavenVersion);
-
     installDirectory.mkdirs();
     if (!installDirectory.isDirectory()) {
       throw new IllegalStateException("Could not create Maven install directory " + installDirectory);
@@ -31,7 +35,6 @@ public class MavenProvisioner extends Provisioner {
 
     unarchiver.unarchive(archive, installDirectory);
 
-    File mvn = new File(installDirectory, "bin/mvn");
     if (!mvn.isFile()) {
       throw new IllegalStateException("Unpacking of Maven distro failed");
     }

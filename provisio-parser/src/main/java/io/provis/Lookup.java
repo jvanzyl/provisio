@@ -1,6 +1,6 @@
 package io.provis;
 
-import io.provis.model.Action;
+import io.provis.model.ProvisioningAction;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -16,10 +16,10 @@ import org.eclipse.aether.artifact.Artifact;
 @Named
 public class Lookup {
 
-  private Map<String,Provider<Action>> actions;
+  private Map<String,Provider<ProvisioningAction>> actions;
   
   @Inject
-  public Lookup(Map<String,Provider<Action>> actions) {
+  public Lookup(Map<String,Provider<ProvisioningAction>> actions) {
     this.actions = actions;
   }
     
@@ -27,7 +27,7 @@ public class Lookup {
   // Container lookup methods
   // ----------------------------------------------------------------------
 
-  public Action lookupAction(String key) {   
+  public ProvisioningAction lookupAction(String key) {   
     return actions.get(key).get();
   }
   

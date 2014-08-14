@@ -1,6 +1,6 @@
 package io.provis.provision;
 
-import io.provis.model.ProvisioModel;
+import io.provis.model.v2.Runtime;
 
 // The provisioning result should carry with it:
 // what artifacts have been resolved and where they live
@@ -13,13 +13,13 @@ import io.provis.model.ProvisioModel;
 // allow for easy submission of problems
 
 public class ProvisioningResult {
-  private ProvisioModel assembly;
+  private Runtime assembly;
 
-  public ProvisioningResult(ProvisioModel assembly) {
+  public ProvisioningResult(Runtime assembly) {
     this.assembly = assembly;
   }
 
-  public ProvisioModel getAssembly() {
+  public Runtime getAssembly() {
     return assembly;
   }
 }
