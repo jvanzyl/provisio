@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component-set>
+  <components>
+    <component>
+      <role>org.apache.maven.lifecycle.mapping.LifecycleMapping</role>
+      <role-hint>provisio</role-hint>
+      <implementation>org.apache.maven.lifecycle.mapping.DefaultLifecycleMapping</implementation>
+      <configuration>
+        <lifecycles>
+          <lifecycle>
+            <id>default</id>
+            <phases>
+              <package>
+                io.takari.maven.plugins:provisio-maven-plugin:${project.version}:provision
+              </package>
+              <install>
+                io.takari.maven.plugins:takari-lifecycle-plugin:${takariLifecyclePluginVersion}:install
+              </install>
+              <deploy>
+                io.takari.maven.plugins:takari-lifecycle-plugin:${takariLifecyclePluginVersion}:deploy
+              </deploy>
+            </phases>
+          </lifecycle>
+        </lifecycles>
+      </configuration>
+    </component>        
+  </components>
+</component-set>

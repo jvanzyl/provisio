@@ -1,18 +1,16 @@
 package io.tesla.maven.plugins.provisio;
 
-import io.provis.model.ArtifactSet;
-import io.provis.model.ProvisioArtifact;
 import io.provis.model.Runtime;
 import io.provis.model.io.RuntimeReader;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
@@ -22,14 +20,18 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 
-@Singleton
-@Named("ProvisioLifecycleParticipant")
-public class ProvisioLifecycleParticipant extends AbstractMavenLifecycleParticipant {
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
-  @Inject
-  private RuntimeReader parser;
+@Singleton
+@Named("ProvisioningLifecycleParticipant")
+public class ProvisioningLifecycleParticipant extends AbstractMavenLifecycleParticipant {
+
+  private static final String DEFAULT_DESCRIPTOR_DIRECTORY = "src/main/provisio";
+  private static final String DESCRIPTOR_DIRECTORY_CONFIG_ELEMENT = "descriptorDirectory";
 
   protected String getPluginId() {
     return "provisio-maven-plugin";
@@ -37,16 +39,17 @@ public class ProvisioLifecycleParticipant extends AbstractMavenLifecycleParticip
 
   @Override
   public void afterProjectsRead(MavenSession session) throws MavenExecutionException {
-
+    
+    /*
+    
     Map<String, MavenProject> projectMap = new HashMap<String, MavenProject>();
     for (MavenProject project : session.getProjects()) {
       projectMap.put(project.getGroupId() + ":" + project.getArtifactId(), project);
     }
-    
     for (MavenProject project : session.getProjects()) {
       for (Plugin plugin : project.getBuild().getPlugins()) {
         if (plugin.getArtifactId().equals(getPluginId())) {
-          Set<String> dependenciesInGAForm = process(project, plugin);
+          Set<String> dependenciesInGAForm = gleanDependenciesFromExternalResource(session, project, plugin);
           if (dependenciesInGAForm != null) {
             //
             // If we see a dependency here on a project that is in the reactor then we need
@@ -66,34 +69,38 @@ public class ProvisioLifecycleParticipant extends AbstractMavenLifecycleParticip
           }
         }
       }
-    }
+    } 
+    
+    */
   }
 
-  protected Set<String> process(MavenProject project, Plugin plugin) {
+  //
+  // We need to store the assembly models for each project
+  //
+  protected Set<String> gleanDependenciesFromExternalResource(MavenSession session, MavenProject project, Plugin plugin) throws MavenExecutionException {
+    File descriptorDirectory;
     Xpp3Dom configuration = getMojoConfiguration(plugin);
-    File runtimeDescriptor = new File(project.getBasedir(), configuration.getChild("runtimeDescriptor").getValue());
-    Runtime assembly = null;
-    try {
-      assembly = parser.read(new FileInputStream(runtimeDescriptor));
-    } catch (Exception e) {
-      e.printStackTrace();
-      return null;
+    if (configuration != null && configuration.getChild(DESCRIPTOR_DIRECTORY_CONFIG_ELEMENT) != null) {
+      descriptorDirectory = new File(project.getBasedir(), configuration.getChild(DESCRIPTOR_DIRECTORY_CONFIG_ELEMENT).getValue());
+    } else {
+      descriptorDirectory = new File(project.getBasedir(), DEFAULT_DESCRIPTOR_DIRECTORY);
     }
-
-    Set<String> dependenciesInGAForm = new HashSet<String>();
-    for (ArtifactSet fileSet : assembly.getArtifactSets()) {
-      for (ProvisioArtifact gaDependency : fileSet.getArtifactMap().values()) {
-        dependenciesInGAForm.add(gaDependency.getGA());
-      }
-      if (fileSet.getArtifactSets() != null) {
-        for (ArtifactSet childFileSet : fileSet.getArtifactSets()) {
-          for (ProvisioArtifact gaDependency : childFileSet.getArtifactMap().values()) {
-            dependenciesInGAForm.add(gaDependency.getGA());
-          }
-        }
+    //
+    // For all our descriptors we need to find all the artifacts requested that might refer to projects
+    // in the current build so we can influence build ordering.
+    //
+    Set<String> dependencyCoordinatesInGAForm = Sets.newHashSet();
+    List<File> descriptors = findDescriptors(descriptorDirectory);
+    for (File descriptor : descriptors) {
+      try {
+        RuntimeReader parser = new RuntimeReader();
+        Runtime assembly = parser.read(new FileInputStream(descriptor));
+        dependencyCoordinatesInGAForm.addAll(assembly.getGACoordinatesOfArtifacts());
+      } catch (Exception e) {
+        throw new MavenExecutionException("Error reading provisioning descriptors.", e);
       }
     }
-    return dependenciesInGAForm;
+    return dependencyCoordinatesInGAForm;
   }
 
   protected Xpp3Dom getMojoConfiguration(Plugin plugin) {
@@ -107,7 +114,20 @@ public class ProvisioLifecycleParticipant extends AbstractMavenLifecycleParticip
     }
     return configuration;
   }
+
   //
   // DefaultMavenPluginManager.populatePluginFields, this is what we want the same behaviour from
   //
+
+  private List<File> findDescriptors(File descriptorDirectory) {
+    List<File> descriptors = Lists.newArrayList();
+    if (descriptorDirectory.exists()) {
+      try {
+        return FileUtils.getFiles(descriptorDirectory, "*.xml", null);
+      } catch (IOException e) {
+        // ignore
+      }
+    }
+    return descriptors;
+  }
 }

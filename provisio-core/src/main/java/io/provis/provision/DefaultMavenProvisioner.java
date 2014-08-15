@@ -55,7 +55,7 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
     //
     for (ArtifactSet fileSet : request.getModel().getArtifactSets()) {
       try {
-        processFileSet(request, context, fileSet);
+        processArtifactSet(request, context, fileSet);
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
@@ -69,14 +69,8 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
     return new ProvisioningResult(request.getRuntime());
   }
 
-  private void processFileSet(ProvisioningRequest request, ProvisioningContext context, ArtifactSet artifactSet) throws Exception {
-
-    artifactSet.setOutputDirectory(new File(request.getOutputDirectory(), artifactSet.getDirectory()));
-
-    if (!artifactSet.getOutputDirectory().exists()) {
-      artifactSet.getOutputDirectory().mkdirs();
-    }
-
+  private void processArtifactSet(ProvisioningRequest request, ProvisioningContext context, ArtifactSet artifactSet) throws Exception {
+    
     resolveFileSetOutputDirectory(request, context, artifactSet);
     resolveFileSetArtifacts(request, context, artifactSet);
     processArtifactsWithActions(context, artifactSet);
@@ -84,21 +78,24 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
 
     if (artifactSet.getArtifactSets() != null) {
       for (ArtifactSet childFileSet : artifactSet.getArtifactSets()) {
-        processFileSet(request, context, childFileSet);
+        processArtifactSet(request, context, childFileSet);
       }
     }
   }
 
-  private void resolveFileSetOutputDirectory(ProvisioningRequest request, ProvisioningContext context, ArtifactSet fileSet) {
-    ArtifactSet parent = fileSet.getParent();
+  private void resolveFileSetOutputDirectory(ProvisioningRequest request, ProvisioningContext context, ArtifactSet artifactSet) {
+    ArtifactSet parent = artifactSet.getParent();
     if (parent != null) {
-      fileSet.setOutputDirectory(new File(parent.getOutputDirectory(), fileSet.getDirectory()));
+      artifactSet.setOutputDirectory(new File(parent.getOutputDirectory(), artifactSet.getDirectory()));
     } else {
-      if (fileSet.getDirectory().equals("root")) {
-        fileSet.setOutputDirectory(request.getOutputDirectory());
+      if (artifactSet.getDirectory().equals("root") || artifactSet.getDirectory().equals("/")) {
+        artifactSet.setOutputDirectory(request.getOutputDirectory());
       } else {
-        fileSet.setOutputDirectory(new File(request.getOutputDirectory(), fileSet.getDirectory()));
+        artifactSet.setOutputDirectory(new File(request.getOutputDirectory(), artifactSet.getDirectory()));
       }
+    }    
+    if (!artifactSet.getOutputDirectory().exists()) {
+      artifactSet.getOutputDirectory().mkdirs();
     }
   }
 

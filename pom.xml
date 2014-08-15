@@ -158,6 +158,15 @@
   </dependencyManagement>
 
   <build>
+   <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+      <resource>
+        <directory>src/main/resources-filtered</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>  
     <pluginManagement>
       <plugins>
         <plugin>

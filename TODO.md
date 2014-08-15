@@ -1,8 +1,23 @@
-- how to structure provisioning action, what to use for populating configuration
-  - here i think that using xstream and passing it information to instantiate and configure new actions would be cool
-- separate model from runtime model
+- synchronize the participant with the plugin
+  - test the ordering in the reactor
+- specify way to make the archive and attach properly
+- use provisio for the presto plugins
+- add action to copy files into the runtime
+- make the action descriptors more pluggable
+- add tests for the execution of plugins
+- create a test plugin
+- catch version parsing errors and report them correctly
 - use mustache for filtering
 - make TDM 
+- allow consulting the dependency management section (done)
+- support ${project.groupId|artifactId|version} (done)
+- easy way to include the project you are building (done)
+- find the provisioning files automatically without configuration (done)
+- create a packging for provisio (done)
+
+- how to structure provisioning action, what to use for populating configuration (done)
+  - here i think that using xstream and passing it information to instantiate and configure new actions would be cool
+- separate model from runtime model (done)
 
 ## Maven
 

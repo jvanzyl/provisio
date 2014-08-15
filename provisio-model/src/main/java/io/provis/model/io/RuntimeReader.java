@@ -22,13 +22,19 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 
 public class RuntimeReader {
 
-  private XStream xstream;
+  private final XStream xstream;
+  private final List<ActionDescriptor> actions;
+  private final Map<String, String> versionMap;
 
   public RuntimeReader() {
-    this(Collections.<ActionDescriptor> emptyList());
+    this(Collections.<ActionDescriptor> emptyList(), Collections.<String, String> emptyMap());
   }
 
   public RuntimeReader(List<ActionDescriptor> actions) {
+    this(actions, Collections.<String, String> emptyMap());
+  }
+
+  public RuntimeReader(List<ActionDescriptor> actions, Map<String, String> versionMap) {
     xstream = new XStream();
     xstream.alias("runtime", Runtime.class);
     xstream.useAttributeFor(Runtime.class, "id");
@@ -48,6 +54,9 @@ public class RuntimeReader {
         xstream.useAttributeFor(action.getImplementation(), attributeForProperty);
       }
     }
+    
+    this.actions = actions;
+    this.versionMap = versionMap;
   }
 
   public Runtime read(InputStream inputStream, Map<String, String> variables) {
@@ -60,12 +69,14 @@ public class RuntimeReader {
 
   public class ArtifactConverter implements Converter {
     private Map<String, ActionDescriptor> actionMap;
+
     public ArtifactConverter(List<ActionDescriptor> actions) {
       this.actionMap = Maps.newHashMap();
       for (ActionDescriptor actionDescriptor : actions) {
         actionMap.put(actionDescriptor.getName(), actionDescriptor);
       }
     }
+
     @Override
     public boolean canConvert(Class type) {
       if (ProvisioArtifact.class.isAssignableFrom(type)) {
@@ -73,12 +84,41 @@ public class RuntimeReader {
       }
       return false;
     }
+
     @Override
     public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
     }
+
     @Override
     public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-      String coordinate = reader.getAttribute("id");
+      //
+      // Coordinates have the following form:
+      //
+      // <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>
+      //
+      // If the user is specifying versionless coordinates they are expecting to glean the version from their dependency
+      // management system, like in Maven
+      //
+      String coordinate = reader.getAttribute("id");      
+      int coordinateSegments = coordinate.length() - coordinate.replace(":", "").length() + 1;
+      if(coordinateSegments == 2) {
+        //
+        // We only have groupId:artifactId where the extension defaults to "jar" which we need to add because the
+        // versionMap is created with the full versionless coordinate.
+        //
+        coordinate += ":jar";
+      }
+      //
+      // Look at the last element of coordinate and determine if it's a version. If it's not then we need to consult
+      // the versionMap to find the appropriate version.
+      //
+      String lastElement = coordinate.substring(coordinate.lastIndexOf(":") + 1);
+      if(!Character.isDigit(lastElement.charAt(0))) {
+        String version  = versionMap.get(coordinate);
+        if(version != null) {
+          coordinate += ":" + version;
+        }
+      }
       ProvisioArtifact artifact = new ProvisioArtifact(coordinate);
       while (reader.hasMoreChildren()) {
         reader.moveDown();
