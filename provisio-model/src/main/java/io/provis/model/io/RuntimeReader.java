@@ -8,7 +8,6 @@ import io.provis.model.Runtime;
 
 import java.io.InputStream;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +22,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 public class RuntimeReader {
 
   private final XStream xstream;
-  private final List<ActionDescriptor> actions;
+  private final Map<String, ActionDescriptor> actionMap;
   private final Map<String, String> versionMap;
 
   public RuntimeReader() {
@@ -36,6 +35,7 @@ public class RuntimeReader {
 
   public RuntimeReader(List<ActionDescriptor> actions, Map<String, String> versionMap) {
     xstream = new XStream();
+    xstream.alias("assembly", Runtime.class);
     xstream.alias("runtime", Runtime.class);
     xstream.useAttributeFor(Runtime.class, "id");
     xstream.addImplicitCollection(Runtime.class, "artifactSets");
@@ -46,17 +46,25 @@ public class RuntimeReader {
 
     xstream.alias("artifact", ProvisioArtifact.class);
 
-    xstream.registerConverter(new MapToAttributesConverter());
-    xstream.registerConverter(new ArtifactConverter(actions));
+    xstream.registerConverter(new RuntimeConverter());
+    xstream.registerConverter(new ArtifactConverter());
 
     for (ActionDescriptor action : actions) {
+
+      // Runtime actions
+      // xstream.alias(action.getName(), action.getImplementation());
+
+      // Inform XStream about the attributes we care about for this action
       for (String attributeForProperty : action.attributes()) {
         xstream.useAttributeFor(action.getImplementation(), attributeForProperty);
       }
     }
-    
-    this.actions = actions;
+
     this.versionMap = versionMap;
+    this.actionMap = Maps.newHashMap();
+    for (ActionDescriptor actionDescriptor : actions) {
+      this.actionMap.put(actionDescriptor.getName(), actionDescriptor);
+    }
   }
 
   public Runtime read(InputStream inputStream, Map<String, String> variables) {
@@ -67,15 +75,42 @@ public class RuntimeReader {
     return (Runtime) xstream.fromXML(inputStream);
   }
 
-  public class ArtifactConverter implements Converter {
-    private Map<String, ActionDescriptor> actionMap;
+  public class RuntimeConverter implements Converter {
 
-    public ArtifactConverter(List<ActionDescriptor> actions) {
-      this.actionMap = Maps.newHashMap();
-      for (ActionDescriptor actionDescriptor : actions) {
-        actionMap.put(actionDescriptor.getName(), actionDescriptor);
+    @Override
+    public boolean canConvert(Class type) {
+      if (Runtime.class.isAssignableFrom(type)) {
+        return true;
       }
+      return false;
     }
+
+    @Override
+    public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+    }
+
+    @Override
+    public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+      Runtime runtime = new Runtime();
+      while (reader.hasMoreChildren()) {
+        reader.moveDown();
+        if (reader.getNodeName().equals("artifactSet")) {
+          runtime.addArtifactSet((ArtifactSet) context.convertAnother(runtime, ArtifactSet.class));
+        } else {
+          // We have an arbitrary action
+          String actionName = reader.getNodeName();
+          ActionDescriptor actionDescriptor = actionMap.get(actionName);
+          if (actionDescriptor != null) {
+            runtime.addAction((ProvisioningAction) context.convertAnother(runtime, actionDescriptor.getImplementation()));
+          }
+        }
+        reader.moveUp();
+      }
+      return runtime;
+    }
+  }
+
+  public class ArtifactConverter implements Converter {
 
     @Override
     public boolean canConvert(Class type) {
@@ -99,9 +134,9 @@ public class RuntimeReader {
       // If the user is specifying versionless coordinates they are expecting to glean the version from their dependency
       // management system, like in Maven
       //
-      String coordinate = reader.getAttribute("id");      
+      String coordinate = reader.getAttribute("id");
       int coordinateSegments = coordinate.length() - coordinate.replace(":", "").length() + 1;
-      if(coordinateSegments == 2) {
+      if (coordinateSegments == 2) {
         //
         // We only have groupId:artifactId where the extension defaults to "jar" which we need to add because the
         // versionMap is created with the full versionless coordinate.
@@ -113,9 +148,9 @@ public class RuntimeReader {
       // the versionMap to find the appropriate version.
       //
       String lastElement = coordinate.substring(coordinate.lastIndexOf(":") + 1);
-      if(!Character.isDigit(lastElement.charAt(0))) {
-        String version  = versionMap.get(coordinate);
-        if(version != null) {
+      if (!Character.isDigit(lastElement.charAt(0))) {
+        String version = versionMap.get(coordinate);
+        if (version != null) {
           coordinate += ":" + version;
         }
       }
@@ -130,35 +165,6 @@ public class RuntimeReader {
         reader.moveUp();
       }
       return artifact;
-    }
-  }
-
-  public class MapToAttributesConverter implements Converter {
-
-    @Override
-    @SuppressWarnings("rawtypes")
-    public boolean canConvert(Class type) {
-      return Map.class.isAssignableFrom(type);
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-      Map<String, String> map = (Map<String, String>) source;
-      for (Map.Entry<String, String> entry : map.entrySet()) {
-        writer.addAttribute(entry.getKey(), entry.getValue().toString());
-      }
-    }
-
-    @Override
-    public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-      Map<String, String> map = new HashMap<String, String>();
-      for (int i = 0; i < reader.getAttributeCount(); i++) {
-        String key = reader.getAttributeName(i);
-        String value = reader.getAttribute(key);
-        map.put(key, value);
-      }
-      return map;
     }
   }
 }

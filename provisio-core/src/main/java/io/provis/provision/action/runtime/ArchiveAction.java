@@ -8,11 +8,10 @@ import java.io.File;
 
 import javax.inject.Named;
 
-@Named("archive")
 public class ArchiveAction implements ProvisioningAction {
 
-  private File runtimeDirectory;
   private String name;
+  private File runtimeDirectory;
   
   public void execute(ProvisioningContext context) {
     Archiver archiver = Archiver.builder().build();

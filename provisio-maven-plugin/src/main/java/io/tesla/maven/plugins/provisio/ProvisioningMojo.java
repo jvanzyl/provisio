@@ -8,6 +8,7 @@ import io.provis.provision.MavenProvisioner;
 import io.provis.provision.ProvisioningRequest;
 import io.provis.provision.ProvisioningResult;
 import io.provis.provision.action.artifact.UnpackAction;
+import io.provis.provision.action.runtime.ArchiveAction;
 import io.takari.incrementalbuild.Incremental;
 import io.takari.incrementalbuild.Incremental.Configuration;
 
@@ -123,6 +124,24 @@ public class ProvisioningMojo extends AbstractMojo {
         };
       }
     });
+    actionDescriptors.add(new ActionDescriptor() {
+      @Override
+      public String getName() {
+        return "archive";
+      }
+
+      @Override
+      public Class<?> getImplementation() {
+        return ArchiveAction.class;
+      }
+
+      @Override
+      public String[] attributes() {
+        return new String[] {
+            "name"
+        };
+      }
+    });    
     return actionDescriptors;
   }
 

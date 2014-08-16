@@ -76,4 +76,9 @@ public class ArtifactSet {
     }
     return artifactMap;
   }
+
+  @Override
+  public String toString() {
+    return "ArtifactSet [directory=" + directory + ", artifacts=" + artifacts + "]";
+  }
 }

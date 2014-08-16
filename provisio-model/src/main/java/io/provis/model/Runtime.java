@@ -4,15 +4,29 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.Lists;
+
 public class Runtime {
 
   private String id;
+  private List<ProvisioningAction> actions;
   private List<ArtifactSet> artifactSets;
 
   public String getId() {
     return id;
   }
 
+  public List<ProvisioningAction> getActions() {
+    return actions;
+  }
+  
+  public void addAction(ProvisioningAction action) {
+    if(actions == null) {
+      actions = Lists.newArrayList();
+    }
+    actions.add(action);
+  }
+  
   public List<ArtifactSet> getArtifactSets() {
     return artifactSets;
   }
@@ -32,5 +46,12 @@ public class Runtime {
       }
     }
     return dependenciesInGAForm;
+  }
+
+  public void addArtifactSet(ArtifactSet artifactSet) {
+    if(artifactSets == null) {
+      artifactSets = Lists.newArrayList();
+    }
+    artifactSets.add(artifactSet);
   }
 }
