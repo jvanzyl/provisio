@@ -1,11 +1,11 @@
 package io.provis.assembly;
 
 import io.provis.model.ProvisioArtifact;
+import io.provis.model.ProvisioningRequest;
+import io.provis.model.ProvisioningResult;
 import io.provis.model.Runtime;
 import io.provis.model.io.RuntimeReader;
 import io.provis.provision.MavenProvisioner;
-import io.provis.provision.ProvisioningRequest;
-import io.provis.provision.ProvisioningResult;
 
 import java.io.File;
 import java.io.FileInputStream;

@@ -1,0 +1,66 @@
+<runtime id="presto">
+  
+  <!-- Launcher -->
+  
+  <artifactSet to="bin">
+    <artifact id="io.airlift:launcher:tar.gz:bin:${airshipVersion}">
+      <unpack/>
+    </artifact>
+    <artifact id="io.airlift:launcher:tar.gz:properties:${airshipVersion}">
+      <unpack filter="true"/>
+    </artifact>
+  </artifactSet>
+  
+  <!-- Server -->
+  
+  <artifactSet to="lib">
+    <artifact id="com.facebook.presto:presto-main:${prestoVersion}"/>
+  </artifactSet>
+
+  <!-- Plugins -->
+      
+  <artifactSet to="plugin/raptor">
+    <artifact id="com.facebook.presto:presto-raptor:zip:${prestoVersion}">
+      <unpack/>
+    </artifact>
+  </artifactSet>
+
+  <artifactSet to="plugin/tpch">
+    <artifact id="com.facebook.presto:presto-tpch:zip:${prestoVersion}">
+      <unpack/>
+    </artifact>
+  </artifactSet>
+
+  <artifactSet to="plugin/hive-hadoop1">
+    <artifact id="com.facebook.presto:presto-hive-hadoop1:zip:${prestoVersion}">
+      <unpack/>
+    </artifact>
+  </artifactSet>
+
+  <artifactSet to="plugin/hive-hadoop2">
+    <artifact id="com.facebook.presto:presto-hive-hadoop2:zip:${prestoVersion}">
+      <unpack/>
+    </artifact>
+  </artifactSet>
+
+  <artifactSet to="plugin/hive-cdh4">
+    <artifact id="com.facebook.presto:presto-hive-cdh4:zip:${prestoVersion}">
+      <unpack/>
+    </artifact>
+  </artifactSet>
+
+  <artifactSet to="plugin/cassandra">
+    <artifact id="com.facebook.presto:presto-cassandra:zip:${prestoVersion}">
+      <unpack/>
+    </artifact>
+  </artifactSet>
+
+  <artifactSet to="plugin/example-http">
+    <artifact id="com.facebook.presto:presto-example-http:zip:${prestoVersion}">
+      <unpack/>
+    </artifact>
+  </artifactSet>
+  
+  <archive name="foo.zip"/>
+  
+</runtime>

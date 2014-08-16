@@ -11,6 +11,7 @@ public class ArtifactSet {
   // parse time
   private String directory;
   private List<ProvisioArtifact> artifacts;
+  private List<Resource> resources;
   // children
   private List<ArtifactSet> artifactSets;
   private List<String> excludes;
@@ -29,6 +30,10 @@ public class ArtifactSet {
     return artifacts;
   }
 
+  public List<Resource> getResources() {
+    return resources;
+  }
+  
   public List<ArtifactSet> getArtifactSets() {
     return artifactSets;
   }
@@ -65,8 +70,6 @@ public class ArtifactSet {
     this.resolvedArtifacts = resolvedArtifacts;
   }
 
-  Lookup lookup = new Lookup();
-    
   public Map<String, ProvisioArtifact> getArtifactMap() {
     if(artifactMap == null) {
       artifactMap = new LinkedHashMap<String, ProvisioArtifact>();

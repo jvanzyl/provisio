@@ -5,6 +5,9 @@ import io.provis.model.Lookup;
 import io.provis.model.ProvisioArtifact;
 import io.provis.model.ProvisioningAction;
 import io.provis.model.ProvisioningContext;
+import io.provis.model.ProvisioningRequest;
+import io.provis.model.ProvisioningResult;
+import io.provis.model.Resource;
 import io.provis.provision.action.artifact.WriteToDiskAction;
 
 import java.io.File;
@@ -33,6 +36,7 @@ import org.eclipse.aether.util.filter.DependencyFilterUtils;
 import org.eclipse.aether.util.filter.ExclusionsDependencyFilter;
 
 import com.google.common.collect.Sets;
+import com.google.common.io.Files;
 
 public class DefaultMavenProvisioner implements MavenProvisioner {
 
@@ -48,8 +52,8 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
 
   public ProvisioningResult provision(ProvisioningRequest request) {
 
-    ProvisioningContext context = new ProvisioningContext();
-    context.setVariables(request.getVariables());
+    ProvisioningResult result = new ProvisioningResult();
+    ProvisioningContext context = new ProvisioningContext(request, result);
     //
     // We probably want to make sure all the operations can be done first
     //
@@ -66,7 +70,7 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    return new ProvisioningResult(request.getRuntime());
+    return result;
   }
 
   private void processArtifactSet(ProvisioningRequest request, ProvisioningContext context, ArtifactSet artifactSet) throws Exception {
@@ -74,6 +78,7 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
     resolveFileSetOutputDirectory(request, context, artifactSet);
     resolveFileSetArtifacts(request, context, artifactSet);
     processArtifactsWithActions(context, artifactSet);
+    resolveResourcesForArtifactSet(request, context, artifactSet);    
     processArtifactSetActions(context, artifactSet.getOutputDirectory(), artifactSet);
 
     if (artifactSet.getArtifactSets() != null) {
@@ -122,10 +127,26 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
     }
   }
 
+  private void resolveResourcesForArtifactSet(ProvisioningRequest request, ProvisioningContext context, ArtifactSet artifactSet) throws Exception {
+    for(Resource resource : artifactSet.getResources()) {
+      File source = new File(new File(request.getOutputDirectory(), "..").getCanonicalFile(), resource.getName());
+      if(!source.exists()) {
+        throw new RuntimeException(String.format("The specified file %s does not exist.", source));
+      }
+      File target = new File(artifactSet.getOutputDirectory(), resource.getName());
+      Files.copy(source, target);      
+    }
+  }
+  
+  
   //
   // Process actions that apply across the entire runtime installation
   //
   private void processRuntimeActions(ProvisioningRequest request, ProvisioningContext context) throws Exception {
+    for (ProvisioningAction action : request.getRuntime().getActions()) {
+      configureArtifactSetAction(action, request.getOutputDirectory());
+      action.execute(context);
+    }    
   }
 
   Lookup lookup = new Lookup();
@@ -153,10 +174,10 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
     }
   }
 
-  private void configureArtifactSetAction(ProvisioningAction action, File outputDirectory, String directory) {
-    lookup.setObjectProperty(action, "fileSetDirectory", new File(outputDirectory, directory));
-    lookup.setObjectProperty(action, "outputDirectory", new File(outputDirectory, directory));
-    lookup.setObjectProperty(action, "runtimeDirectory", outputDirectory);
+  private void configureArtifactSetAction(ProvisioningAction provisioningAction, File outputDirectory) {
+    lookup.setObjectProperty(provisioningAction, "fileSetDirectory", outputDirectory);
+    lookup.setObjectProperty(provisioningAction, "outputDirectory", outputDirectory);
+    lookup.setObjectProperty(provisioningAction, "runtimeDirectory", outputDirectory);
   }
 
   private void configureArtifactAction(ProvisioArtifact artifact, ProvisioningAction provisioningAction, File outputDirectory) {

@@ -4,13 +4,23 @@ import java.util.Map;
 
 public class ProvisioningContext {   
 
-  private Map<String,String> variables;
+  private final ProvisioningRequest request;
+  private final ProvisioningResult result;
 
-  public Map<String, String> getVariables() {
-    return variables;
+  public ProvisioningContext(ProvisioningRequest request, ProvisioningResult result) {
+    this.request = request;
+    this.result = result;
   }
 
-  public void setVariables(Map<String, String> variables) {
-    this.variables = variables;
+  public ProvisioningRequest getRequest() {
+    return request;
+  }
+  
+  public ProvisioningResult getResult() {
+    return result;
+  }
+  
+  public Map<String, String> getVariables() {
+    return request.getVariables();
   }
 }

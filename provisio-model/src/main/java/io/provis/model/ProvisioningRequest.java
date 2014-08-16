@@ -1,4 +1,4 @@
-package io.provis.provision;
+package io.provis.model;
 
 import io.provis.model.Runtime;
 

@@ -1,0 +1,12 @@
+<assembly id="presto-hive-cdh4">
+      
+  <artifactSet to="/">
+    <artifact id="com.facebook.presto.hadoop:hadoop-cdh4:1.0"/>
+    <artifact id="com.facebook.presto:presto-hive:1.0"/>
+    <resource name="http://takari.io/foo.txt"/>  
+    <file path="/path/to/file"/>  
+  </artifactSet>
+
+  <archive name="${project.artifactId}-${project.version}.zip"/>
+
+</assembly>

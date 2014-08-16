@@ -4,6 +4,7 @@ import io.provis.model.ActionDescriptor;
 import io.provis.model.ArtifactSet;
 import io.provis.model.ProvisioArtifact;
 import io.provis.model.ProvisioningAction;
+import io.provis.model.Resource;
 import io.provis.model.Runtime;
 
 import java.io.InputStream;
@@ -42,9 +43,16 @@ public class RuntimeReader {
 
     xstream.alias("artifactSet", ArtifactSet.class);
     xstream.aliasAttribute(ArtifactSet.class, "directory", "to");
-    xstream.addImplicitCollection(ArtifactSet.class, "artifacts");
-
     xstream.alias("artifact", ProvisioArtifact.class);
+    xstream.addImplicitCollection(ArtifactSet.class, "artifacts", "artifact", ProvisioArtifact.class);
+    // <resource name="http://takari.io/foo.txt"/>
+    xstream.alias("resource", Resource.class);
+    xstream.useAttributeFor(Resource.class, "name");
+    xstream.addImplicitCollection(ArtifactSet.class, "resources", "resource", Resource.class);
+    // <file path="/path/to/file/>
+    xstream.alias("file", Resource.class);
+    xstream.aliasAttribute(Resource.class, "name", "path");
+    xstream.addImplicitCollection(ArtifactSet.class, "resources", "file", Resource.class);
 
     xstream.registerConverter(new RuntimeConverter());
     xstream.registerConverter(new ArtifactConverter());
@@ -152,6 +160,8 @@ public class RuntimeReader {
         String version = versionMap.get(coordinate);
         if (version != null) {
           coordinate += ":" + version;
+        } else {
+          throw new RuntimeException(String.format("A version for %s cannot be found. You either need to specify one in your dependencyManagement section, or explicity set one in your assembly descriptor.", coordinate));
         }
       }
       ProvisioArtifact artifact = new ProvisioArtifact(coordinate);

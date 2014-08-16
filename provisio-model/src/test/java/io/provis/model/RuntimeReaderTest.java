@@ -162,6 +162,24 @@ public class RuntimeReaderTest {
     assertEquals("archive", runtime.getActions().get(0).getClass().getSimpleName().toLowerCase());
   }
 
+  @Test
+  public void validateRuntimeUsingFiles() throws IOException {
+    RuntimeReader reader = new RuntimeReader(actionDescriptors());
+    Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/assembly.xml")));
+    
+    List<ArtifactSet> artifactSets = runtime.getArtifactSets();
+    assertEquals(1, artifactSets.size());
+    
+    ArtifactSet artifactSet = artifactSets.get(0);
+    assertEquals("/", artifactSet.getDirectory());    
+    assertEquals(2, artifactSet.getArtifacts().size());
+    assertEquals(2, artifactSet.getResources().size());
+    Resource resource = artifactSet.getResources().get(0);
+    assertEquals("http://takari.io/foo.txt", resource.getName());
+    Resource file = artifactSet.getResources().get(1);
+    assertEquals("/path/to/file", file.getName());
+  }
+
   private List<ActionDescriptor> actionDescriptors() {
     List<ActionDescriptor> actionDescriptors = Lists.newArrayList();
     actionDescriptors.add(new ActionDescriptor() {

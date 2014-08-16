@@ -1,12 +1,12 @@
 package io.tesla.maven.plugins.provisio;
 
 import io.provis.model.ActionDescriptor;
+import io.provis.model.ProvisioningRequest;
+import io.provis.model.ProvisioningResult;
 import io.provis.model.Runtime;
 import io.provis.model.io.RuntimeReader;
 import io.provis.provision.DefaultMavenProvisioner;
 import io.provis.provision.MavenProvisioner;
-import io.provis.provision.ProvisioningRequest;
-import io.provis.provision.ProvisioningResult;
 import io.provis.provision.action.artifact.UnpackAction;
 import io.provis.provision.action.runtime.ArchiveAction;
 import io.takari.incrementalbuild.Incremental;
@@ -53,7 +53,7 @@ public class ProvisioningMojo extends AbstractMojo {
 
   @Inject
   private ArtifactHandlerManager artifactHandlerManager;
-  
+
   @Parameter(defaultValue = "${project}")
   @Incremental(configuration = Configuration.ignore)
   protected MavenProject project;
@@ -72,12 +72,12 @@ public class ProvisioningMojo extends AbstractMojo {
     for (File descriptor : descriptors) {
       RuntimeReader parser = new RuntimeReader(actionDescriptors(), versionMap(project));
       MavenProvisioner provisioner = new DefaultMavenProvisioner(repositorySystem, repositorySystemSession, project.getRemoteProjectRepositories());
-      Map<String,String> variables = Maps.newHashMap();
+      Map<String, String> variables = Maps.newHashMap();
       variables.putAll((Map) project.getProperties());
       variables.put("project.version", project.getVersion());
       variables.put("project.groupId", project.getArtifactId());
       variables.put("project.artifactId", project.getArtifactId());
-      
+
       Runtime runtime;
       try {
         runtime = parser.read(new FileInputStream(descriptor), variables);
@@ -89,6 +89,17 @@ public class ProvisioningMojo extends AbstractMojo {
       request.setModel(runtime);
       request.setVariables(variables);
       ProvisioningResult result = provisioner.provision(request);
+
+      //
+      // We need to distinguish between a mode of building a single project and producing a set of distributions
+      //
+      //for (File archives : result.getArchives()) {
+      //}
+      if (result.getArchives().size() == 1) {
+        File file = result.getArchives().get(0);
+        project.getArtifact().setFile(file);
+      }
+
     }
   }
 
@@ -138,10 +149,10 @@ public class ProvisioningMojo extends AbstractMojo {
       @Override
       public String[] attributes() {
         return new String[] {
-            "name"
+          "name"
         };
       }
-    });    
+    });
     return actionDescriptors;
   }
 
@@ -162,7 +173,7 @@ public class ProvisioningMojo extends AbstractMojo {
     // don't have to put versions in the descriptor when including the project being built.
     //
     versionMap.put(toVersionlessCoordinate(project), project.getVersion());
-    
+
     return versionMap;
   }
 
@@ -176,7 +187,7 @@ public class ProvisioningMojo extends AbstractMojo {
 
   public String toVersionlessCoordinate(MavenProject project) {
     String extension = artifactHandlerManager.getArtifactHandler(project.getPackaging()).getExtension();
-    StringBuffer sb = new StringBuffer().append(project.getGroupId()).append(":").append(project.getArtifactId()).append(":").append(extension);    
+    StringBuffer sb = new StringBuffer().append(project.getGroupId()).append(":").append(project.getArtifactId()).append(":").append(extension);
     return sb.toString();
   }
 }

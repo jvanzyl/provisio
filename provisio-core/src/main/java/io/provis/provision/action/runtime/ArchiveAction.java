@@ -16,7 +16,13 @@ public class ArchiveAction implements ProvisioningAction {
   public void execute(ProvisioningContext context) {
     Archiver archiver = Archiver.builder().build();
     try {
-      archiver.archive(new File(runtimeDirectory, "../" + name), runtimeDirectory);
+      File archive = new File(runtimeDirectory, "../" + name).getCanonicalFile();
+      archiver.archive(archive, runtimeDirectory);
+      //
+      // Right now this action has some special meaning it maybe shouldn't, but we need to know what archives are produced
+      // so that we can set/attach the artifacts in a MavenProject.
+      //
+      context.getResult().addArchive(archive);      
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

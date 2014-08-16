@@ -1,14 +1,19 @@
+- how to distinguish between a project producing a single output which is the primary artifact vs producing many secondary
 - synchronize the participant with the plugin
   - test the ordering in the reactor
-- specify way to make the archive and attach properly
 - use provisio for the presto plugins
-- add action to copy files into the runtime
+- allow for non-transitive resolution: <artifact id="g:a:v" transitive="false"/>
+- allow for exclusions at the artifact level, and artifact set level
 - make the action descriptors more pluggable
 - add tests for the execution of plugins
 - create a test plugin
 - catch version parsing errors and report them correctly
 - use mustache for filtering
 - make TDM 
+
+- specify way to make the archive and attach properly for a single archive (done)
+- add action to copy files into the runtime (done)
+- we have the case for a presto plugin where it produces a JAR that needs to be included in a final zip that is built. we want to refer to the JAR that is being built with no version so that it will be included but what we are producing is a zip file (done)
 - allow consulting the dependency management section (done)
 - support ${project.groupId|artifactId|version} (done)
 - easy way to include the project you are building (done)
