@@ -1,6 +1,6 @@
 package io.provis.testing;
 
-import io.tesla.aether.connector.AetherRepositoryConnectorFactory;
+import io.takari.aether.connector.AetherRepositoryConnectorFactory;
 
 import java.io.File;
 import java.io.IOException;
