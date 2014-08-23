@@ -43,7 +43,7 @@ public class ProvisioningRequest {
     this.localRepository = localRepository;
   }
 
-  public Runtime getModel() {
+  public Runtime getRuntimeModel() {
     return model;
   }
 

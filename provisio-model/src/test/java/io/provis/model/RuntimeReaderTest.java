@@ -3,6 +3,8 @@ package io.provis.model;
 import static org.junit.Assert.assertEquals;
 import io.provis.model.ProvisioArtifact;
 import io.provis.model.ProvisioningAction;
+import io.provis.model.action.Archive;
+import io.provis.model.action.Unpack;
 import io.provis.model.io.RuntimeReader;
 
 import java.io.File;
@@ -22,7 +24,7 @@ public class RuntimeReaderTest {
   @Test
   public void validateRuntimeReader() throws IOException {
     RuntimeReader reader = new RuntimeReader(actionDescriptors());
-    Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/presto.xml")));
+    Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/assembly.xml")));
     List<ArtifactSet> artifactSets = runtime.getArtifactSets();
     assertEquals(9, artifactSets.size());
     assertEquals("bin", artifactSets.get(0).getDirectory());
@@ -32,8 +34,8 @@ public class RuntimeReaderTest {
 
     List<ProvisioArtifact> artifacts = artifactSets.get(0).getArtifacts();
     assertEquals(2, artifacts.size());
-    assertEquals("io.airlift:launcher:tar.gz:bin:${airshipVersion}", artifacts.get(0).getCoordinate());
-    assertEquals("io.airlift:launcher:tar.gz:properties:${airshipVersion}", artifacts.get(1).getCoordinate());
+    assertEquals("io.airlift:launcher:tar.gz:bin:0.92", artifacts.get(0).getCoordinate());
+    assertEquals("io.airlift:launcher:tar.gz:properties:0.92", artifacts.get(1).getCoordinate());
 
     List<ProvisioningAction> actions = artifacts.get(0).getActions();
     assertEquals("unpack", actions.get(0).getClass().getSimpleName().toLowerCase());
@@ -45,7 +47,7 @@ public class RuntimeReaderTest {
     variables.put("airshipVersion", "0.92");
     variables.put("prestoVersion", "0.74");
     RuntimeReader reader = new RuntimeReader(actionDescriptors());
-    Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/presto.xml")), variables);
+    Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/assembly-with-variables.xml")), variables);
     List<ArtifactSet> artifactSets = runtime.getArtifactSets();
     assertEquals(9, artifactSets.size());
     assertEquals("bin", artifactSets.get(0).getDirectory());
@@ -71,7 +73,7 @@ public class RuntimeReaderTest {
     variables.put("airshipVersion", "0.92");
     variables.put("prestoVersion", "0.74");
     RuntimeReader reader = new RuntimeReader(actionDescriptors());
-    Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/presto.xml")), variables);
+    Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/assembly-with-variables.xml")), variables);
     List<ArtifactSet> artifactSets = runtime.getArtifactSets();
     assertEquals(9, artifactSets.size());
     assertEquals("bin", artifactSets.get(0).getDirectory());
@@ -111,7 +113,7 @@ public class RuntimeReaderTest {
     versionMap.put("com.facebook.presto:presto-example-http:zip", "0.74");
 
     RuntimeReader reader = new RuntimeReader(actionDescriptors(), versionMap);
-    Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/presto-no-versions.xml")), variables);
+    Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/assembly-no-versions.xml")), variables);
     List<ArtifactSet> artifactSets = runtime.getArtifactSets();
     assertEquals(9, artifactSets.size());
     assertEquals("bin", artifactSets.get(0).getDirectory());
@@ -138,7 +140,7 @@ public class RuntimeReaderTest {
     variables.put("airshipVersion", "0.92");
     variables.put("prestoVersion", "0.74");
     RuntimeReader reader = new RuntimeReader(actionDescriptors());
-    Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/presto-with-runtime-actions.xml")), variables);
+    Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/assembly-with-runtime-actions.xml")), variables);
     
     List<ArtifactSet> artifactSets = runtime.getArtifactSets();
     assertEquals(9, artifactSets.size());
@@ -163,21 +165,32 @@ public class RuntimeReaderTest {
   }
 
   @Test
-  public void validateRuntimeUsingFiles() throws IOException {
+  public void validateRuntimeUsingResourceSets() throws IOException {
     RuntimeReader reader = new RuntimeReader(actionDescriptors());
-    Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/assembly.xml")));
+    Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/assembly-with-resourcesets.xml")));
+    
+    ResourceSet resourceSet = runtime.getResourceSets().get(0);
+    assertEquals(1, resourceSet.getResources().size());
+    assertEquals("${project.artifactId}-${project.version}.jar", resourceSet.getResources().get(0).getName());
+    
+    assertEquals(1, runtime.getActions().size());
+    assertEquals("archive", runtime.getActions().get(0).getClass().getSimpleName().toLowerCase());
+  }
+
+  @Test
+  public void validateRuntimeUsingReferences() throws IOException {
+    RuntimeReader reader = new RuntimeReader(actionDescriptors());
+    Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/assembly-with-refs.xml")));
     
     List<ArtifactSet> artifactSets = runtime.getArtifactSets();
     assertEquals(1, artifactSets.size());
     
     ArtifactSet artifactSet = artifactSets.get(0);
     assertEquals("/", artifactSet.getDirectory());    
-    assertEquals(2, artifactSet.getArtifacts().size());
-    assertEquals(2, artifactSet.getResources().size());
-    Resource resource = artifactSet.getResources().get(0);
-    assertEquals("http://takari.io/foo.txt", resource.getName());
-    Resource file = artifactSet.getResources().get(1);
-    assertEquals("/path/to/file", file.getName());
+    assertEquals("runtime.classpath", artifactSet.getReference());
+
+    assertEquals(1, runtime.getActions().size());
+    assertEquals("archive", runtime.getActions().get(0).getClass().getSimpleName().toLowerCase());
   }
 
   private List<ActionDescriptor> actionDescriptors() {

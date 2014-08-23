@@ -1,0 +1,9 @@
+<assembly id="cassandra">
+      
+  <resourceSet to="/">
+    <resource name="${project.artifactId}-${project.version}.jar"/>
+  </resourceSet>
+
+  <archive name="${project.artifactId}-${project.version}.zip"/>
+
+</assembly>

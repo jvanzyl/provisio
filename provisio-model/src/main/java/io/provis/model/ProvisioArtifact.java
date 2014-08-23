@@ -37,6 +37,14 @@ public class ProvisioArtifact extends AbstractArtifact {
     return getGroupId() + ":" + getArtifactId() + ":" + getVersion();
   }
        
+  public String toVersionlessCoordinate() {
+    StringBuffer sb = new StringBuffer().append(getGroupId()).append(":").append(getArtifactId()).append(":").append(getExtension());
+    if (getClassifier() != null && getClassifier().isEmpty() == false) {
+      sb.append(":").append(getClassifier());
+    }
+    return sb.toString();
+  }  
+  
   public List<ProvisioningAction> getActions() {
     return actions;
   }

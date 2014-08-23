@@ -1,12 +1,64 @@
-<assembly id="presto-hive-cdh4">
-      
-  <artifactSet to="/">
-    <artifact id="com.facebook.presto.hadoop:hadoop-cdh4:1.0"/>
-    <artifact id="com.facebook.presto:presto-hive:1.0"/>
-    <resource name="http://takari.io/foo.txt"/>  
-    <file path="/path/to/file"/>  
+<runtime id="presto">
+  
+  <!-- Launcher -->
+  
+  <artifactSet to="bin">
+    <artifact id="io.airlift:launcher:tar.gz:bin:0.92">
+      <unpack/>
+    </artifact>
+    <artifact id="io.airlift:launcher:tar.gz:properties:0.92">
+      <unpack filter="true"/>
+    </artifact>
+  </artifactSet>
+  
+  <!-- Server -->
+  
+  <artifactSet to="lib">
+    <artifact id="com.facebook.presto:presto-main:0.74"/>
   </artifactSet>
 
-  <archive name="${project.artifactId}-${project.version}.zip"/>
+  <!-- Plugins -->
+      
+  <artifactSet to="plugin/raptor">
+    <artifact id="com.facebook.presto:presto-raptor:zip:0.74">
+      <unpack/>
+    </artifact>
+  </artifactSet>
 
-</assembly>
+  <artifactSet to="plugin/tpch">
+    <artifact id="com.facebook.presto:presto-tpch:zip:0.74">
+      <unpack/>
+    </artifact>
+  </artifactSet>
+
+  <artifactSet to="plugin/hive-hadoop1">
+    <artifact id="com.facebook.presto:presto-hive-hadoop1:zip:0.74">
+      <unpack/>
+    </artifact>
+  </artifactSet>
+
+  <artifactSet to="plugin/hive-hadoop2">
+    <artifact id="com.facebook.presto:presto-hive-hadoop2:zip:0.74">
+      <unpack/>
+    </artifact>
+  </artifactSet>
+
+  <artifactSet to="plugin/hive-cdh4">
+    <artifact id="com.facebook.presto:presto-hive-cdh4:zip:0.74">
+      <unpack/>
+    </artifact>
+  </artifactSet>
+
+  <artifactSet to="plugin/cassandra">
+    <artifact id="com.facebook.presto:presto-cassandra:zip:0.74">
+      <unpack/>
+    </artifact>
+  </artifactSet>
+
+  <artifactSet to="plugin/example-http">
+    <artifact id="com.facebook.presto:presto-example-http:zip:0.74">
+      <unpack/>
+    </artifact>
+  </artifactSet>
+  
+</runtime>

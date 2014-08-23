@@ -26,6 +26,7 @@
     <module>provisio-maven-plugin</module>
     <module>provisio-model</module>
     <module>provisio-nexus</module>
+    <module>provisio-testing</module>
   </modules>
 
   <properties>

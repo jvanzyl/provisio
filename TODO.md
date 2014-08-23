@@ -1,3 +1,4 @@
+- a way to test the provisioner with a real resolution setup and a repository and verify the output
 - how to distinguish between a project producing a single output which is the primary artifact vs producing many secondary
 - synchronize the participant with the plugin
   - test the ordering in the reactor
@@ -11,6 +12,7 @@
 - use mustache for filtering
 - make TDM 
 
+- add ${basedir} to support referencing resources correctly (done)
 - specify way to make the archive and attach properly for a single archive (done)
 - add action to copy files into the runtime (done)
 - we have the case for a presto plugin where it produces a JAR that needs to be included in a final zip that is built. we want to refer to the JAR that is being built with no version so that it will be included but what we are producing is a zip file (done)

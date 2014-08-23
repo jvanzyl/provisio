@@ -2,6 +2,7 @@ package io.tesla.maven.plugins.provisio;
 
 import io.provis.model.Runtime;
 import io.provis.model.io.RuntimeReader;
+import io.provis.provision.Actions;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,11 +12,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.MavenExecutionException;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
@@ -24,12 +27,22 @@ import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 @Singleton
 @Named("ProvisioningLifecycleParticipant")
 public class ProvisioningLifecycleParticipant extends AbstractMavenLifecycleParticipant {
 
+  private final Map<String,Runtime> runtimes;
+  private final ArtifactHandlerManager artifactHandlerManager;
+  
+  @Inject
+  public ProvisioningLifecycleParticipant(ArtifactHandlerManager artifactHandlerManager) {
+    this.artifactHandlerManager = artifactHandlerManager;
+    this.runtimes = Maps.newHashMap();
+  }
+  
   private static final String DEFAULT_DESCRIPTOR_DIRECTORY = "src/main/provisio";
   private static final String DESCRIPTOR_DIRECTORY_CONFIG_ELEMENT = "descriptorDirectory";
 
@@ -39,9 +52,6 @@ public class ProvisioningLifecycleParticipant extends AbstractMavenLifecyclePart
 
   @Override
   public void afterProjectsRead(MavenSession session) throws MavenExecutionException {
-    
-    /*
-    
     Map<String, MavenProject> projectMap = new HashMap<String, MavenProject>();
     for (MavenProject project : session.getProjects()) {
       projectMap.put(project.getGroupId() + ":" + project.getArtifactId(), project);
@@ -70,8 +80,6 @@ public class ProvisioningLifecycleParticipant extends AbstractMavenLifecyclePart
         }
       }
     } 
-    
-    */
   }
 
   //
@@ -89,18 +97,30 @@ public class ProvisioningLifecycleParticipant extends AbstractMavenLifecyclePart
     // For all our descriptors we need to find all the artifacts requested that might refer to projects
     // in the current build so we can influence build ordering.
     //
-    Set<String> dependencyCoordinatesInGAForm = Sets.newHashSet();
+    Set<String> dependencyCoordinatesInVersionlessForm = Sets.newHashSet();
     List<File> descriptors = findDescriptors(descriptorDirectory);
     for (File descriptor : descriptors) {
       try {
-        RuntimeReader parser = new RuntimeReader();
-        Runtime assembly = parser.read(new FileInputStream(descriptor));
-        dependencyCoordinatesInGAForm.addAll(assembly.getGACoordinatesOfArtifacts());
+        RuntimeReader parser = new RuntimeReader(Actions.defaultActionDescriptors(), versionMap(project));
+        Map<String, String> variables = Maps.newHashMap();
+        variables.putAll((Map) project.getProperties());
+        variables.put("project.version", project.getVersion());
+        variables.put("project.groupId", project.getArtifactId());
+        variables.put("project.artifactId", project.getArtifactId());
+        variables.put("basedir", project.getBasedir().getAbsolutePath());        
+        Runtime runtime = parser.read(new FileInputStream(descriptor), variables);
+        //
+        // Return all the artifacts that may have projects that contribute to the ordering of the project
+        // 
+        dependencyCoordinatesInVersionlessForm.addAll(runtime.getVersionlessCoordinatesOfArtifacts());
+        //
+        // Add
+        //
       } catch (Exception e) {
-        throw new MavenExecutionException("Error reading provisioning descriptors.", e);
+        throw new MavenExecutionException(String.format("Error reading provisioning descriptor %s for project %s.", descriptor, project.getArtifactId()), e);
       }
     }
-    return dependencyCoordinatesInGAForm;
+    return dependencyCoordinatesInVersionlessForm;
   }
 
   protected Xpp3Dom getMojoConfiguration(Plugin plugin) {
@@ -115,10 +135,6 @@ public class ProvisioningLifecycleParticipant extends AbstractMavenLifecyclePart
     return configuration;
   }
 
-  //
-  // DefaultMavenPluginManager.populatePluginFields, this is what we want the same behaviour from
-  //
-
   private List<File> findDescriptors(File descriptorDirectory) {
     List<File> descriptors = Lists.newArrayList();
     if (descriptorDirectory.exists()) {
@@ -130,4 +146,43 @@ public class ProvisioningLifecycleParticipant extends AbstractMavenLifecyclePart
     }
     return descriptors;
   }
+  
+  //
+  //
+  //
+  
+  //
+  // The version map to use when versions are not specified for the artifacts in the assembly/runtime document.
+  //
+  private Map<String, String> versionMap(MavenProject project) {
+    Map<String, String> versionMap = Maps.newHashMap();
+    if (!project.getDependencyManagement().getDependencies().isEmpty()) {
+      for (Dependency managedDependency : project.getDependencyManagement().getDependencies()) {
+        String versionlessCoordinate = toVersionlessCoordinate(managedDependency);
+        versionMap.put(versionlessCoordinate, managedDependency.getVersion());
+      }
+    }
+    //
+    // Add a map entry for the project itself in the event that its not in dependency management so that users
+    // don't have to put versions in the descriptor when including the project being built.
+    //
+    versionMap.put(toVersionlessCoordinate(project), project.getVersion());
+
+    return versionMap;
+  }
+
+  public String toVersionlessCoordinate(Dependency d) {
+    StringBuffer sb = new StringBuffer().append(d.getGroupId()).append(":").append(d.getArtifactId()).append(":").append(d.getType());
+    if (d.getClassifier() != null && d.getClassifier().isEmpty() == false) {
+      sb.append(":").append(d.getClassifier());
+    }
+    return sb.toString();
+  }
+
+  public String toVersionlessCoordinate(MavenProject project) {
+    String extension = artifactHandlerManager.getArtifactHandler(project.getPackaging()).getExtension();
+    StringBuffer sb = new StringBuffer().append(project.getGroupId()).append(":").append(project.getArtifactId()).append(":").append(extension);
+    return sb.toString();
+  }
+  
 }

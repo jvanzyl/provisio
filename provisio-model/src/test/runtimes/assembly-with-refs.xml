@@ -1,0 +1,7 @@
+<assembly id="cassandra">
+      
+  <artifactSet to="/" ref="runtime.classpath"/>
+
+  <archive name="${project.artifactId}-${project.version}.zip"/>
+
+</assembly>

@@ -8,6 +8,8 @@ import io.provis.model.ProvisioningContext;
 import io.provis.model.ProvisioningRequest;
 import io.provis.model.ProvisioningResult;
 import io.provis.model.Resource;
+import io.provis.model.ResourceSet;
+import io.provis.model.Runtime;
 import io.provis.provision.action.artifact.WriteToDiskAction;
 
 import java.io.File;
@@ -35,6 +37,7 @@ import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.util.filter.DependencyFilterUtils;
 import org.eclipse.aether.util.filter.ExclusionsDependencyFilter;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 
@@ -57,7 +60,7 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
     //
     // We probably want to make sure all the operations can be done first
     //
-    for (ArtifactSet fileSet : request.getModel().getArtifactSets()) {
+    for (ArtifactSet fileSet : request.getRuntimeModel().getArtifactSets()) {
       try {
         processArtifactSet(request, context, fileSet);
       } catch (Exception e) {
@@ -66,7 +69,7 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
     }
 
     try {
-      processRuntimeActions(request, context);
+      processRuntimeActions(context);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -74,12 +77,13 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
   }
 
   private void processArtifactSet(ProvisioningRequest request, ProvisioningContext context, ArtifactSet artifactSet) throws Exception {
-    
-    resolveFileSetOutputDirectory(request, context, artifactSet);
-    resolveFileSetArtifacts(request, context, artifactSet);
+
+    resolveArtifactSetOutputDirectory(context, artifactSet);
+    resolveArtifactSet(context, artifactSet);
     processArtifactsWithActions(context, artifactSet);
-    resolveResourcesForArtifactSet(request, context, artifactSet);    
-    processArtifactSetActions(context, artifactSet.getOutputDirectory(), artifactSet);
+    processArtifactSetActions(context, artifactSet);
+    // This needs to be removed as resourceSets and fileSets should be processed separately
+    processResourceSets(context, artifactSet);
 
     if (artifactSet.getArtifactSets() != null) {
       for (ArtifactSet childFileSet : artifactSet.getArtifactSets()) {
@@ -88,65 +92,49 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
     }
   }
 
-  private void resolveFileSetOutputDirectory(ProvisioningRequest request, ProvisioningContext context, ArtifactSet artifactSet) {
+  private void resolveArtifactSetOutputDirectory(ProvisioningContext context, ArtifactSet artifactSet) {
     ArtifactSet parent = artifactSet.getParent();
     if (parent != null) {
       artifactSet.setOutputDirectory(new File(parent.getOutputDirectory(), artifactSet.getDirectory()));
     } else {
       if (artifactSet.getDirectory().equals("root") || artifactSet.getDirectory().equals("/")) {
-        artifactSet.setOutputDirectory(request.getOutputDirectory());
+        artifactSet.setOutputDirectory(context.getRequest().getOutputDirectory());
       } else {
-        artifactSet.setOutputDirectory(new File(request.getOutputDirectory(), artifactSet.getDirectory()));
+        artifactSet.setOutputDirectory(new File(context.getRequest().getOutputDirectory(), artifactSet.getDirectory()));
       }
-    }    
+    }
     if (!artifactSet.getOutputDirectory().exists()) {
       artifactSet.getOutputDirectory().mkdirs();
     }
   }
 
-  private void resolveFileSetArtifacts(ProvisioningRequest request, ProvisioningContext context, ArtifactSet artifactSet) {
-    //
-    // Set Parent = [a, b, c]
-    // Set Child = [a, b, c, d, e, f]
-    //
-    // First we want to collect all the dependencies that a FileSet may yield.
-    //
-    // We want to use this first in a calculation of overlapping dependencies between FileSets that have a parent-->child relationship. We are making the assumption that a
-    // classloader relationship will be setup along the lines of the parent-->child relationship. So we only want to place in the child's directory the artifacts that
-    // are not present in the parent.
-    //
-    Set<ProvisioArtifact> artifacts = resolveArtifactSet(request, artifactSet);
-    ArtifactSet parent = artifactSet.getParent();
-    if (parent != null) {
-      Set<ProvisioArtifact> parentArtifacts = artifactSet.getParent().getResolvedArtifacts();
-      //Set<ProvisioArtifact> resolved = Maps.difference(artifacts, parentArtifacts).entriesOnlyOnLeft();      
-      Set<ProvisioArtifact> resolved = Sets.difference(artifacts, parentArtifacts);
-      artifactSet.setResolvedArtifacts(resolved);
-    } else {
-      artifactSet.setResolvedArtifacts(artifacts);
+  private void processResourceSets(ProvisioningContext context, ArtifactSet artifactSet) throws Exception {
+    List<ResourceSet> resourceSets = context.getRequest().getRuntime().getResourceSets();
+    if (resourceSets != null) {
+      for (ResourceSet resourceSet : resourceSets) {
+        for (Resource resource : resourceSet.getResources()) {
+          File source = new File(resource.getName());
+          if (!source.exists()) {
+            throw new RuntimeException(String.format("The specified file %s does not exist.", source));
+          }
+          File target = new File(artifactSet.getOutputDirectory(), source.getName());
+          Files.copy(source, target);
+        }
+      }
     }
   }
 
-  private void resolveResourcesForArtifactSet(ProvisioningRequest request, ProvisioningContext context, ArtifactSet artifactSet) throws Exception {
-    for(Resource resource : artifactSet.getResources()) {
-      File source = new File(new File(request.getOutputDirectory(), "..").getCanonicalFile(), resource.getName());
-      if(!source.exists()) {
-        throw new RuntimeException(String.format("The specified file %s does not exist.", source));
-      }
-      File target = new File(artifactSet.getOutputDirectory(), resource.getName());
-      Files.copy(source, target);      
-    }
-  }
-  
-  
   //
   // Process actions that apply across the entire runtime installation
   //
-  private void processRuntimeActions(ProvisioningRequest request, ProvisioningContext context) throws Exception {
-    for (ProvisioningAction action : request.getRuntime().getActions()) {
-      configureArtifactSetAction(action, request.getOutputDirectory());
-      action.execute(context);
-    }    
+  private void processRuntimeActions(ProvisioningContext context) throws Exception {
+    List<ProvisioningAction> runtimeActions = context.getRequest().getRuntime().getActions();
+    if (runtimeActions != null) {
+      for (ProvisioningAction action : runtimeActions) {
+        configureArtifactSetAction(action, context.getRequest().getOutputDirectory());
+        action.execute(context);
+      }
+    }
   }
 
   Lookup lookup = new Lookup();
@@ -154,7 +142,7 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
   //
   // Process actions that apply across filesets
   //
-  private void processArtifactSetActions(ProvisioningContext context, File outputDirectory, ArtifactSet artifactSet) throws Exception {
+  private void processArtifactSetActions(ProvisioningContext context, ArtifactSet artifactSet) throws Exception {
   }
 
   //
@@ -190,19 +178,42 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
   //
   // Resolving artifact sets
   //
-  public Set<ProvisioArtifact> resolveArtifactSet(ProvisioningRequest provisioningRequest, ArtifactSet fileSet) {
+  public Set<ProvisioArtifact> resolveArtifactSet(ProvisioningContext context, ArtifactSet artifactSet) {
 
     CollectRequest request = new CollectRequest();
     //
     // Resolve versions
     //
-    Map<String, ProvisioArtifact> artifacts = fileSet.getArtifactMap();
+    List<ProvisioArtifact> artifacts;
+    if (artifactSet.getReference() != null) {
+      Runtime runtime = context.getRequest().getRuntimeModel();
+      if (runtime.getArtifactSetReferences() == null) {
+        throw new RuntimeException(String.format("The reference '%s' is being requested but the artifactSet references are null.", artifactSet.getReference()));
+      }
 
-    for (ProvisioArtifact artifact : artifacts.values()) {
+      ArtifactSet referenceArtifactSet = runtime.getArtifactSetReferences().get(artifactSet.getReference());
+      if (referenceArtifactSet == null) {
+        throw new RuntimeException(String.format("The is no '%s' artifactSet reference available.", artifactSet.getReference()));
+      }
+      artifacts = referenceArtifactSet.getArtifacts();
+    } else {
+      artifacts = artifactSet.getArtifacts();
+    }
+
+    //
+    // Artifacts that have been handed to us that have been resolved or provided locally
+    //
+    List<ProvisioArtifact> providedArtifacts = Lists.newArrayList();
+    
+    for (ProvisioArtifact artifact : artifacts) {
+      
+      if(artifact.getFile() != null) {
+        providedArtifacts.add(artifact);
+        continue;
+      }
       //
       // <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>
       //
-
       // ArtifactType
       //
       // String id 
@@ -243,11 +254,11 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
     // Add an exclude filter if necessary
     //
     DependencyRequest dependencyRequest = new DependencyRequest(request, null);
-    if (fileSet.getExcludes() != null) {
-      dependencyRequest.setFilter(new ExclusionsDependencyFilter(fileSet.getExcludes()));
+    if (artifactSet.getExcludes() != null) {
+      dependencyRequest.setFilter(new ExclusionsDependencyFilter(artifactSet.getExcludes()));
     }
 
-    for (String coordinate : provisioningRequest.getManagedDependencies()) {
+    for (String coordinate : context.getRequest().getManagedDependencies()) {
       Artifact artifact = new ProvisioArtifact(coordinate);
       request.addManagedDependency(new Dependency(artifact, "runtime"));
     }
@@ -255,8 +266,8 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
     //
     // Treat the parent's resolved artifacts as set of managed dependencies for the child
     //
-    if (fileSet.getParent() != null && fileSet.getParent().getResolvedArtifacts() != null) {
-      for (Artifact artifact : fileSet.getParent().getResolvedArtifacts()) {
+    if (artifactSet.getParent() != null && artifactSet.getParent().getResolvedArtifacts() != null) {
+      for (Artifact artifact : artifactSet.getParent().getResolvedArtifacts()) {
         request.addManagedDependency(new Dependency(artifact, "runtime"));
       }
     }
@@ -264,6 +275,10 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
     List<Artifact> resultArtifacts;
     try {
       resultArtifacts = resolveArtifacts(dependencyRequest);
+      //
+      // We need to add back in the artifacts that have already been provided
+      //
+      resultArtifacts.addAll(providedArtifacts);
     } catch (DependencyResolutionException e) {
       throw new ProvisioningException(e.getMessage(), e);
     }
@@ -281,7 +296,26 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
       }
     }
 
-    fileSet.setResolvedArtifacts(resolvedArtifacts);
+    artifactSet.setResolvedArtifacts(resolvedArtifacts);
+
+    //
+    // Set Parent = [a, b, c]
+    // Set Child = [a, b, c, d, e, f]
+    //
+    // First we want to collect all the dependencies that a FileSet may yield.
+    //
+    // We want to use this first in a calculation of overlapping dependencies between FileSets that have a parent-->child relationship. We are making the assumption that a
+    // classloader relationship will be setup along the lines of the parent-->child relationship. So we only want to place in the child's directory the artifacts that
+    // are not present in the parent.
+    //    
+    ArtifactSet parent = artifactSet.getParent();
+    if (parent != null) {
+      Set<ProvisioArtifact> parentArtifacts = artifactSet.getParent().getResolvedArtifacts();
+      Set<ProvisioArtifact> resolved = Sets.difference(resolvedArtifacts, parentArtifacts);
+      artifactSet.setResolvedArtifacts(resolved);
+    } else {
+      artifactSet.setResolvedArtifacts(resolvedArtifacts);
+    }
 
     return resolvedArtifacts;
   }

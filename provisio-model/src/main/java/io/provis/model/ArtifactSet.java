@@ -6,26 +6,41 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.Lists;
+
 public class ArtifactSet {
-  
+
   // parse time
   private String directory;
+  private String reference;
+
   private List<ProvisioArtifact> artifacts;
   private List<Resource> resources;
   // children
   private List<ArtifactSet> artifactSets;
   private List<String> excludes;
-   
+
   // runtime
   private ArtifactSet parent;
   private File outputDirectory;
-  private Map<String, ProvisioArtifact> artifactMap;  
+  private Map<String, ProvisioArtifact> artifactMap;
   private Set<ProvisioArtifact> resolvedArtifacts;
-    
+
   public String getDirectory() {
     return directory;
   }
-  
+
+  public String getReference() {
+    return reference;
+  }
+
+  public void addArtifact(ProvisioArtifact artifact) {
+    if (artifacts == null) {
+      artifacts = Lists.newArrayList();
+    }
+    artifacts.add(artifact);
+  }
+
   public List<ProvisioArtifact> getArtifacts() {
     return artifacts;
   }
@@ -33,13 +48,13 @@ public class ArtifactSet {
   public List<Resource> getResources() {
     return resources;
   }
-  
+
   public List<ArtifactSet> getArtifactSets() {
     return artifactSets;
   }
 
   // runtime
-  
+
   public List<String> getExcludes() {
     return excludes;
   }
@@ -51,9 +66,9 @@ public class ArtifactSet {
   public void setOutputDirectory(File outputDirectory) {
     this.outputDirectory = outputDirectory;
   }
-  
+
   // maybe we can do this in the model
-  
+
   public ArtifactSet getParent() {
     return parent;
   }
@@ -71,11 +86,13 @@ public class ArtifactSet {
   }
 
   public Map<String, ProvisioArtifact> getArtifactMap() {
-    if(artifactMap == null) {
+    if (artifactMap == null) {
       artifactMap = new LinkedHashMap<String, ProvisioArtifact>();
+    }
+    if (artifacts != null) {
       for (ProvisioArtifact artifact : artifacts) {
         artifactMap.put(artifact.getCoordinate(), artifact);
-      }      
+      }
     }
     return artifactMap;
   }

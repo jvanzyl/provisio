@@ -2,12 +2,15 @@ package io.provis.model.io;
 
 import io.provis.model.ActionDescriptor;
 import io.provis.model.ArtifactSet;
+import io.provis.model.ResourceSet;
 import io.provis.model.ProvisioArtifact;
 import io.provis.model.ProvisioningAction;
 import io.provis.model.Resource;
 import io.provis.model.Runtime;
 
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -43,25 +46,20 @@ public class RuntimeReader {
 
     xstream.alias("artifactSet", ArtifactSet.class);
     xstream.aliasAttribute(ArtifactSet.class, "directory", "to");
+    xstream.aliasAttribute(ArtifactSet.class, "reference", "ref");
     xstream.alias("artifact", ProvisioArtifact.class);
-    xstream.addImplicitCollection(ArtifactSet.class, "artifacts", "artifact", ProvisioArtifact.class);
-    // <resource name="http://takari.io/foo.txt"/>
+    xstream.addImplicitCollection(ArtifactSet.class, "artifacts");
+
+    xstream.alias("resourceSet", ResourceSet.class);
+    xstream.addImplicitCollection(ResourceSet.class, "resources");
+    xstream.addImplicitCollection(Runtime.class, "resourceSets");
     xstream.alias("resource", Resource.class);
     xstream.useAttributeFor(Resource.class, "name");
-    xstream.addImplicitCollection(ArtifactSet.class, "resources", "resource", Resource.class);
-    // <file path="/path/to/file/>
-    xstream.alias("file", Resource.class);
-    xstream.aliasAttribute(Resource.class, "name", "path");
-    xstream.addImplicitCollection(ArtifactSet.class, "resources", "file", Resource.class);
 
     xstream.registerConverter(new RuntimeConverter());
     xstream.registerConverter(new ArtifactConverter());
 
     for (ActionDescriptor action : actions) {
-
-      // Runtime actions
-      // xstream.alias(action.getName(), action.getImplementation());
-
       // Inform XStream about the attributes we care about for this action
       for (String attributeForProperty : action.attributes()) {
         xstream.useAttributeFor(action.getImplementation(), attributeForProperty);
@@ -74,7 +72,7 @@ public class RuntimeReader {
       this.actionMap.put(actionDescriptor.getName(), actionDescriptor);
     }
   }
-
+    
   public Runtime read(InputStream inputStream, Map<String, String> variables) {
     return (Runtime) xstream.fromXML(new InterpolatingInputStream(inputStream, variables));
   }
@@ -104,6 +102,8 @@ public class RuntimeReader {
         reader.moveDown();
         if (reader.getNodeName().equals("artifactSet")) {
           runtime.addArtifactSet((ArtifactSet) context.convertAnother(runtime, ArtifactSet.class));
+        } else if (reader.getNodeName().equals("resourceSet")) {
+          runtime.addResourceSet((ResourceSet) context.convertAnother(runtime, ResourceSet.class));
         } else {
           // We have an arbitrary action
           String actionName = reader.getNodeName();
@@ -161,7 +161,8 @@ public class RuntimeReader {
         if (version != null) {
           coordinate += ":" + version;
         } else {
-          throw new RuntimeException(String.format("A version for %s cannot be found. You either need to specify one in your dependencyManagement section, or explicity set one in your assembly descriptor.", coordinate));
+          throw new RuntimeException(String.format(
+              "A version for %s cannot be found. You either need to specify one in your dependencyManagement section, or explicity set one in your assembly descriptor.", coordinate));
         }
       }
       ProvisioArtifact artifact = new ProvisioArtifact(coordinate);
@@ -177,4 +178,10 @@ public class RuntimeReader {
       return artifact;
     }
   }
+  
+  //
+  // Actions
+  //
+  
+  
 }
