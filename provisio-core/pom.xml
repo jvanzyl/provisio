@@ -81,7 +81,7 @@
     <dependency>
       <groupId>io.takari.aether</groupId>
       <artifactId>aether-connector-okhttp</artifactId>
-      <version>0.13.0-SNAPSHOT</version>
+      <version>0.13.0</version>
       <scope>test</scope>
     </dependency>    
     <dependency>
