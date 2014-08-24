@@ -11,7 +11,7 @@
 
   <groupId>io.provis</groupId>
   <artifactId>provisio</artifactId>
-  <version>0.1.1-SNAPSHOT</version>
+  <version>0.1.1</version>
   <packaging>pom</packaging>
   <name>Provisio</name>
 
@@ -48,12 +48,12 @@
       <dependency>
         <groupId>io.provis</groupId>
         <artifactId>provisio-core</artifactId>
-        <version>0.1.1-SNAPSHOT</version>
+        <version>0.1.1</version>
       </dependency>
       <dependency>
         <groupId>io.provis</groupId>
         <artifactId>provisio-model</artifactId>
-        <version>0.1.1-SNAPSHOT</version>
+        <version>0.1.1</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
