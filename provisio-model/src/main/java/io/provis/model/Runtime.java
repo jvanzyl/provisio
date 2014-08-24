@@ -19,7 +19,9 @@ public class Runtime {
   private Map<String, ArtifactSet> artifactSetReferences;
   // ResourceSets
   private List<ResourceSet> resourceSets;
-
+  // Variables
+  Map<String, String> variables;
+  
   public String getId() {
     return id;
   }
@@ -78,5 +80,13 @@ public class Runtime {
       resourceSets = Lists.newArrayList();
     }
     resourceSets.add(resourceSet);
+  }
+
+  public Map<String, String> getVariables() {
+    return variables;
+  }
+
+  public void setVariables(Map<String, String> variables) {
+    this.variables = variables;
   }
 }

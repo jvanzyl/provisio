@@ -74,7 +74,9 @@ public class RuntimeReader {
   }
     
   public Runtime read(InputStream inputStream, Map<String, String> variables) {
-    return (Runtime) xstream.fromXML(new InterpolatingInputStream(inputStream, variables));
+    Runtime runtime = (Runtime) xstream.fromXML(new InterpolatingInputStream(inputStream, variables));
+    runtime.setVariables(variables);    
+    return runtime;
   }
 
   public Runtime read(InputStream inputStream) {
