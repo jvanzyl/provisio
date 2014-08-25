@@ -37,6 +37,7 @@ import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.util.filter.DependencyFilterUtils;
 import org.eclipse.aether.util.filter.ExclusionsDependencyFilter;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
@@ -137,8 +138,6 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
     }
   }
 
-  Lookup lookup = new Lookup();
-
   //
   // Process actions that apply across filesets
   //
@@ -160,19 +159,6 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
         action.execute(context);
       }
     }
-  }
-
-  private void configureArtifactSetAction(ProvisioningAction provisioningAction, File outputDirectory) {
-    lookup.setObjectProperty(provisioningAction, "fileSetDirectory", outputDirectory);
-    lookup.setObjectProperty(provisioningAction, "outputDirectory", outputDirectory);
-    lookup.setObjectProperty(provisioningAction, "runtimeDirectory", outputDirectory);
-  }
-
-  private void configureArtifactAction(ProvisioArtifact artifact, ProvisioningAction provisioningAction, File outputDirectory) {
-    lookup.setObjectProperty(provisioningAction, "artifact", artifact);
-    lookup.setObjectProperty(provisioningAction, "fileSetDirectory", outputDirectory);
-    lookup.setObjectProperty(provisioningAction, "outputDirectory", outputDirectory);
-    lookup.setObjectProperty(provisioningAction, "runtimeDirectory", outputDirectory);
   }
 
   //
@@ -311,8 +297,11 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
     ArtifactSet parent = artifactSet.getParent();
     if (parent != null) {
       Set<ProvisioArtifact> parentArtifacts = artifactSet.getParent().getResolvedArtifacts();
-      Set<ProvisioArtifact> resolved = Sets.difference(resolvedArtifacts, parentArtifacts);
-      artifactSet.setResolvedArtifacts(resolved);
+      //
+      // contained by childArtifacts and not contained in parentArtifacts
+      //
+      Set<ProvisioArtifact> childResolvedArtifacts = Sets.difference(resolvedArtifacts, parentArtifacts);
+      artifactSet.setResolvedArtifacts(childResolvedArtifacts);
     } else {
       artifactSet.setResolvedArtifacts(resolvedArtifacts);
     }
@@ -357,5 +346,21 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
   public ArtifactType getArtifactType(String typeId) {
     return repositorySystemSession.getArtifactTypeRegistry().get(typeId);
   }
+  
+  // Configuring Actions, this needs to change
+  
+  Lookup lookup = new Lookup();
 
+  private void configureArtifactSetAction(ProvisioningAction provisioningAction, File outputDirectory) {
+    lookup.setObjectProperty(provisioningAction, "fileSetDirectory", outputDirectory);
+    lookup.setObjectProperty(provisioningAction, "outputDirectory", outputDirectory);
+    lookup.setObjectProperty(provisioningAction, "runtimeDirectory", outputDirectory);
+  }
+
+  private void configureArtifactAction(ProvisioArtifact artifact, ProvisioningAction provisioningAction, File outputDirectory) {
+    lookup.setObjectProperty(provisioningAction, "artifact", artifact);
+    lookup.setObjectProperty(provisioningAction, "fileSetDirectory", outputDirectory);
+    lookup.setObjectProperty(provisioningAction, "outputDirectory", outputDirectory);
+    lookup.setObjectProperty(provisioningAction, "runtimeDirectory", outputDirectory);
+  }
 }

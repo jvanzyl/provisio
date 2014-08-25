@@ -101,4 +101,17 @@ public class ArtifactSet {
   public String toString() {
     return "ArtifactSet [directory=" + directory + ", artifacts=" + artifacts + "]";
   }
+
+  //
+  // In order to set the parent references we use this technique: http://xstream.codehaus.org/faq.html#Serialization_initialize_transient
+  //
+  private Object readResolve() {
+    if (artifactSets != null) {
+      for (ArtifactSet child : artifactSets) {
+        child.setParent(this);
+      }
+    }
+    return this;
+  }
+
 }

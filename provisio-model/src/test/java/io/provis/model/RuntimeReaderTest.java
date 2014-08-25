@@ -1,8 +1,7 @@
 package io.provis.model;
 
 import static org.junit.Assert.assertEquals;
-import io.provis.model.ProvisioArtifact;
-import io.provis.model.ProvisioningAction;
+import static org.junit.Assert.assertNotNull;
 import io.provis.model.action.Archive;
 import io.provis.model.action.Unpack;
 import io.provis.model.io.RuntimeReader;
@@ -13,7 +12,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
@@ -212,12 +210,14 @@ public class RuntimeReaderTest {
         
     assertEquals(2, artifactSetWithChildren.getArtifactSets().size());
     ArtifactSet libExt = artifactSetWithChildren.getArtifactSets().get(0);
+    assertNotNull(libExt.getParent());
     assertEquals("lib/ext", libExt.getDirectory());
     assertEquals("io.takari.aether:takari-concurrent-localrepo:0.0.7", libExt.getArtifacts().get(0).getCoordinate());
     assertEquals("io.takari.maven:takari-smart-builder:0.0.2", libExt.getArtifacts().get(1).getCoordinate());
     assertEquals("io.takari.maven:takari-workspace-reader:0.0.2", libExt.getArtifacts().get(2).getCoordinate());
     
     ArtifactSet libDelta = artifactSetWithChildren.getArtifactSets().get(1);
+    assertNotNull(libDelta.getParent());    
     assertEquals("lib/delta", libDelta.getDirectory());
     assertEquals("io.takari.tdm:tdm-delta:3.2.1", libDelta.getArtifacts().get(0).getCoordinate());
     
