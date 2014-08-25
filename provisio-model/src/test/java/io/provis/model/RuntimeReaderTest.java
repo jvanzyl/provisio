@@ -193,6 +193,36 @@ public class RuntimeReaderTest {
     assertEquals("archive", runtime.getActions().get(0).getClass().getSimpleName().toLowerCase());
   }
 
+  @Test
+  public void validateAssemblyUsingChildArtifactSets() throws IOException {    
+    Map<String, String> variables = Maps.newHashMap();
+    variables.put("mavenVersion", "3.2.3");
+    variables.put("tdmVersion", "3.2.1");
+
+    RuntimeReader reader = new RuntimeReader(actionDescriptors());
+    Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/assembly-with-child-artifactsets.xml")), variables);
+    
+    List<ArtifactSet> artifactSets = runtime.getArtifactSets();
+    assertEquals(4, artifactSets.size());
+    
+    ArtifactSet artifactSet = artifactSets.get(0);
+    assertEquals("/", artifactSet.getDirectory());    
+    
+    ArtifactSet artifactSetWithChildren = artifactSets.get(3);
+        
+    assertEquals(2, artifactSetWithChildren.getArtifactSets().size());
+    ArtifactSet libExt = artifactSetWithChildren.getArtifactSets().get(0);
+    assertEquals("lib/ext", libExt.getDirectory());
+    assertEquals("io.takari.aether:takari-concurrent-localrepo:0.0.7", libExt.getArtifacts().get(0).getCoordinate());
+    assertEquals("io.takari.maven:takari-smart-builder:0.0.2", libExt.getArtifacts().get(1).getCoordinate());
+    assertEquals("io.takari.maven:takari-workspace-reader:0.0.2", libExt.getArtifacts().get(2).getCoordinate());
+    
+    ArtifactSet libDelta = artifactSetWithChildren.getArtifactSets().get(1);
+    assertEquals("lib/delta", libDelta.getDirectory());
+    assertEquals("io.takari.tdm:tdm-delta:3.2.1", libDelta.getArtifacts().get(0).getCoordinate());
+    
+  }
+  
   private List<ActionDescriptor> actionDescriptors() {
     List<ActionDescriptor> actionDescriptors = Lists.newArrayList();
     actionDescriptors.add(new ActionDescriptor() {

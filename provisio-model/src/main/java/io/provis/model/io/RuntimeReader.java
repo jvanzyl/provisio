@@ -39,17 +39,22 @@ public class RuntimeReader {
 
   public RuntimeReader(List<ActionDescriptor> actions, Map<String, String> versionMap) {
     xstream = new XStream();
+    // Allow both "assembly" and "runtime" as the root elements
     xstream.alias("assembly", Runtime.class);
     xstream.alias("runtime", Runtime.class);
     xstream.useAttributeFor(Runtime.class, "id");
     xstream.addImplicitCollection(Runtime.class, "artifactSets");
 
+    // ArtifactSet
     xstream.alias("artifactSet", ArtifactSet.class);
     xstream.aliasAttribute(ArtifactSet.class, "directory", "to");
     xstream.aliasAttribute(ArtifactSet.class, "reference", "ref");
     xstream.alias("artifact", ProvisioArtifact.class);
-    xstream.addImplicitCollection(ArtifactSet.class, "artifacts");
+    xstream.addImplicitCollection(ArtifactSet.class, "artifacts", ProvisioArtifact.class);
+    // Child ArtifactSets
+    xstream.addImplicitCollection(ArtifactSet.class, "artifactSets", ArtifactSet.class);
 
+    // ResourceSets
     xstream.alias("resourceSet", ResourceSet.class);
     xstream.addImplicitCollection(ResourceSet.class, "resources");
     xstream.addImplicitCollection(Runtime.class, "resourceSets");
