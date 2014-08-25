@@ -14,8 +14,10 @@ import java.util.Map;
 
 import javax.inject.Named;
 
+import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.artifact.Artifact;
 
+import com.google.common.base.Splitter;
 import com.google.common.io.ByteStreams;
 
 /**
@@ -35,23 +37,25 @@ public class UnpackAction implements ProvisioningAction {
   //
   private Artifact artifact;
   private File outputDirectory;
-        
+
+  private static final Splitter splitter = Splitter.on(',').trimResults().omitEmptyStrings();
+  
   public void execute(ProvisioningContext context) {
-    
+
     if (!outputDirectory.exists()) {
       outputDirectory.mkdirs();
     }
 
     File archive = artifact.getFile();
-        
+
     try {
-      
-      UnArchiver unarchiver = UnArchiver.builder()
-        .includes(includes)
-        .excludes(excludes)
-        .useRoot(useRoot)
-        .flatten(flatten)
-        .build();
+
+      UnArchiver unarchiver = UnArchiver.builder() //
+          .includes(split(includes)) //
+          .excludes(split(excludes)) // 
+          .useRoot(useRoot) //
+          .flatten(flatten) //
+          .build();
 
       if (filter) {
         unarchiver.unarchive(archive, outputDirectory, new FilteringProcessor(context.getVariables()));
@@ -63,6 +67,13 @@ public class UnpackAction implements ProvisioningAction {
     }
   }
 
+  private String[] split(String s) {
+    if(s == null) {
+      return new String[0];
+    }
+    return StringUtils.split(s, ",");
+  }
+  
   public String getIncludes() {
     return includes;
   }
@@ -110,7 +121,7 @@ public class UnpackAction implements ProvisioningAction {
   public void setOutputDirectory(File outputDirectory) {
     this.outputDirectory = outputDirectory;
   }
-  
+
   public boolean isFilter() {
     return filter;
   }
@@ -121,12 +132,12 @@ public class UnpackAction implements ProvisioningAction {
 
   class FilteringProcessor implements UnarchivingEntryProcessor {
 
-    Map<String,String> variables;
-    
-    FilteringProcessor(Map<String,String> variables) {
+    Map<String, String> variables;
+
+    FilteringProcessor(Map<String, String> variables) {
       this.variables = variables;
     }
-    
+
     @Override
     public String processName(String name) {
       return name;
@@ -134,7 +145,7 @@ public class UnpackAction implements ProvisioningAction {
 
     @Override
     public void processStream(InputStream inputStream, OutputStream outputStream) throws IOException {
-      ByteStreams.copy(new InterpolatingInputStream(inputStream, variables), outputStream);            
-    }    
+      ByteStreams.copy(new InterpolatingInputStream(inputStream, variables), outputStream);
+    }
   }
 }

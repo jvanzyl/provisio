@@ -108,7 +108,9 @@ public class ProvisioningLifecycleParticipant extends AbstractMavenLifecyclePart
     //
     Xpp3Dom configuration = (Xpp3Dom) plugin.getConfiguration();
     if (configuration == null) {
-      configuration = (Xpp3Dom) plugin.getExecutions().get(0).getConfiguration();
+      if (!plugin.getExecutions().isEmpty()) {
+        configuration = (Xpp3Dom) plugin.getExecutions().get(0).getConfiguration();
+      }
     }
     return configuration;
   }

@@ -86,6 +86,25 @@ public class Provisio {
     return versionMap;
   }
 
+  public List<String> getManagedDependencies(MavenProject project) {
+    List<String> managedDependencies = Lists.newArrayList();
+    if (!project.getDependencyManagement().getDependencies().isEmpty()) {
+      for (Dependency managedDependency : project.getDependencyManagement().getDependencies()) {
+        managedDependencies.add(toCoordinate(managedDependency));
+      }
+    }
+    return managedDependencies;
+  }
+
+  public String toCoordinate(Dependency d) {
+    StringBuffer sb = new StringBuffer().append(d.getGroupId()).append(":").append(d.getArtifactId()).append(":").append(d.getType());
+    if (d.getClassifier() != null && d.getClassifier().isEmpty() == false) {
+      sb.append(":").append(d.getClassifier());
+    }
+    sb.append(":").append(d.getVersion());
+    return sb.toString();
+  }
+
   public String toVersionlessCoordinate(Dependency d) {
     StringBuffer sb = new StringBuffer().append(d.getGroupId()).append(":").append(d.getArtifactId()).append(":").append(d.getType());
     if (d.getClassifier() != null && d.getClassifier().isEmpty() == false) {

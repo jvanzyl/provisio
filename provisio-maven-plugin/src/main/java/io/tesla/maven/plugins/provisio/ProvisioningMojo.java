@@ -18,6 +18,7 @@ import javax.inject.Inject;
 
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -36,6 +37,8 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.artifact.DefaultArtifactType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Maps;
 
 @Mojo(name = "provision", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class ProvisioningMojo extends AbstractMojo {
@@ -81,6 +84,7 @@ public class ProvisioningMojo extends AbstractMojo {
       request.setOutputDirectory(outputDirectory);
       request.setModel(runtime);
       request.setVariables(runtime.getVariables());
+      request.setManagedDependencies(provisio.getManagedDependencies(project));
 
       MavenProvisioner provisioner = new DefaultMavenProvisioner(repositorySystem, repositorySystemSession, project.getRemoteProjectRepositories());
       ProvisioningResult result = provisioner.provision(request);
@@ -93,7 +97,7 @@ public class ProvisioningMojo extends AbstractMojo {
       }
     }
   }
-
+  
   //
   // We want to produce an artifact set the corresponds to the runtime classpath of the project. This ArtifactSet will contain:
   //
