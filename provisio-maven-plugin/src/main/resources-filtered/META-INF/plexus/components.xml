@@ -10,7 +10,23 @@
           <lifecycle>
             <id>default</id>
             <phases>
+              <process-resources>
+                io.takari.maven.plugins:takari-lifecycle-plugin:${project.version}:process-resources
+              </process-resources>
+              <compile>
+                io.takari.maven.plugins:takari-lifecycle-plugin:${project.version}:compile
+              </compile>
+              <process-test-resources>
+                io.takari.maven.plugins:takari-lifecycle-plugin:${project.version}:process-test-resources
+              </process-test-resources>
+              <test-compile>
+                io.takari.maven.plugins:takari-lifecycle-plugin:${project.version}:testCompile
+              </test-compile>
+              <test>
+                org.apache.maven.plugins:maven-surefire-plugin:2.12.1:test
+              </test>
               <package>
+                io.takari.maven.plugins:takari-lifecycle-plugin:${project.version}:jar,              
                 io.takari.maven.plugins:provisio-maven-plugin:${project.version}:provision
               </package>
               <install>
