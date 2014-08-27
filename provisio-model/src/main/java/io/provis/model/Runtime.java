@@ -21,6 +21,8 @@ public class Runtime {
   private List<ResourceSet> resourceSets;
   // Variables
   Map<String, String> variables;
+  // FileSets
+  private List<FileSet> fileSets;
   
   public String getId() {
     return id;
@@ -41,6 +43,17 @@ public class Runtime {
     return artifactSets;
   }
 
+  public void addArtifactSet(ArtifactSet artifactSet) {
+    if (artifactSets == null) {
+      artifactSets = Lists.newArrayList();
+    }
+    artifactSets.add(artifactSet);
+  }
+
+  public Map<String, ArtifactSet> getArtifactSetReferences() {
+    return artifactSetReferences;
+  }
+
   public void addArtifactSetReference(String refId, ArtifactSet artifactSet) {
     if (artifactSetReferences == null) {
       artifactSetReferences = Maps.newHashMap();
@@ -48,14 +61,36 @@ public class Runtime {
     artifactSetReferences.put(refId, artifactSet);
   }
 
-  public Map<String, ArtifactSet> getArtifactSetReferences() {
-    return artifactSetReferences;
-  }
-
   public List<ResourceSet> getResourceSets() {
     return resourceSets;
   }
 
+  public void addResourceSet(ResourceSet resourceSet) {
+    if (resourceSets == null) {
+      resourceSets = Lists.newArrayList();
+    }
+    resourceSets.add(resourceSet);
+  }
+
+  public List<FileSet> getFileSets() {
+    return fileSets;
+  }
+
+  public void addFileSet(FileSet fileSet) {
+    if (fileSets == null) {
+      fileSets = Lists.newArrayList();
+    }
+    fileSets.add(fileSet);
+  }
+
+  public Map<String, String> getVariables() {
+    return variables;
+  }
+
+  public void setVariables(Map<String, String> variables) {
+    this.variables = variables;
+  }
+  
   public Set<String> getVersionlessCoordinatesOfArtifacts() {
     Set<String> dependenciesInVersionlessForm = new HashSet<String>();
     for (ArtifactSet artifactSet : artifactSets) {
@@ -66,27 +101,5 @@ public class Runtime {
       }
     }
     return dependenciesInVersionlessForm;
-  }
-
-  public void addArtifactSet(ArtifactSet artifactSet) {
-    if (artifactSets == null) {
-      artifactSets = Lists.newArrayList();
-    }
-    artifactSets.add(artifactSet);
-  }
-
-  public void addResourceSet(ResourceSet resourceSet) {
-    if (resourceSets == null) {
-      resourceSets = Lists.newArrayList();
-    }
-    resourceSets.add(resourceSet);
-  }
-
-  public Map<String, String> getVariables() {
-    return variables;
-  }
-
-  public void setVariables(Map<String, String> variables) {
-    this.variables = variables;
-  }
+  }  
 }

@@ -8,8 +8,8 @@
     <artifactId>provisio</artifactId>
     <version>0.1.0-SNAPSHOT</version>
   </parent>
-
   <artifactId>provisio-parser</artifactId>
+  <packaging>${lifecycle}</packaging>  
   <name>Provisio :: DSL</name>
   <description>Parser for Thrift IDL</description>
 

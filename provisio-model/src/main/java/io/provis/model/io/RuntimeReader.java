@@ -2,6 +2,11 @@ package io.provis.model.io;
 
 import io.provis.model.ActionDescriptor;
 import io.provis.model.ArtifactSet;
+import io.provis.model.Directory;
+import io.provis.model.Directory.Exclude;
+import io.provis.model.Directory.Include;
+import io.provis.model.File;
+import io.provis.model.FileSet;
 import io.provis.model.ResourceSet;
 import io.provis.model.ProvisioArtifact;
 import io.provis.model.ProvisioningAction;
@@ -44,6 +49,8 @@ public class RuntimeReader {
     xstream.alias("runtime", Runtime.class);
     xstream.useAttributeFor(Runtime.class, "id");
     xstream.addImplicitCollection(Runtime.class, "artifactSets");
+    xstream.addImplicitCollection(Runtime.class, "resourceSets");
+    xstream.addImplicitCollection(Runtime.class, "fileSets");
 
     // ArtifactSet
     xstream.alias("artifactSet", ArtifactSet.class);
@@ -57,9 +64,24 @@ public class RuntimeReader {
     // ResourceSets
     xstream.alias("resourceSet", ResourceSet.class);
     xstream.addImplicitCollection(ResourceSet.class, "resources");
-    xstream.addImplicitCollection(Runtime.class, "resourceSets");
     xstream.alias("resource", Resource.class);
     xstream.useAttributeFor(Resource.class, "name");
+
+    // FileSets
+    xstream.alias("fileSet", FileSet.class);
+    xstream.useAttributeFor(FileSet.class, "to");
+    xstream.addImplicitCollection(FileSet.class, "files", "file", File.class);
+    xstream.addImplicitCollection(FileSet.class, "directories", "directory", Directory.class);
+    // File
+    xstream.alias("file", File.class);
+    xstream.useAttributeFor(File.class, "path");
+    // Directory
+    xstream.alias("directory", Directory.class);
+    xstream.useAttributeFor(Directory.class, "path");
+    xstream.addImplicitCollection(Directory.class, "includes", "include", Include.class);
+    xstream.useAttributeFor(Include.class, "name");
+    xstream.addImplicitCollection(Directory.class, "excludes", "exclude", Exclude.class);
+    xstream.useAttributeFor(Exclude.class, "name");
 
     xstream.registerConverter(new RuntimeConverter());
     xstream.registerConverter(new ArtifactConverter());
@@ -77,10 +99,10 @@ public class RuntimeReader {
       this.actionMap.put(actionDescriptor.getName(), actionDescriptor);
     }
   }
-    
+
   public Runtime read(InputStream inputStream, Map<String, String> variables) {
     Runtime runtime = (Runtime) xstream.fromXML(new InterpolatingInputStream(inputStream, variables));
-    runtime.setVariables(variables);    
+    runtime.setVariables(variables);
     return runtime;
   }
 
@@ -111,6 +133,8 @@ public class RuntimeReader {
           runtime.addArtifactSet((ArtifactSet) context.convertAnother(runtime, ArtifactSet.class));
         } else if (reader.getNodeName().equals("resourceSet")) {
           runtime.addResourceSet((ResourceSet) context.convertAnother(runtime, ResourceSet.class));
+        } else if (reader.getNodeName().equals("fileSet")) {
+          runtime.addFileSet((FileSet) context.convertAnother(runtime, FileSet.class));
         } else {
           // We have an arbitrary action
           String actionName = reader.getNodeName();
@@ -185,10 +209,9 @@ public class RuntimeReader {
       return artifact;
     }
   }
-  
+
   //
   // Actions
   //
-  
-  
+
 }

@@ -26,6 +26,7 @@
   </modules>
 
   <properties>
+    <lifecycle>takari-jar</lifecycle>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <surefire.redirectTestOutputToFile>true</surefire.redirectTestOutputToFile>
@@ -152,9 +153,9 @@
         <directory>src/main/resources-filtered</directory>
         <filtering>true</filtering>
       </resource>
-    </resources>  
+    </resources>
     <pluginManagement>
-      <plugins>
+      <plugins>      
         <plugin>
           <groupId>org.eclipse.m2e</groupId>
           <artifactId>lifecycle-mapping</artifactId>
@@ -196,6 +197,12 @@
       </plugins>
     </pluginManagement>
     <plugins>
+      <plugin>
+        <groupId>io.takari.maven.plugins</groupId>
+        <artifactId>takari-lifecycle-plugin</artifactId>
+        <version>1.7.5</version>
+        <extensions>true</extensions>
+      </plugin>    
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>

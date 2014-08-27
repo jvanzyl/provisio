@@ -10,6 +10,7 @@
   </parent>
 
   <artifactId>provisio-core</artifactId>
+  <packaging>${lifecycle}</packaging>  
   <name>Provisio :: Core</name>
 
   <properties>

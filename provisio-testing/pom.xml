@@ -8,8 +8,8 @@
     <artifactId>provisio</artifactId>
     <version>0.1.2-SNAPSHOT</version>
   </parent>
-
   <artifactId>provisio-testing</artifactId>
+  <packaging>${lifecycle}</packaging>  
   <name>Provisio :: Testing</name>
   <description>Testing Utilities for Provisioning</description>
 

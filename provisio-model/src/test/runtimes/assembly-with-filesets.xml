@@ -1,0 +1,14 @@
+<assembly id="cassandra">
+      
+  <fileSet to="bin">
+    <file path="/path/to/file0"/>
+  </fileSet>
+
+  <fileSet to="conf">
+    <directory path="${basedir}/src/team/conf">
+      <include name="**/*.xml"/>
+      <exclude name="**/pom.xml"/>
+    </directory>
+  </fileSet>
+
+</assembly>

@@ -2,6 +2,8 @@ package io.provis.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import io.provis.model.Directory.Exclude;
+import io.provis.model.Directory.Include;
 import io.provis.model.action.Archive;
 import io.provis.model.action.Unpack;
 import io.provis.model.io.RuntimeReader;
@@ -173,6 +175,26 @@ public class RuntimeReaderTest {
     
     assertEquals(1, runtime.getActions().size());
     assertEquals("archive", runtime.getActions().get(0).getClass().getSimpleName().toLowerCase());
+  }
+
+  @Test
+  public void validateRuntimeUsingFileSets() throws IOException {
+    RuntimeReader reader = new RuntimeReader(actionDescriptors());
+    Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/assembly-with-filesets.xml")));
+
+    List<FileSet> fileSets = runtime.getFileSets();
+    FileSet bin = fileSets.get(0);
+    assertEquals("bin", bin.getDirectory());
+    assertEquals("/path/to/file0", bin.getFiles().get(0).getPath());
+    
+    FileSet conf = fileSets.get(1);
+    assertEquals("conf", conf.getDirectory());
+    Directory directory = conf.getDirectories().get(0);
+    assertEquals("${basedir}/src/team/conf", directory.getPath());
+    Include include = directory.getIncludes().get(0);
+    assertEquals("**/*.xml", include.getName());
+    Exclude exclude = directory.getExcludes().get(0);
+    assertEquals("**/pom.xml", exclude.getName());
   }
 
   @Test
