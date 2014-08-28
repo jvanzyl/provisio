@@ -389,7 +389,6 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
       if(!target.getParentFile().exists()) {
         target.getParentFile().mkdirs();
       }
-      System.out.println(String.format("copying %s to %s", source, target));
       Files.copy(source, target);
     }
   }
