@@ -3,19 +3,15 @@ package io.provis.model.io;
 import io.provis.model.ActionDescriptor;
 import io.provis.model.ArtifactSet;
 import io.provis.model.Directory;
-import io.provis.model.Directory.Exclude;
-import io.provis.model.Directory.Include;
 import io.provis.model.File;
 import io.provis.model.FileSet;
-import io.provis.model.ResourceSet;
 import io.provis.model.ProvisioArtifact;
 import io.provis.model.ProvisioningAction;
 import io.provis.model.Resource;
+import io.provis.model.ResourceSet;
 import io.provis.model.Runtime;
 
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -78,10 +74,8 @@ public class RuntimeReader {
     // Directory
     xstream.alias("directory", Directory.class);
     xstream.useAttributeFor(Directory.class, "path");
-    xstream.addImplicitCollection(Directory.class, "includes", "include", Include.class);
-    xstream.useAttributeFor(Include.class, "name");
-    xstream.addImplicitCollection(Directory.class, "excludes", "exclude", Exclude.class);
-    xstream.useAttributeFor(Exclude.class, "name");
+    xstream.addImplicitCollection(Directory.class, "includes", "include", String.class);
+    xstream.addImplicitCollection(Directory.class, "excludes", "exclude", String.class);
 
     xstream.registerConverter(new RuntimeConverter());
     xstream.registerConverter(new ArtifactConverter());

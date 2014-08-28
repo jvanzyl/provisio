@@ -2,39 +2,29 @@ package io.provis.model;
 
 import java.util.List;
 
+import com.google.common.collect.Lists;
+
 public class Directory {
 
   private String path;
-  private List<Include> includes;
-  private List<Exclude> excludes;
-  
+  private List<String> includes;
+  private List<String> excludes;
+
   public String getPath() {
     return path;
   }
-  
-  public List<Include> getIncludes() {
+
+  public List<String> getIncludes() {
+    if (includes == null) {
+      includes = Lists.newArrayList();
+    }
     return includes;
   }
 
-  public List<Exclude> getExcludes() {
+  public List<String> getExcludes() {
+    if (excludes == null) {
+      excludes = Lists.newArrayList();
+    }
     return excludes;
-  }
-
-
-
-  public class Include {
-    String name;
-
-    public String getName() {
-      return name;
-    }    
-  }
-  
-  public class Exclude {
-    String name;
-
-    public String getName() {
-      return name;
-    }    
   }
 }

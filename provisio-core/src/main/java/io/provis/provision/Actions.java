@@ -44,7 +44,7 @@ public class Actions {
       @Override
       public String[] attributes() {
         return new String[] {
-          "name"
+          "name", "executable"
         };
       }
     });

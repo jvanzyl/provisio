@@ -6,7 +6,7 @@
     <artifactId>provisio</artifactId>
     <version>0.1.2-SNAPSHOT</version>
   </parent>
-  <packaging>takari-maven-plugin</packaging>
+  <packaging>maven-plugin</packaging>
   <groupId>io.takari.maven.plugins</groupId>
   <artifactId>provisio-maven-plugin</artifactId>
 

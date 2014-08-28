@@ -1,6 +1,8 @@
 package io.provis.provision;
 
 import io.provis.model.ArtifactSet;
+import io.provis.model.Directory;
+import io.provis.model.FileSet;
 import io.provis.model.Lookup;
 import io.provis.model.ProvisioArtifact;
 import io.provis.model.ProvisioningAction;
@@ -13,12 +15,14 @@ import io.provis.model.Runtime;
 import io.provis.provision.action.artifact.WriteToDiskAction;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.codehaus.plexus.util.FileUtils;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
@@ -37,7 +41,7 @@ import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.util.filter.DependencyFilterUtils;
 import org.eclipse.aether.util.filter.ExclusionsDependencyFilter;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
@@ -54,45 +58,43 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
     this.remoteRepositories = remoteRepositories;
   }
 
-  public ProvisioningResult provision(ProvisioningRequest request) {
-
+  public ProvisioningResult provision(ProvisioningRequest request) throws Exception {
     ProvisioningResult result = new ProvisioningResult();
     ProvisioningContext context = new ProvisioningContext(request, result);
-    //
-    // We probably want to make sure all the operations can be done first
-    //
-    for (ArtifactSet fileSet : request.getRuntimeModel().getArtifactSets()) {
-      try {
-        processArtifactSet(request, context, fileSet);
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    }
 
-    try {
-      processRuntimeActions(context);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    processArtifactSets(context);
+    processResourceSets(context);
+    processFileSets(context);
+    processRuntimeActions(context);
+    
     return result;
   }
 
-  private void processArtifactSet(ProvisioningRequest request, ProvisioningContext context, ArtifactSet artifactSet) throws Exception {
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // ArtifactSets
+  //
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+  private void processArtifactSets(ProvisioningContext context) throws Exception {
+    for (ArtifactSet artifactSet : context.getRequest().getRuntimeModel().getArtifactSets()) {
+      processArtifactSet(context, artifactSet);
+    }
+  }
 
+  private void processArtifactSet(ProvisioningContext context, ArtifactSet artifactSet) throws Exception {
     resolveArtifactSetOutputDirectory(context, artifactSet);
     resolveArtifactSet(context, artifactSet);
     processArtifactsWithActions(context, artifactSet);
     processArtifactSetActions(context, artifactSet);
-    // This needs to be removed as resourceSets and fileSets should be processed separately
-    processResourceSets(context, artifactSet);
 
     if (artifactSet.getArtifactSets() != null) {
       for (ArtifactSet childFileSet : artifactSet.getArtifactSets()) {
-        processArtifactSet(request, context, childFileSet);
+        processArtifactSet(context, childFileSet);
       }
     }
   }
-
+  
   private void resolveArtifactSetOutputDirectory(ProvisioningContext context, ArtifactSet artifactSet) {
     ArtifactSet parent = artifactSet.getParent();
     if (parent != null) {
@@ -106,35 +108,6 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
     }
     if (!artifactSet.getOutputDirectory().exists()) {
       artifactSet.getOutputDirectory().mkdirs();
-    }
-  }
-
-  private void processResourceSets(ProvisioningContext context, ArtifactSet artifactSet) throws Exception {
-    List<ResourceSet> resourceSets = context.getRequest().getRuntime().getResourceSets();
-    if (resourceSets != null) {
-      for (ResourceSet resourceSet : resourceSets) {
-        for (Resource resource : resourceSet.getResources()) {
-          File source = new File(resource.getName());
-          if (!source.exists()) {
-            throw new RuntimeException(String.format("The specified file %s does not exist.", source));
-          }
-          File target = new File(artifactSet.getOutputDirectory(), source.getName());
-          Files.copy(source, target);
-        }
-      }
-    }
-  }
-
-  //
-  // Process actions that apply across the entire runtime installation
-  //
-  private void processRuntimeActions(ProvisioningContext context) throws Exception {
-    List<ProvisioningAction> runtimeActions = context.getRequest().getRuntime().getActions();
-    if (runtimeActions != null) {
-      for (ProvisioningAction action : runtimeActions) {
-        configureArtifactSetAction(action, context.getRequest().getOutputDirectory());
-        action.execute(context);
-      }
     }
   }
 
@@ -190,10 +163,10 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
     // Artifacts that have been handed to us that have been resolved or provided locally
     //
     List<ProvisioArtifact> providedArtifacts = Lists.newArrayList();
-    
+
     for (ProvisioArtifact artifact : artifacts) {
-      
-      if(artifact.getFile() != null) {
+
+      if (artifact.getFile() != null) {
         providedArtifacts.add(artifact);
         continue;
       }
@@ -347,8 +320,98 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
     return repositorySystemSession.getArtifactTypeRegistry().get(typeId);
   }
   
-  // Configuring Actions, this needs to change
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // ResourceSets
+  //
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
   
+  private void processResourceSets(ProvisioningContext context) throws Exception {
+    List<ResourceSet> resourceSets = context.getRequest().getRuntime().getResourceSets();
+    if (resourceSets != null) {
+      for (ResourceSet resourceSet : resourceSets) {
+        for (Resource resource : resourceSet.getResources()) {
+          File source = new File(resource.getName());
+          if (!source.exists()) {
+            throw new RuntimeException(String.format("The specified file %s does not exist.", source));
+          }
+          File target = new File(context.getRequest().getOutputDirectory(), source.getName());
+          Files.copy(source, target);
+        }
+      }
+    }
+  }
+  
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // FileSets
+  //
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+
+  static Joiner joiner = Joiner.on(',').skipNulls();
+  
+  private void processFileSets(ProvisioningContext context) throws Exception {
+    List<FileSet> fileSets = context.getRequest().getRuntime().getFileSets();
+    if (fileSets != null) {
+      for (FileSet fileSet : fileSets) {
+        // Files
+        for (io.provis.model.File file : fileSet.getFiles()) {
+          File source = new File(file.getPath());
+          if (!source.exists()) {
+            throw new RuntimeException(String.format("The specified file %s does not exist.", source));
+          }
+          File target = new File(context.getRequest().getOutputDirectory(), source.getName());
+          Files.copy(source, target);
+        }
+        // Directories
+        for(Directory directory : fileSet.getDirectories()) {
+          File sourceDirectory = new File(directory.getPath());
+          File targetDirectory = context.getRequest().getOutputDirectory();
+          copyDirectoryStructure(sourceDirectory, targetDirectory, directory.getIncludes(), directory.getExcludes());
+        }
+      }
+    }
+  }
+  
+  private void copyDirectoryStructure(File sourceDirectory, File targetDirectory, List<String>includes, List<String> excludes) throws IOException {
+    String includesString = null;
+    if(includes != null && !includes.isEmpty() ) {
+      includesString = joiner.join(includes);
+    }
+    String excludesString = null;
+    if(excludes != null && !excludes.isEmpty()) {
+      excludesString = joiner.join(excludes); 
+    }
+    List<String> relativePaths = FileUtils.getFileNames(sourceDirectory, includesString, excludesString, false);
+    for(String relativePath : relativePaths) {
+      File source= new File(sourceDirectory, relativePath);
+      File target = new File(targetDirectory, relativePath);
+      if(!target.getParentFile().exists()) {
+        target.getParentFile().mkdirs();
+      }
+      System.out.println(String.format("copying %s to %s", source, target));
+      Files.copy(source, target);
+    }
+  }
+  
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // Actions
+  //
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+
+  private void processRuntimeActions(ProvisioningContext context) throws Exception {
+    List<ProvisioningAction> runtimeActions = context.getRequest().getRuntime().getActions();
+    if (runtimeActions != null) {
+      for (ProvisioningAction action : runtimeActions) {
+        configureArtifactSetAction(action, context.getRequest().getOutputDirectory());
+        action.execute(context);
+      }
+    }
+  }
+  
+  // Configuring Actions, this needs to change
+
   Lookup lookup = new Lookup();
 
   private void configureArtifactSetAction(ProvisioningAction provisioningAction, File outputDirectory) {

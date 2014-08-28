@@ -2,8 +2,6 @@ package io.provis.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import io.provis.model.Directory.Exclude;
-import io.provis.model.Directory.Include;
 import io.provis.model.action.Archive;
 import io.provis.model.action.Unpack;
 import io.provis.model.io.RuntimeReader;
@@ -191,10 +189,8 @@ public class RuntimeReaderTest {
     assertEquals("conf", conf.getDirectory());
     Directory directory = conf.getDirectories().get(0);
     assertEquals("${basedir}/src/team/conf", directory.getPath());
-    Include include = directory.getIncludes().get(0);
-    assertEquals("**/*.xml", include.getName());
-    Exclude exclude = directory.getExcludes().get(0);
-    assertEquals("**/pom.xml", exclude.getName());
+    assertEquals("**/*.xml", directory.getIncludes().get(0));
+    assertEquals("**/pom.xml", directory.getExcludes().get(0));    
   }
 
   @Test

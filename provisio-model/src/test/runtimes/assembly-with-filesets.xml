@@ -6,8 +6,8 @@
 
   <fileSet to="conf">
     <directory path="${basedir}/src/team/conf">
-      <include name="**/*.xml"/>
-      <exclude name="**/pom.xml"/>
+      <include>**/*.xml</include>
+      <exclude>**/pom.xml</exclude>
     </directory>
   </fileSet>
 

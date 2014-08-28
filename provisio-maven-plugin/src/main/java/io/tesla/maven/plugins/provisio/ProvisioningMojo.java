@@ -87,7 +87,12 @@ public class ProvisioningMojo extends AbstractMojo {
       request.setManagedDependencies(provisio.getManagedDependencies(project));
 
       MavenProvisioner provisioner = new DefaultMavenProvisioner(repositorySystem, repositorySystemSession, project.getRemoteProjectRepositories());
-      ProvisioningResult result = provisioner.provision(request);
+      ProvisioningResult result;
+      try {
+        result = provisioner.provision(request);
+      } catch (Exception e) {
+        throw new MojoExecutionException("Error provisioning assembly.", e);
+      }
 
       if (result.getArchives() != null) {
         if (result.getArchives().size() == 1) {
