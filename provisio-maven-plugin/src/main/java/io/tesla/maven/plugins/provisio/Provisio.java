@@ -7,6 +7,11 @@ import io.provis.provision.Actions;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 
@@ -17,7 +22,11 @@ import javax.inject.Singleton;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -26,44 +35,77 @@ import com.google.common.collect.Maps;
 @Singleton
 public class Provisio {
 
+  private Logger logger = LoggerFactory.getLogger(Provisio.class);
+
   private final ArtifactHandlerManager artifactHandlerManager;
- 
+
   @Inject
   public Provisio(ArtifactHandlerManager artifactHandlerManager) {
     this.artifactHandlerManager = artifactHandlerManager;
   }
-  
-  public List<Runtime> parseDescriptors(File descriptorDirectory, MavenProject project) {
+
+  public List<Runtime> findDescriptors(File descriptorDirectory, MavenProject project) {
     List<Runtime> runtimes = Lists.newArrayList();
-    List<File> descriptors = findDescriptors(descriptorDirectory);
-    for (File descriptor : descriptors) {
-      try {
-        RuntimeReader parser = new RuntimeReader(Actions.defaultActionDescriptors(), versionMap(project));
-        Map<String, String> variables = Maps.newHashMap();
-        variables.putAll((Map) project.getProperties());
-        variables.put("project.version", project.getVersion());
-        variables.put("project.groupId", project.getArtifactId());
-        variables.put("project.artifactId", project.getArtifactId());
-        variables.put("basedir", project.getBasedir().getAbsolutePath());        
-        Runtime runtime = parser.read(new FileInputStream(descriptor), variables);
-        runtimes.add(runtime);
-      } catch (Exception e) {
-        throw new RuntimeException(String.format("Error reading provisioning descriptor %s for project %s.", descriptor, project.getArtifactId()), e);
-      }
-    }    
+    runtimes.addAll(findDescriptorsInFileSystem(descriptorDirectory, project));
+    runtimes.addAll(findDescriptorsInClasspath(project));
     return runtimes;
   }
-  
-  private List<File> findDescriptors(File descriptorDirectory) {
-    List<File> descriptors = Lists.newArrayList();
+
+  public List<Runtime> findDescriptorsInFileSystem(File descriptorDirectory, MavenProject project) {
+    List<Runtime> runtimes = Lists.newArrayList();
     if (descriptorDirectory.exists()) {
       try {
-        return FileUtils.getFiles(descriptorDirectory, "*.xml", null);
+        List<File> descriptors = FileUtils.getFiles(descriptorDirectory, "*.xml", null);
+        for (File descriptor : descriptors) {
+          Runtime runtime = parseDescriptor(new FileInputStream(descriptor), project);
+          runtimes.add(runtime);
+        }
       } catch (IOException e) {
-        throw new RuntimeException(String.format("Error finding provisioning descriptors in %s.", descriptorDirectory), e);
+        throw new RuntimeException(String.format("Error parsing provisioning descriptors in %s.", descriptorDirectory), e);
       }
     }
-    return descriptors;
+    return runtimes;
+  }
+
+  public List<Runtime> findDescriptorsInClasspath(MavenProject project) {
+    List<Runtime> runtimes = Lists.newArrayList();
+    Collection<ClassRealm> extensionRealms = project.getClassRealm().getImportRealms();
+    if (extensionRealms != null) {
+      for (ClassRealm extensionRealm : extensionRealms) {
+        String[] s = StringUtils.split(extensionRealm.getId(), ":");
+        String extensionArtifactId = s[1];
+        String extensionVersion = s[2];
+        // presto-maven-plugin --> presto-plugin
+        if (extensionArtifactId.replace("-maven", "").equals(project.getPackaging())) {
+          String descriptorResourceLocation = String.format("META-INF/provisio/%s.xml", project.getPackaging());
+          logger.info(String.format("Looking for descriptor %s in %s version %s", descriptorResourceLocation, extensionArtifactId, extensionVersion));
+          try {
+            Enumeration<URL> descriptors = extensionRealm.getResources(descriptorResourceLocation);
+            for (URL descriptorUrl : Collections.list(descriptors)) {
+              InputStream inputStream = descriptorUrl.openStream();
+              if (inputStream != null) {
+                Runtime runtime = parseDescriptor(inputStream, project);
+                runtimes.add(runtime);
+              }
+            }
+          } catch (IOException e) {
+            throw new RuntimeException(String.format("Error parsing provisioning descriptors from %s.", descriptorResourceLocation), e);
+          }
+        }
+      }
+    }
+    return runtimes;
+  }
+
+  public Runtime parseDescriptor(InputStream inputStream, MavenProject project) {
+    RuntimeReader parser = new RuntimeReader(Actions.defaultActionDescriptors(), versionMap(project));
+    Map<String, String> variables = Maps.newHashMap();
+    variables.putAll((Map) project.getProperties());
+    variables.put("project.version", project.getVersion());
+    variables.put("project.groupId", project.getArtifactId());
+    variables.put("project.artifactId", project.getArtifactId());
+    variables.put("basedir", project.getBasedir().getAbsolutePath());
+    return parser.read(inputStream, variables);
   }
 
   //
@@ -117,6 +159,6 @@ public class Provisio {
     String extension = artifactHandlerManager.getArtifactHandler(project.getPackaging()).getExtension();
     StringBuffer sb = new StringBuffer().append(project.getGroupId()).append(":").append(project.getArtifactId()).append(":").append(extension);
     return sb.toString();
-  }  
+  }
 
 }

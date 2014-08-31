@@ -72,7 +72,7 @@ public class ProvisioningMojo extends AbstractMojo {
 
   public void execute() throws MojoExecutionException, MojoFailureException {
 
-    for (Runtime runtime : provisio.parseDescriptors(descriptorDirectory, project)) {
+    for (Runtime runtime : provisio.findDescriptors(descriptorDirectory, project)) {
       //
       // Add the ArtifactSet reference for the runtime classpath
       //

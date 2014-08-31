@@ -91,7 +91,7 @@ public class ProvisioningLifecycleParticipant extends AbstractMavenLifecyclePart
     //
     Set<String> dependencyCoordinatesInVersionlessForm = Sets.newHashSet();
 
-    List<Runtime> runtimes = provisio.parseDescriptors(descriptorDirectory, project);
+    List<Runtime> runtimes = provisio.findDescriptorsInFileSystem(descriptorDirectory, project);
     for (Runtime runtime : runtimes) {
       //
       // Return all the artifacts that may have projects that contribute to the ordering of the project
