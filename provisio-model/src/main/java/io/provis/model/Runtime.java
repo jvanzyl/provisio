@@ -90,7 +90,19 @@ public class Runtime {
   public void setVariables(Map<String, String> variables) {
     this.variables = variables;
   }
-  
+
+  public Set<String> getGAsOfArtifacts() {
+    Set<String> dependenciesInVersionlessForm = new HashSet<String>();
+    for (ArtifactSet artifactSet : artifactSets) {
+      if (artifactSet.getArtifacts() != null) {
+        for (ProvisioArtifact artifact : artifactSet.getArtifacts()) {
+          dependenciesInVersionlessForm.add(artifact.getGA());
+        }
+      }
+    }
+    return dependenciesInVersionlessForm;
+  }  
+
   public Set<String> getVersionlessCoordinatesOfArtifacts() {
     Set<String> dependenciesInVersionlessForm = new HashSet<String>();
     for (ArtifactSet artifactSet : artifactSets) {

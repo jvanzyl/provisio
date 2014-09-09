@@ -96,7 +96,7 @@ public class ProvisioningLifecycleParticipant extends AbstractMavenLifecyclePart
       //
       // Return all the artifacts that may have projects that contribute to the ordering of the project
       // 
-      dependencyCoordinatesInVersionlessForm.addAll(runtime.getVersionlessCoordinatesOfArtifacts());
+      dependencyCoordinatesInVersionlessForm.addAll(runtime.getGAsOfArtifacts());
     }
     return dependencyCoordinatesInVersionlessForm;
   }
