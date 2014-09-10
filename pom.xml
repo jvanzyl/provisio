@@ -11,7 +11,7 @@
 
   <groupId>io.provis</groupId>
   <artifactId>provisio</artifactId>
-  <version>0.1.9-SNAPSHOT</version>
+  <version>0.1.9</version>
   <packaging>pom</packaging>
   <name>Provisio</name>
 
@@ -42,7 +42,7 @@
     <connection>scm:git:git@github.com/takari/provisio.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/takari/provisio.git</developerConnection>
     <url>http://github.com/takari/provisio</url>
-    <tag>HEAD</tag>
+    <tag>provisio-0.1.9</tag>
   </scm>
 
   <dependencyManagement>
@@ -50,12 +50,12 @@
       <dependency>
         <groupId>io.provis</groupId>
         <artifactId>provisio-core</artifactId>
-        <version>0.1.9-SNAPSHOT</version>
+        <version>0.1.9</version>
       </dependency>
       <dependency>
         <groupId>io.provis</groupId>
         <artifactId>provisio-model</artifactId>
-        <version>0.1.9-SNAPSHOT</version>
+        <version>0.1.9</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
