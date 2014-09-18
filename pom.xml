@@ -35,7 +35,7 @@
     <mavenVersion>3.1.1</mavenVersion>
     <aetherVersion>0.9.0.M2</aetherVersion>
     <sisuInjectVersion>0.0.0.M5</sisuInjectVersion>
-    <takariArchiverVersion>0.1.6</takariArchiverVersion>
+    <takariArchiverVersion>0.1.7</takariArchiverVersion>
   </properties>
 
   <scm>
