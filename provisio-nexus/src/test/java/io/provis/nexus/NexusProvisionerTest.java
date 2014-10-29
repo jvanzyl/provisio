@@ -1,4 +1,4 @@
-package io.provis.maven;
+package io.provis.nexus;
 
 import io.provis.nexus.NexusForkedLauncher;
 import io.provis.nexus.NexusProvisioner;
@@ -23,7 +23,7 @@ public class NexusProvisionerTest extends InjectedTest {
   private NexusProvisioner provisioner;
       
   @Test
-  public void testMavenExecution() throws Exception {
+  public void testNexusExecution() throws Exception {
     
     FileUtils.deleteDirectory(baseDirectory);
     

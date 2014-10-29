@@ -23,7 +23,8 @@ public class MavenProvisioner extends SimpleProvisioner {
     }
 
     File mvn = new File(installDirectory, "bin/mvn");
-    if(mvn.exists()) {
+    // If we're working with snapshot versions re-provision
+    if(mvn.exists() && !mavenVersion.contains("SNAPSHOT")) {
       return installDirectory;
     }
     

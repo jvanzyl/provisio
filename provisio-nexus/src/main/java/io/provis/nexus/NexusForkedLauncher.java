@@ -76,7 +76,12 @@ public class NexusForkedLauncher {
   }
 
   public void stop() throws Exception {
-    command.stop();
+    //
+    // This unfortunately does not stop the sub-process that JSW creates. Eclipse launching must find child processes and kill them. We
+    // appear to need to kill the process we started, and use the Launcher to stop the Java process that it created.
+    //
+    command.stop(); // main JSW process
+    new Launcher().commandStop(); // JVM sub-process
   }
 
   public String getMainClass() throws Exception {
