@@ -1,4 +1,4 @@
-package io.provis;
+package io.provis.provision;
 
 import java.io.File;
 import java.io.FileOutputStream;

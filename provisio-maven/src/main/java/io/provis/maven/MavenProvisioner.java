@@ -1,6 +1,6 @@
 package io.provis.maven;
 
-import io.provis.SimpleProvisioner;
+import io.provis.provision.SimpleProvisioner;
 import io.tesla.proviso.archive.UnArchiver;
 
 import java.io.File;
