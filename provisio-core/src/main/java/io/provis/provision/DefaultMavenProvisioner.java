@@ -58,7 +58,8 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
     this.remoteRepositories = remoteRepositories;
   }
 
-  public ProvisioningResult provision(ProvisioningRequest request) throws Exception {
+  @Override
+public ProvisioningResult provision(ProvisioningRequest request) throws Exception {
     ProvisioningResult result = new ProvisioningResult();
     ProvisioningContext context = new ProvisioningContext(request, result);
 
@@ -272,7 +273,7 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
       Set<ProvisioArtifact> parentArtifacts = artifactSet.getParent().getResolvedArtifacts();
       //
       // contained by childArtifacts and not contained in parentArtifacts
-      //
+      //      
       Set<ProvisioArtifact> childResolvedArtifacts = Sets.difference(resolvedArtifacts, parentArtifacts);
       artifactSet.setResolvedArtifacts(childResolvedArtifacts);
     } else {

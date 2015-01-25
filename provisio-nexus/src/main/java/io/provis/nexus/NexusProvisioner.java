@@ -71,8 +71,8 @@ public class NexusProvisioner extends SimpleProvisioner {
       addPlugin(context.getPluginRepositories().get(0), plugin, workDirectory);
     }
 
-    File securityConfigurationXml = SetUpNexusConfigFile(workDirectory, "security-configuration.xml");
-    File securityXml = SetUpNexusConfigFile(workDirectory, "security.xml");
+    File securityConfigurationXml = setUpNexusConfigFile(workDirectory, "security-configuration.xml");
+    File securityXml = setUpNexusConfigFile(workDirectory, "security.xml");
 
     addRealms(securityConfigurationXml, context.getRealms());
     addUsers(securityXml, context.getUsers());
@@ -90,7 +90,7 @@ public class NexusProvisioner extends SimpleProvisioner {
     return installationDirectory;
   }
 
-  private File SetUpNexusConfigFile(File workDirectory, String configFileName) throws IOException {
+  private File setUpNexusConfigFile(File workDirectory, String configFileName) throws IOException {
     InputStream is = getClass().getClassLoader().getResourceAsStream("nexus/conf/" + configFileName);
     File configXml = new File(workDirectory, "conf/" + configFileName);
     if (is != null) {

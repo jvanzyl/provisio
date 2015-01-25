@@ -60,7 +60,7 @@ public abstract class SimpleProvisioner {
     return (value == null || value.length() <= 0) ? defaultValue : value;
   }
 
-  public String repositoryPathOf(String groupId, String artifactId, String extension, String classifier, String version) {
+  protected String repositoryPathOf(String groupId, String artifactId, String extension, String classifier, String version) {
     //
     // <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>
     //
