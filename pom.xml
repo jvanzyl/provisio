@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>io.takari</groupId>
     <artifactId>takari</artifactId>
-    <version>12</version>
+    <version>15</version>
   </parent>
 
   <groupId>io.provis</groupId>
@@ -48,6 +49,11 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <groupId>javax.inject</groupId>
+        <artifactId>javax.inject</artifactId>
+        <version>1</version>
+      </dependency>
+      <dependency>
         <groupId>io.provis</groupId>
         <artifactId>provisio-core</artifactId>
         <version>0.1.13-SNAPSHOT</version>
@@ -73,6 +79,11 @@
         <version>3.0.15</version>
       </dependency>
       <!-- Aether for org.eclipse.provisoprovisioning -->
+      <dependency>
+        <groupId>org.eclipse.aether</groupId>
+        <artifactId>aether-spi</artifactId>
+        <version>${aetherVersion}</version>
+      </dependency>
       <dependency>
         <groupId>org.eclipse.aether</groupId>
         <artifactId>aether-api</artifactId>
@@ -146,7 +157,7 @@
   </dependencyManagement>
 
   <build>
-   <resources>
+    <resources>
       <resource>
         <directory>src/main/resources</directory>
       </resource>
@@ -156,7 +167,7 @@
       </resource>
     </resources>
     <pluginManagement>
-      <plugins>      
+      <plugins>
         <plugin>
           <groupId>org.eclipse.m2e</groupId>
           <artifactId>lifecycle-mapping</artifactId>
@@ -201,9 +212,12 @@
       <plugin>
         <groupId>io.takari.maven.plugins</groupId>
         <artifactId>takari-lifecycle-plugin</artifactId>
-        <version>1.7.5</version>
+        <version>1.10.2</version>
         <extensions>true</extensions>
-      </plugin>    
+        <configuration>
+          <proc>proc</proc>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
