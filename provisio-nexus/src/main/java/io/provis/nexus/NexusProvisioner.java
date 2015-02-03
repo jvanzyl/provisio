@@ -1,7 +1,6 @@
 package io.provis.nexus;
 
 import io.provis.provision.SimpleProvisioner;
-import io.tesla.proviso.archive.UnArchiver;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,13 +31,6 @@ import de.pdark.decentxml.XMLWriter;
 public class NexusProvisioner extends SimpleProvisioner {
 
   static final String ID = "nexus";
-
-  private UnArchiver unarchiver;
-
-  public NexusProvisioner() {
-
-    unarchiver = UnArchiver.builder().useRoot(false).flatten(false).build();
-  }
 
   public File provision(NexusProvisioningContext context) throws IOException {
 

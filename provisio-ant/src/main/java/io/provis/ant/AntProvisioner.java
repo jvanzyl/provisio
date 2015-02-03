@@ -1,7 +1,6 @@
 package io.provis.ant;
 
 import io.provis.provision.SimpleProvisioner;
-import io.tesla.proviso.archive.UnArchiver;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,12 +9,6 @@ import javax.inject.Named;
 
 @Named
 public class AntProvisioner extends SimpleProvisioner {
-
-  private UnArchiver unarchiver;
-
-  public AntProvisioner() {
-    unarchiver = UnArchiver.builder().useRoot(false).flatten(false).build();
-  }
 
   public File provision(String antVersion, File installDir) throws IOException {
     if (antVersion == null || antVersion.length() <= 0) {

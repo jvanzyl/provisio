@@ -1,5 +1,7 @@
 package io.provis.provision;
 
+import io.tesla.proviso.archive.UnArchiver;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -14,6 +16,28 @@ import com.squareup.okhttp.Response;
 
 public abstract class SimpleProvisioner {
 
+  private static final String DEFAULT_REMOTE_REPO = "http://repo1.maven.org/maven2";
+  private static final File DEFAULT_LOCAL_REPO = new File(System.getProperty("user.home"), ".m2/repository");
+  
+  protected final UnArchiver unarchiver;
+  protected final File localRepository;
+  protected final String remoteRepository;
+
+  public SimpleProvisioner() {
+    this(DEFAULT_LOCAL_REPO, DEFAULT_REMOTE_REPO);
+  }
+
+  public SimpleProvisioner(File localRepository, String remoteRepository) {
+    this.localRepository = localRepository;
+    this.remoteRepository = remoteRepository;
+    this.unarchiver = UnArchiver.builder().useRoot(false).flatten(false).build();
+  }
+
+  protected File resolveFromRepository(String coordinate) throws IOException {
+    return resolveFromRepository(remoteRepository, coordinate);
+  }
+
+  @Deprecated
   protected File resolveFromRepository(String repositoryUrl, String coordinate) throws IOException {
     String path = coordinateToPath(coordinate);
     String url = String.format("%s/%s", repositoryUrl, path);
