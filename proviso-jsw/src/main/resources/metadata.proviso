@@ -1,0 +1,25 @@
+{
+  "requirements": {
+    "boot.classpath": {
+      "type": "String[] || List<String>",
+      "validate": "as File and must exist"
+    }
+  },
+  "attributes": {
+    "directory": "jsw"
+  },
+  "actions": {
+    "artifact": {
+      "unpack": {
+        "excludes": "META-INF/**,metadata.proviso"
+      }
+    },
+    "directory": {
+      "executable": {
+        "includes": "**/*.so,**/*.jnilib,**/launcher*,**/**wrapper-*",
+        "excludes": "**/wrapper.conf*,**/*.dll,**/*.jar,**/*.exe,**/*.bat"
+      }
+    }
+  }      
+}
+
