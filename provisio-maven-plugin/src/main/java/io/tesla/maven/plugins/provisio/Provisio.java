@@ -8,10 +8,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 
@@ -24,9 +21,6 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.util.FileUtils;
-import org.codehaus.plexus.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -67,14 +61,16 @@ public class Provisio {
 
   public List<Runtime> findDescriptorsForPackagingTypeInExtensionRealms(MavenProject project) {
     List<Runtime> runtimes = Lists.newArrayList();
-    Collection<ClassRealm> extensionRealms = project.getClassRealm().getImportRealms();
-    if (extensionRealms != null) {
-      for (ClassRealm extensionRealm : extensionRealms) {
-        String descriptorResourceLocation = String.format("META-INF/provisio/%s.xml", project.getPackaging());
-        InputStream inputStream = extensionRealm.getResourceAsStream(descriptorResourceLocation);
-        if (inputStream != null) {
-          Runtime runtime = parseDescriptor(inputStream, project);
-          runtimes.add(runtime);
+    if (project.getClassRealm() != null) {
+      Collection<ClassRealm> extensionRealms = project.getClassRealm().getImportRealms();
+      if (extensionRealms != null) {
+        for (ClassRealm extensionRealm : extensionRealms) {
+          String descriptorResourceLocation = String.format("META-INF/provisio/%s.xml", project.getPackaging());
+          InputStream inputStream = extensionRealm.getResourceAsStream(descriptorResourceLocation);
+          if (inputStream != null) {
+            Runtime runtime = parseDescriptor(inputStream, project);
+            runtimes.add(runtime);
+          }
         }
       }
     }
