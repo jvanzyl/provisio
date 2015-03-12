@@ -2,6 +2,7 @@ package io.provis.provision;
 
 import io.provis.model.ActionDescriptor;
 import io.provis.provision.action.artifact.UnpackAction;
+import io.provis.provision.action.fileset.MakeExecutableAction;
 import io.provis.provision.action.runtime.ArchiveAction;
 
 import java.util.List;
@@ -44,9 +45,29 @@ public class Actions {
       @Override
       public String[] attributes() {
         return new String[] {
-          "name", "executable"
+            "name", "executable"
         };
       }
+    });
+    actionDescriptors.add(new ActionDescriptor() {
+
+      @Override
+      public String getName() {
+        return "executable";
+      }
+
+      @Override
+      public Class<?> getImplementation() {
+        return MakeExecutableAction.class;
+      }
+
+      @Override
+      public String[] attributes() {
+        return new String[] {
+            "includes", "excludes"
+        };
+      }
+
     });
     return actionDescriptors;
   }
