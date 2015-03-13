@@ -35,7 +35,7 @@
     <mavenVersion>3.1.1</mavenVersion>
     <aetherVersion>0.9.0.M2</aetherVersion>
     <sisuInjectVersion>0.0.0.M5</sisuInjectVersion>
-    <takariArchiverVersion>0.1.7</takariArchiverVersion>
+    <takariArchiverVersion>0.1.9</takariArchiverVersion>
   </properties>
 
   <scm>
@@ -132,7 +132,7 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>14.0.1</version>
+        <version>18.0</version>
       </dependency>
       <dependency>
         <groupId>io.takari</groupId>
