@@ -23,6 +23,7 @@
     <module>provisio-model</module>
     <module>provisio-nexus</module>
     <module>provisio-testing</module>
+    <module>provisio-jsw</module>
   </modules>
 
   <properties>
