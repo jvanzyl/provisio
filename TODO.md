@@ -1,8 +1,5 @@
 - a way to test the provisioner with a real resolution setup and a repository and verify the output
 - how to distinguish between a project producing a single output which is the primary artifact vs producing many secondary
-- synchronize the participant with the plugin
-  - test the ordering in the reactor
-- use provisio for the presto plugins
 - allow for non-transitive resolution: <artifact id="g:a:v" transitive="false"/>
 - allow for exclusions at the artifact level, and artifact set level
 - make the action descriptors more pluggable
@@ -10,7 +7,6 @@
 - create a test plugin
 - catch version parsing errors and report them correctly
 - use mustache for filtering
-- make TDM 
 
 - add ${basedir} to support referencing resources correctly (done)
 - specify way to make the archive and attach properly for a single archive (done)
