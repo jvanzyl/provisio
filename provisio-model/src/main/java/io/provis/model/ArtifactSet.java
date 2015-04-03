@@ -33,7 +33,7 @@ public class ArtifactSet {
   public String getReference() {
     return reference;
   }
-
+  
   public void addArtifact(ProvisioArtifact artifact) {
     if (artifacts == null) {
       artifacts = Lists.newArrayList();

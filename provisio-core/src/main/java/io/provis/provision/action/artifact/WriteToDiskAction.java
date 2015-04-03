@@ -1,26 +1,25 @@
 package io.provis.provision.action.artifact;
 
-import io.provis.model.ProvisioningAction;
-import io.provis.model.ProvisioningContext;
-import io.provis.provision.ProvisioningException;
-
 import java.io.File;
 import java.io.IOException;
 
 import javax.inject.Named;
 
-import org.eclipse.aether.artifact.Artifact;
-
 import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
+
+import io.provis.model.ProvisioArtifact;
+import io.provis.model.ProvisioningAction;
+import io.provis.model.ProvisioningContext;
+import io.provis.provision.ProvisioningException;
 
 @Named("write")
 public class WriteToDiskAction implements ProvisioningAction {
   
-  private Artifact artifact;
+  private ProvisioArtifact artifact;
   private File outputDirectory;
   
-  public WriteToDiskAction(Artifact artifact, File outputDirectory) {    
+  public WriteToDiskAction(ProvisioArtifact artifact, File outputDirectory) {    
     Preconditions.checkArgument(outputDirectory != null, "outputDirectory cannot be null.");    
     this.artifact = artifact;
     this.outputDirectory = outputDirectory;
@@ -30,7 +29,8 @@ public class WriteToDiskAction implements ProvisioningAction {
   public void execute(ProvisioningContext context) {
     File file = artifact.getFile();
     if (file != null) {
-      copy(file, new File(outputDirectory, file.getName()));
+      String targetName = artifact.getName() != null ? artifact.getName() : file.getName();
+      copy(file, new File(outputDirectory, targetName));
     } 
   }
   

@@ -1,16 +1,5 @@
 package io.provis.model.io;
 
-import io.provis.model.ActionDescriptor;
-import io.provis.model.ArtifactSet;
-import io.provis.model.Directory;
-import io.provis.model.File;
-import io.provis.model.FileSet;
-import io.provis.model.ProvisioArtifact;
-import io.provis.model.ProvisioningAction;
-import io.provis.model.Resource;
-import io.provis.model.ResourceSet;
-import io.provis.model.Runtime;
-
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
@@ -24,6 +13,17 @@ import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 
+import io.provis.model.ActionDescriptor;
+import io.provis.model.ArtifactSet;
+import io.provis.model.Directory;
+import io.provis.model.File;
+import io.provis.model.FileSet;
+import io.provis.model.ProvisioArtifact;
+import io.provis.model.ProvisioningAction;
+import io.provis.model.Resource;
+import io.provis.model.ResourceSet;
+import io.provis.model.Runtime;
+
 public class RuntimeReader {
 
   private final XStream xstream;
@@ -31,11 +31,11 @@ public class RuntimeReader {
   private final Map<String, String> versionMap;
 
   public RuntimeReader() {
-    this(Collections.<ActionDescriptor> emptyList(), Collections.<String, String> emptyMap());
+    this(Collections.<ActionDescriptor>emptyList(), Collections.<String, String>emptyMap());
   }
 
   public RuntimeReader(List<ActionDescriptor> actions) {
-    this(actions, Collections.<String, String> emptyMap());
+    this(actions, Collections.<String, String>emptyMap());
   }
 
   public RuntimeReader(List<ActionDescriptor> actions, Map<String, String> versionMap) {
@@ -115,8 +115,7 @@ public class RuntimeReader {
     }
 
     @Override
-    public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-    }
+    public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {}
 
     @Override
     public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
@@ -154,43 +153,50 @@ public class RuntimeReader {
     }
 
     @Override
-    public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-    }
+    public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {}
 
     @Override
     public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-      //
-      // Coordinates have the following form:
-      //
-      // <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>
-      //
-      // If the user is specifying versionless coordinates they are expecting to glean the version from their dependency
-      // management system, like in Maven
-      //
-      String coordinate = reader.getAttribute("id");
-      int coordinateSegments = coordinate.length() - coordinate.replace(":", "").length() + 1;
-      if (coordinateSegments == 2) {
+      ProvisioArtifact artifact;
+      String reference = reader.getAttribute("ref");
+      String name = reader.getAttribute("as");
+      if (reference != null) {
+        artifact = new ProvisioArtifact(reference, name);
+      } else {
         //
-        // We only have groupId:artifactId where the extension defaults to "jar" which we need to add because the
-        // versionMap is created with the full versionless coordinate.
+        // Coordinates have the following form:
         //
-        coordinate += ":jar";
-      }
-      //
-      // Look at the last element of coordinate and determine if it's a version. If it's not then we need to consult
-      // the versionMap to find the appropriate version.
-      //
-      String lastElement = coordinate.substring(coordinate.lastIndexOf(":") + 1);
-      if (!Character.isDigit(lastElement.charAt(0))) {
-        String version = versionMap.get(coordinate);
-        if (version != null) {
-          coordinate += ":" + version;
-        } else {
-          throw new RuntimeException(String.format(
-              "A version for %s cannot be found. You either need to specify one in your dependencyManagement section, or explicity set one in your assembly descriptor.", coordinate));
+        // <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>
+        //
+        // If the user is specifying versionless coordinates they are expecting to glean the version from their dependency
+        // management system, like in Maven
+        //
+        String coordinate = reader.getAttribute("id");
+        int coordinateSegments = coordinate.length() - coordinate.replace(":", "").length() + 1;
+        if (coordinateSegments == 2) {
+          //
+          // We only have groupId:artifactId where the extension defaults to "jar" which we need to add because the
+          // versionMap is created with the full versionless coordinate.
+          //
+          coordinate += ":jar";
         }
+        //
+        // Look at the last element of coordinate and determine if it's a version. If it's not then we need to consult
+        // the versionMap to find the appropriate version.
+        //
+        String lastElement = coordinate.substring(coordinate.lastIndexOf(":") + 1);
+        if (!Character.isDigit(lastElement.charAt(0))) {
+          String version = versionMap.get(coordinate);
+          if (version != null) {
+            coordinate += ":" + version;
+          } else {
+            throw new RuntimeException(
+                String.format("A version for %s cannot be found. You either need to specify one in your dependencyManagement section, or explicity set one in your assembly descriptor.", coordinate));
+          }
+        }
+        artifact = new ProvisioArtifact(coordinate, name);
       }
-      ProvisioArtifact artifact = new ProvisioArtifact(coordinate);
+      
       while (reader.hasMoreChildren()) {
         reader.moveDown();
         String actionName = reader.getNodeName();

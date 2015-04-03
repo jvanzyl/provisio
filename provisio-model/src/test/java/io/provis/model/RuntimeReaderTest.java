@@ -2,9 +2,6 @@ package io.provis.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import io.provis.model.action.Archive;
-import io.provis.model.action.Unpack;
-import io.provis.model.io.RuntimeReader;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,6 +13,10 @@ import org.junit.Test;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+
+import io.provis.model.action.Archive;
+import io.provis.model.action.Unpack;
+import io.provis.model.io.RuntimeReader;
 
 public class RuntimeReaderTest {
 
@@ -239,6 +240,29 @@ public class RuntimeReaderTest {
     assertEquals("lib/delta", libDelta.getDirectory());
     assertEquals("io.takari.tdm:tdm-delta:3.2.1", libDelta.getArtifacts().get(0).getCoordinate());
     
+  }
+  
+  @Test
+  public void validateRuntimeUsingArtifactReference() throws IOException {
+    Map<String, String> variables = Maps.newHashMap();
+    variables.put("mavenVersion", "3.2.3");
+    variables.put("tdmVersion", "3.2.1");
+    
+    RuntimeReader reader = new RuntimeReader(actionDescriptors());
+    Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/runtime-with-artifact-ref.xml")), variables);
+    
+    List<ArtifactSet> artifactSets = runtime.getArtifactSets();
+    assertEquals(1, artifactSets.size());
+    
+    ArtifactSet artifactSet = artifactSets.get(0);
+    assertEquals("/.mvn/wrapper", artifactSet.getDirectory());    
+    
+    List<ProvisioArtifact> artifacts = artifactSet.getArtifacts();
+    assertEquals(1, artifacts.size());
+
+    ProvisioArtifact artifact = artifacts.get(0);
+    assertEquals("this", artifact.getReference());
+    assertEquals("wrapper.jar", artifact.getName());    
   }
   
   private List<ActionDescriptor> actionDescriptors() {

@@ -1,9 +1,5 @@
 package io.tesla.maven.plugins.provisio;
 
-import io.provis.model.Runtime;
-import io.provis.model.io.RuntimeReader;
-import io.provis.provision.Actions;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -18,12 +14,17 @@ import javax.inject.Singleton;
 
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.util.FileUtils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+
+import io.provis.model.Runtime;
+import io.provis.model.io.RuntimeReader;
+import io.provis.provision.Actions;
 
 @Named
 @Singleton
@@ -93,7 +94,8 @@ public class Provisio {
   //
   private Map<String, String> versionMap(MavenProject project) {
     Map<String, String> versionMap = Maps.newHashMap();
-    if (!project.getDependencyManagement().getDependencies().isEmpty()) {
+    DependencyManagement dependencyManagement = project.getDependencyManagement();
+    if (dependencyManagement != null) {
       for (Dependency managedDependency : project.getDependencyManagement().getDependencies()) {
         String versionlessCoordinate = toVersionlessCoordinate(managedDependency);
         versionMap.put(versionlessCoordinate, managedDependency.getVersion());
@@ -110,7 +112,8 @@ public class Provisio {
 
   public List<String> getManagedDependencies(MavenProject project) {
     List<String> managedDependencies = Lists.newArrayList();
-    if (!project.getDependencyManagement().getDependencies().isEmpty()) {
+    DependencyManagement dependencyManagement = project.getDependencyManagement();
+    if (dependencyManagement != null) {
       for (Dependency managedDependency : project.getDependencyManagement().getDependencies()) {
         managedDependencies.add(toCoordinate(managedDependency));
       }

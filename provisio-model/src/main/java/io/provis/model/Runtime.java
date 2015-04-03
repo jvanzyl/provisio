@@ -17,13 +17,24 @@ public class Runtime {
   private List<ArtifactSet> artifactSets;
   // ArtifactSet references
   private Map<String, ArtifactSet> artifactSetReferences;
+  // Artifact references
+  private Map<String, ProvisioArtifact> artifactReferences;
   // ResourceSets
   private List<ResourceSet> resourceSets;
   // Variables
   Map<String, String> variables;
   // FileSets
   private List<FileSet> fileSets;
-  
+
+  public Runtime() {
+    this.actions = Lists.newArrayList();
+    this.artifactSets = Lists.newArrayList();
+    this.artifactSetReferences = Maps.newHashMap();
+    this.artifactReferences = Maps.newHashMap();
+    this.resourceSets = Lists.newArrayList();
+    this.fileSets = Lists.newArrayList();
+  }
+
   public String getId() {
     return id;
   }
@@ -33,9 +44,6 @@ public class Runtime {
   }
 
   public void addAction(ProvisioningAction action) {
-    if (actions == null) {
-      actions = Lists.newArrayList();
-    }
     actions.add(action);
   }
 
@@ -44,9 +52,6 @@ public class Runtime {
   }
 
   public void addArtifactSet(ArtifactSet artifactSet) {
-    if (artifactSets == null) {
-      artifactSets = Lists.newArrayList();
-    }
     artifactSets.add(artifactSet);
   }
 
@@ -55,10 +60,15 @@ public class Runtime {
   }
 
   public void addArtifactSetReference(String refId, ArtifactSet artifactSet) {
-    if (artifactSetReferences == null) {
-      artifactSetReferences = Maps.newHashMap();
-    }
     artifactSetReferences.put(refId, artifactSet);
+  }
+
+  public Map<String, ProvisioArtifact> getArtifactReferences() {
+    return artifactReferences;
+  }
+
+  public void addArtifactReference(String refId, ProvisioArtifact artifact) {
+    artifactReferences.put(refId, artifact);
   }
 
   public List<ResourceSet> getResourceSets() {
@@ -66,9 +76,6 @@ public class Runtime {
   }
 
   public void addResourceSet(ResourceSet resourceSet) {
-    if (resourceSets == null) {
-      resourceSets = Lists.newArrayList();
-    }
     resourceSets.add(resourceSet);
   }
 
@@ -77,9 +84,6 @@ public class Runtime {
   }
 
   public void addFileSet(FileSet fileSet) {
-    if (fileSets == null) {
-      fileSets = Lists.newArrayList();
-    }
     fileSets.add(fileSet);
   }
 
@@ -96,22 +100,26 @@ public class Runtime {
     for (ArtifactSet artifactSet : artifactSets) {
       if (artifactSet.getArtifacts() != null) {
         for (ProvisioArtifact artifact : artifactSet.getArtifacts()) {
-          dependenciesInVersionlessForm.add(artifact.getGA());
+          if (artifact.getReference() == null) {
+            dependenciesInVersionlessForm.add(artifact.getGA());
+          }
         }
       }
     }
     return dependenciesInVersionlessForm;
-  }  
+  }
 
   public Set<String> getVersionlessCoordinatesOfArtifacts() {
     Set<String> dependenciesInVersionlessForm = new HashSet<String>();
     for (ArtifactSet artifactSet : artifactSets) {
       if (artifactSet.getArtifacts() != null) {
         for (ProvisioArtifact artifact : artifactSet.getArtifacts()) {
-          dependenciesInVersionlessForm.add(artifact.toVersionlessCoordinate());
+          if(artifact.getReference() == null) {
+            dependenciesInVersionlessForm.add(artifact.toVersionlessCoordinate());
+          }
         }
       }
     }
     return dependenciesInVersionlessForm;
-  }  
+  }
 }

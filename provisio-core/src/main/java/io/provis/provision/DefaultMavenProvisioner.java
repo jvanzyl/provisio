@@ -1,21 +1,9 @@
 package io.provis.provision;
 
-import io.provis.model.ArtifactSet;
-import io.provis.model.Directory;
-import io.provis.model.FileSet;
-import io.provis.model.Lookup;
-import io.provis.model.ProvisioArtifact;
-import io.provis.model.ProvisioningAction;
-import io.provis.model.ProvisioningContext;
-import io.provis.model.ProvisioningRequest;
-import io.provis.model.ProvisioningResult;
-import io.provis.model.Resource;
-import io.provis.model.ResourceSet;
-import io.provis.model.Runtime;
-import io.provis.provision.action.artifact.WriteToDiskAction;
-
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +32,20 @@ import org.eclipse.aether.util.filter.ExclusionsDependencyFilter;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.common.io.Files;
+
+import io.provis.model.ArtifactSet;
+import io.provis.model.Directory;
+import io.provis.model.FileSet;
+import io.provis.model.Lookup;
+import io.provis.model.ProvisioArtifact;
+import io.provis.model.ProvisioningAction;
+import io.provis.model.ProvisioningContext;
+import io.provis.model.ProvisioningRequest;
+import io.provis.model.ProvisioningResult;
+import io.provis.model.Resource;
+import io.provis.model.ResourceSet;
+import io.provis.model.Runtime;
+import io.provis.provision.action.artifact.WriteToDiskAction;
 
 public class DefaultMavenProvisioner implements MavenProvisioner {
 
@@ -59,7 +60,7 @@ public class DefaultMavenProvisioner implements MavenProvisioner {
   }
 
   @Override
-public ProvisioningResult provision(ProvisioningRequest request) throws Exception {
+  public ProvisioningResult provision(ProvisioningRequest request) throws Exception {
     ProvisioningResult result = new ProvisioningResult();
     ProvisioningContext context = new ProvisioningContext(request, result);
 
@@ -67,7 +68,7 @@ public ProvisioningResult provision(ProvisioningRequest request) throws Exceptio
     processResourceSets(context);
     processFileSets(context);
     processRuntimeActions(context);
-    
+
     return result;
   }
 
@@ -76,7 +77,7 @@ public ProvisioningResult provision(ProvisioningRequest request) throws Exceptio
   // ArtifactSets
   //
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  
+
   private void processArtifactSets(ProvisioningContext context) throws Exception {
     for (ArtifactSet artifactSet : context.getRequest().getRuntimeModel().getArtifactSets()) {
       processArtifactSet(context, artifactSet);
@@ -95,7 +96,7 @@ public ProvisioningResult provision(ProvisioningRequest request) throws Exceptio
       }
     }
   }
-  
+
   private void resolveArtifactSetOutputDirectory(ProvisioningContext context, ArtifactSet artifactSet) {
     ArtifactSet parent = artifactSet.getParent();
     if (parent != null) {
@@ -115,8 +116,7 @@ public ProvisioningResult provision(ProvisioningRequest request) throws Exceptio
   //
   // Process actions that apply across filesets
   //
-  private void processArtifactSetActions(ProvisioningContext context, ArtifactSet artifactSet) throws Exception {
-  }
+  private void processArtifactSetActions(ProvisioningContext context, ArtifactSet artifactSet) throws Exception {}
 
   //
   // Process actions that apply to artifacts
@@ -167,6 +167,25 @@ public ProvisioningResult provision(ProvisioningRequest request) throws Exceptio
 
     for (ProvisioArtifact artifact : artifacts) {
 
+      if (artifact.getReference() != null) {
+        Runtime runtime = context.getRequest().getRuntimeModel();
+        if (runtime.getArtifactReferences() == null) {
+          throw new RuntimeException(String.format("The reference '%s' is being requested but the artifact references are null.", artifact.getReference()));
+        }
+
+        ProvisioArtifact referenceArtifact = runtime.getArtifactReferences().get(artifact.getReference());
+        if (referenceArtifact == null) {
+          throw new RuntimeException(String.format("The is no '%s' artifact reference available.", artifact.getReference()));
+        }
+        
+        // We need a way to copy the artifact
+        if (artifact.getName() != null) {
+          referenceArtifact.setName(artifact.getName());
+        }
+        providedArtifacts.add(referenceArtifact);
+        continue;
+      }
+
       if (artifact.getFile() != null) {
         providedArtifacts.add(artifact);
         continue;
@@ -176,9 +195,9 @@ public ProvisioningResult provision(ProvisioningRequest request) throws Exceptio
       //
       // ArtifactType
       //
-      // String id 
-      // String extension 
-      // String classifier 
+      // String id
+      // String extension
+      // String classifier
       // String language
       // boolean constitutesBuildPath
       // boolean includesDependencies (self-contained so don't attempt to download anything described in the dependency descriptor (POM)
@@ -192,7 +211,7 @@ public ProvisioningResult provision(ProvisioningRequest request) throws Exceptio
       }
 
       //
-      //TODO: Inside Maven this is not null but it should be ??? There is nothing in the type registry for it.
+      // TODO: Inside Maven this is not null but it should be ??? There is nothing in the type registry for it.
       //
       if (getArtifactType(artifact.getExtension()) == null) {
         //
@@ -267,13 +286,13 @@ public ProvisioningResult provision(ProvisioningRequest request) throws Exceptio
     // We want to use this first in a calculation of overlapping dependencies between FileSets that have a parent-->child relationship. We are making the assumption that a
     // classloader relationship will be setup along the lines of the parent-->child relationship. So we only want to place in the child's directory the artifacts that
     // are not present in the parent.
-    //    
+    //
     ArtifactSet parent = artifactSet.getParent();
     if (parent != null) {
       Set<ProvisioArtifact> parentArtifacts = artifactSet.getParent().getResolvedArtifacts();
       //
       // contained by childArtifacts and not contained in parentArtifacts
-      //      
+      //
       Set<ProvisioArtifact> childResolvedArtifacts = Sets.difference(resolvedArtifacts, parentArtifacts);
       artifactSet.setResolvedArtifacts(childResolvedArtifacts);
     } else {
@@ -320,13 +339,13 @@ public ProvisioningResult provision(ProvisioningRequest request) throws Exceptio
   public ArtifactType getArtifactType(String typeId) {
     return repositorySystemSession.getArtifactTypeRegistry().get(typeId);
   }
-  
+
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //
   // ResourceSets
   //
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
-  
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   private void processResourceSets(ProvisioningContext context) throws Exception {
     List<ResourceSet> resourceSets = context.getRequest().getRuntime().getResourceSets();
     if (resourceSets != null) {
@@ -337,20 +356,20 @@ public ProvisioningResult provision(ProvisioningRequest request) throws Exceptio
             throw new RuntimeException(String.format("The specified file %s does not exist.", source));
           }
           File target = new File(context.getRequest().getOutputDirectory(), source.getName());
-          Files.copy(source, target);
+          copy(source, target);
         }
       }
     }
   }
-  
+
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //
   // FileSets
   //
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   static Joiner joiner = Joiner.on(',').skipNulls();
-  
+
   private void processFileSets(ProvisioningContext context) throws Exception {
     List<FileSet> fileSets = context.getRequest().getRuntime().getFileSets();
     if (fileSets != null) {
@@ -362,10 +381,10 @@ public ProvisioningResult provision(ProvisioningRequest request) throws Exceptio
             throw new RuntimeException(String.format("The specified file %s does not exist.", source));
           }
           File target = new File(context.getRequest().getOutputDirectory(), source.getName());
-          Files.copy(source, target);
+          copy(source, target);
         }
         // Directories
-        for(Directory directory : fileSet.getDirectories()) {
+        for (Directory directory : fileSet.getDirectories()) {
           File sourceDirectory = new File(directory.getPath());
           File targetDirectory = context.getRequest().getOutputDirectory();
           copyDirectoryStructure(sourceDirectory, targetDirectory, directory.getIncludes(), directory.getExcludes());
@@ -373,32 +392,36 @@ public ProvisioningResult provision(ProvisioningRequest request) throws Exceptio
       }
     }
   }
-  
-  private void copyDirectoryStructure(File sourceDirectory, File targetDirectory, List<String>includes, List<String> excludes) throws IOException {
+
+  private void copyDirectoryStructure(File sourceDirectory, File targetDirectory, List<String> includes, List<String> excludes) throws IOException {
     String includesString = null;
-    if(includes != null && !includes.isEmpty() ) {
+    if (includes != null && !includes.isEmpty()) {
       includesString = joiner.join(includes);
     }
     String excludesString = null;
-    if(excludes != null && !excludes.isEmpty()) {
-      excludesString = joiner.join(excludes); 
+    if (excludes != null && !excludes.isEmpty()) {
+      excludesString = joiner.join(excludes);
     }
     List<String> relativePaths = FileUtils.getFileNames(sourceDirectory, includesString, excludesString, false);
-    for(String relativePath : relativePaths) {
-      File source= new File(sourceDirectory, relativePath);
+    for (String relativePath : relativePaths) {
+      File source = new File(sourceDirectory, relativePath);
       File target = new File(targetDirectory, relativePath);
-      if(!target.getParentFile().exists()) {
+      if (!target.getParentFile().exists()) {
         target.getParentFile().mkdirs();
       }
-      Files.copy(source, target);
+      copy(source, target);
     }
+  }
+
+  private void copy(File source, File target) throws IOException {
+    Files.copy(source.toPath(), target.toPath(), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
   }
   
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //
   // Actions
   //
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   private void processRuntimeActions(ProvisioningContext context) throws Exception {
     List<ProvisioningAction> runtimeActions = context.getRequest().getRuntime().getActions();
@@ -409,7 +432,7 @@ public ProvisioningResult provision(ProvisioningRequest request) throws Exceptio
       }
     }
   }
-  
+
   // Configuring Actions, this needs to change
 
   Lookup lookup = new Lookup();

@@ -1,12 +1,5 @@
 package io.provis.provision.action.artifact;
 
-import io.provis.model.ProvisioningAction;
-import io.provis.model.ProvisioningContext;
-import io.provis.model.io.InterpolatingInputStream;
-import io.tesla.proviso.archive.Selector;
-import io.tesla.proviso.archive.UnArchiver;
-import io.tesla.proviso.archive.UnarchivingEntryProcessor;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,10 +10,17 @@ import java.util.Map;
 import javax.inject.Named;
 
 import org.codehaus.plexus.util.StringUtils;
-import org.eclipse.aether.artifact.Artifact;
 
 import com.google.common.base.Splitter;
 import com.google.common.io.ByteStreams;
+
+import io.provis.model.ProvisioArtifact;
+import io.provis.model.ProvisioningAction;
+import io.provis.model.ProvisioningContext;
+import io.provis.model.io.InterpolatingInputStream;
+import io.tesla.proviso.archive.Selector;
+import io.tesla.proviso.archive.UnArchiver;
+import io.tesla.proviso.archive.UnarchivingEntryProcessor;
 
 /**
  * The unpack is an operation that results in any number of artifacts and resources being contributed to the runtime. The archive to be unpacked can
@@ -37,7 +37,7 @@ public class UnpackAction implements ProvisioningAction {
   private boolean flatten;
   private boolean filter;
   private String filterIncludes;
-  private Artifact artifact;
+  private ProvisioArtifact artifact;
   private File outputDirectory;
 
   private static final Splitter splitter = Splitter.on(',').trimResults().omitEmptyStrings();
@@ -113,11 +113,11 @@ public class UnpackAction implements ProvisioningAction {
     this.flatten = flatten;
   }
 
-  public Artifact getArtifact() {
+  public ProvisioArtifact getArtifact() {
     return artifact;
   }
 
-  public void setArtifact(Artifact artifact) {
+  public void setArtifact(ProvisioArtifact artifact) {
     this.artifact = artifact;
   }
 

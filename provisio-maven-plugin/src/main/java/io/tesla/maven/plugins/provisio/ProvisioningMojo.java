@@ -1,15 +1,5 @@
 package io.tesla.maven.plugins.provisio;
 
-import io.provis.model.ArtifactSet;
-import io.provis.model.ProvisioArtifact;
-import io.provis.model.ProvisioningRequest;
-import io.provis.model.ProvisioningResult;
-import io.provis.model.Runtime;
-import io.provis.provision.DefaultMavenProvisioner;
-import io.provis.provision.MavenProvisioner;
-import io.takari.incrementalbuild.Incremental;
-import io.takari.incrementalbuild.Incremental.Configuration;
-
 import java.io.File;
 import java.util.Collections;
 import java.util.Map;
@@ -18,7 +8,6 @@ import javax.inject.Inject;
 
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -38,7 +27,15 @@ import org.eclipse.aether.artifact.DefaultArtifactType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Maps;
+import io.provis.model.ArtifactSet;
+import io.provis.model.ProvisioArtifact;
+import io.provis.model.ProvisioningRequest;
+import io.provis.model.ProvisioningResult;
+import io.provis.model.Runtime;
+import io.provis.provision.DefaultMavenProvisioner;
+import io.provis.provision.MavenProvisioner;
+import io.takari.incrementalbuild.Incremental;
+import io.takari.incrementalbuild.Incremental.Configuration;
 
 @Mojo(name = "provision", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class ProvisioningMojo extends AbstractMojo {
@@ -50,10 +47,10 @@ public class ProvisioningMojo extends AbstractMojo {
 
   @Inject
   private Provisio provisio;
-  
+
   @Inject
   private MavenProjectHelper projectHelper;
-  
+
   @Parameter(defaultValue = "${project}")
   @Incremental(configuration = Configuration.ignore)
   protected MavenProject project;
@@ -70,13 +67,27 @@ public class ProvisioningMojo extends AbstractMojo {
   @Parameter(defaultValue = "${session}")
   private MavenSession session;
 
+  @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
 
     for (Runtime runtime : provisio.findDescriptors(descriptorDirectory, project)) {
       //
       // Add the ArtifactSet reference for the runtime classpath
       //
-      runtime.addArtifactSetReference("runtime.classpath", getRuntimeClasspathAsArtifactSet());
+      ArtifactSet runtimeArtifacts = getRuntimeClasspathAsArtifactSet();
+      ProvisioArtifact projectArtifact = projectArtifact();
+      if (projectArtifact != null) {
+        runtime.addArtifactReference("projectArtifact", projectArtifact);
+        runtimeArtifacts.addArtifact(projectArtifact);
+        //
+        // If this is not a provisio-based packaging type, but we have no way to know that really. The presto-plugin
+        // packaging type uses provisio but there is no way to inherit packaging types
+        //
+        if (!project.getPackaging().equals("jar")) {
+          projectHelper.attachArtifact(project, "jar", projectArtifact.getFile());
+        }
+      }
+      runtime.addArtifactSetReference("runtime.classpath", runtimeArtifacts);
       //
       // Provision the runtime
       //
@@ -102,13 +113,28 @@ public class ProvisioningMojo extends AbstractMojo {
       }
     }
   }
-  
+
+  private ProvisioArtifact projectArtifact() {
+    ProvisioArtifact jarArtifact = null;
+    //
+    // We also need to definitively know what others types of runtime artifacts have been created. Right now there
+    // is no real protocol for knowing what something like, say, the JAR plugin did to drop off a file somewhere. We
+    // need to improve this but for now we'll look.
+    //
+    File jar = new File(project.getBuild().getDirectory(), project.getArtifactId() + "-" + project.getVersion() + ".jar");
+    if (jar.exists()) {
+      jarArtifact = new ProvisioArtifact(project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion());
+      jarArtifact.setFile(jar);
+    }
+    return jarArtifact;
+  }
+
   //
   // We want to produce an artifact set the corresponds to the runtime classpath of the project. This ArtifactSet will contain:
   //
   // - runtime dependencies
   // - any artifacts produced by this build
-  //  
+  //
   private ArtifactSet getRuntimeClasspathAsArtifactSet() {
     //
     // project.getArtifacts() will return us the runtime artifacts as that's the resolution scope we have requested
@@ -118,20 +144,6 @@ public class ProvisioningMojo extends AbstractMojo {
     for (org.apache.maven.artifact.Artifact mavenArtifact : project.getArtifacts()) {
       artifactSet.addArtifact(new ProvisioArtifact(toArtifact(mavenArtifact)));
     }
-    //
-    // We also need to definitively know what others types of runtime artifacts have been created. Right now there
-    // is no real protocol for knowing what something like, say, the JAR plugin did to drop off a file somewhere. We
-    // need to improve this but for now we'll look.
-    //
-    File jar = new File(project.getBuild().getDirectory(), project.getArtifactId() + "-" + project.getVersion() + ".jar");
-    if (jar.exists() && !project.getPackaging().equals("jar")) {
-      ProvisioArtifact jarArtifact = new ProvisioArtifact(project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion());
-      jarArtifact.setFile(jar);
-      artifactSet.addArtifact(jarArtifact);
-      // Make the JAR built from a project available to the reactor
-      projectHelper.attachArtifact(project, "jar", jar);
-    }
-
     return artifactSet;
   }
 
@@ -151,8 +163,8 @@ public class ProvisioningMojo extends AbstractMojo {
       props = Collections.singletonMap(ArtifactProperties.LOCAL_PATH, localPath);
     }
 
-    Artifact result = new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier(), artifact.getArtifactHandler().getExtension(), version, props, newArtifactType(
-        artifact.getType(), artifact.getArtifactHandler()));
+    Artifact result = new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier(), artifact.getArtifactHandler().getExtension(), version, props,
+        newArtifactType(artifact.getType(), artifact.getArtifactHandler()));
     result = result.setFile(artifact.getFile());
 
     return result;
