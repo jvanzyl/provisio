@@ -67,7 +67,6 @@ public class ProvisioningMojo extends AbstractMojo {
   @Parameter(defaultValue = "${session}")
   private MavenSession session;
 
-  @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
 
     for (Runtime runtime : provisio.findDescriptors(descriptorDirectory, project)) {

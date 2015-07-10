@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.maven.model.Parent;
 import org.apache.maven.model.Repository;
 import org.apache.maven.model.building.FileModelSource;
 import org.apache.maven.model.building.ModelSource;
@@ -39,6 +40,7 @@ import org.apache.maven.model.resolution.InvalidRepositoryException;
 import org.apache.maven.model.resolution.ModelResolver;
 import org.apache.maven.model.resolution.UnresolvableModelException;
 import org.apache.maven.repository.internal.ArtifactDescriptorUtils;
+import org.apache.maven.repository.internal.DefaultArtifactDescriptorReader;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.RequestTrace;
 import org.eclipse.aether.artifact.Artifact;
@@ -93,20 +95,12 @@ public class DefaultModelResolver implements ModelResolver {
     this.repositoryIds = new HashSet<String>(original.repositoryIds);
   }
 
-  public void addRepository(Repository repository) throws InvalidRepositoryException {
-    if (session.isIgnoreArtifactDescriptorRepositories() || !repositoryIds.add(repository.getId())) {
-      return;
-    }
-
-    List<RemoteRepository> newRepositories = Collections.singletonList(ArtifactDescriptorUtils.toRemoteRepository(repository));
-
-    this.repositories = remoteRepositoryManager.aggregateRepositories(session, repositories, newRepositories, true);
-  }
-
+  @Override
   public ModelResolver newCopy() {
     return new DefaultModelResolver(this);
   }
 
+  @Override
   public ModelSource resolveModel(String groupId, String artifactId, String version) throws UnresolvableModelException {
     Artifact pomArtifact = new DefaultArtifact(groupId, artifactId, "", "pom", version);
 
@@ -123,4 +117,23 @@ public class DefaultModelResolver implements ModelResolver {
     return new FileModelSource(pomFile);
   }
 
+  @Override
+  public ModelSource resolveModel(Parent parent) throws UnresolvableModelException {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void addRepository(Repository repository, boolean replace) throws InvalidRepositoryException {
+    if (session.isIgnoreArtifactDescriptorRepositories() || !repositoryIds.add(repository.getId())) {
+      return;
+    }
+    List<RemoteRepository> newRepositories = Collections.singletonList(ArtifactDescriptorUtils.toRemoteRepository(repository));
+    this.repositories = remoteRepositoryManager.aggregateRepositories(session, repositories, newRepositories, true);    
+  }
+
+  @Override
+  public void addRepository(Repository repository) throws InvalidRepositoryException {
+    addRepository(repository, false);
+  }
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
 
@@ -33,10 +34,9 @@
     <surefire.redirectTestOutputToFile>true</surefire.redirectTestOutputToFile>
     <surefire.runOrder>alphabetical</surefire.runOrder>
     <surefire.mem>-Xmx256m</surefire.mem>
-    <mavenVersion>3.1.1</mavenVersion>
-    <aetherVersion>0.9.0.M2</aetherVersion>
-    <sisuInjectVersion>0.0.0.M5</sisuInjectVersion>
+    <mavenVersion>3.3.3</mavenVersion>
     <takariArchiverVersion>0.1.9</takariArchiverVersion>
+    <aetherVersion>1.0.2.v20150114</aetherVersion>
   </properties>
 
   <scm>
@@ -48,6 +48,13 @@
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven</artifactId>
+        <version>${mavenVersion}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
       <dependency>
         <groupId>javax.inject</groupId>
         <artifactId>javax.inject</artifactId>
@@ -64,83 +71,16 @@
         <version>0.1.18-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-api</artifactId>
-        <version>1.6.1</version>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-simple</artifactId>
-        <version>1.6.1</version>
-      </dependency>
-      <dependency>
-        <groupId>org.codehaus.plexus</groupId>
-        <artifactId>plexus-utils</artifactId>
-        <version>3.0.15</version>
-      </dependency>
-      <!-- Aether for org.eclipse.provisoprovisioning -->
-      <dependency>
-        <groupId>org.eclipse.aether</groupId>
-        <artifactId>aether-spi</artifactId>
-        <version>${aetherVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.eclipse.aether</groupId>
-        <artifactId>aether-api</artifactId>
-        <version>${aetherVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.eclipse.aether</groupId>
-        <artifactId>aether-impl</artifactId>
-        <version>${aetherVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.eclipse.aether</groupId>
-        <artifactId>aether-util</artifactId>
-        <version>${aetherVersion}</version>
-      </dependency>
-      <!-- Maven -->
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-aether-provider</artifactId>
-        <version>${mavenVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-settings-builder</artifactId>
-        <version>${mavenVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-settings</artifactId>
-        <version>${mavenVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-core</artifactId>
-        <version>${mavenVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-model</artifactId>
-        <version>${mavenVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-plugin-api</artifactId>
-        <version>${mavenVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava</artifactId>
-        <version>18.0</version>
-      </dependency>
-      <dependency>
         <groupId>io.takari</groupId>
         <artifactId>takari-archiver</artifactId>
         <version>${takariArchiverVersion}</version>
       </dependency>
       <!-- Guice -->
+      <dependency>
+        <groupId>org.eclipse.sisu</groupId>
+        <artifactId>org.eclipse.sisu.inject</artifactId>
+        <version>0.3.1</version>
+      </dependency>
       <dependency>
         <groupId>org.eclipse.sisu</groupId>
         <artifactId>org.eclipse.sisu.inject.tests</artifactId>
@@ -166,57 +106,11 @@
         <filtering>true</filtering>
       </resource>
     </resources>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.eclipse.m2e</groupId>
-          <artifactId>lifecycle-mapping</artifactId>
-          <version>1.0.0</version>
-          <configuration>
-            <lifecycleMappingMetadata>
-              <pluginExecutions>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>org.sonatype.plugins</groupId>
-                    <artifactId>sisu-maven-plugin</artifactId>
-                    <versionRange>[1.1,)</versionRange>
-                    <goals>
-                      <goal>test-index</goal>
-                      <goal>main-index</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <ignore />
-                  </action>
-                </pluginExecution>
-              </pluginExecutions>
-            </lifecycleMappingMetadata>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.sonatype.plugins</groupId>
-          <artifactId>sisu-maven-plugin</artifactId>
-          <version>1.1</version>
-          <executions>
-            <execution>
-              <id>generate-index</id>
-              <goals>
-                <goal>main-index</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
-      </plugins>
-    </pluginManagement>
     <plugins>
       <plugin>
         <groupId>io.takari.maven.plugins</groupId>
         <artifactId>takari-lifecycle-plugin</artifactId>
-        <version>1.10.1</version>
         <extensions>true</extensions>
-        <configuration>
-          <proc>proc</proc>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -245,6 +139,11 @@
       <plugin>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>sisu-maven-plugin</artifactId>
+        <version>0.3.1</version>
+        <goals>
+          <goal>index</goal>
+          <goal>test-index</goal>
+        </goals>
       </plugin>
     </plugins>
   </build>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
 
@@ -9,7 +10,7 @@
     <version>0.1.18-SNAPSHOT</version>
   </parent>
   <artifactId>provisio-testing</artifactId>
-  <packaging>${lifecycle}</packaging>  
+  <packaging>${lifecycle}</packaging>
   <name>Provisio :: Testing</name>
   <description>Testing Utilities for Provisioning</description>
 
@@ -22,7 +23,6 @@
     <dependency>
       <groupId>javax.inject</groupId>
       <artifactId>javax.inject</artifactId>
-      <version>1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -35,13 +35,25 @@
     </dependency>
     <dependency>
       <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-util</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
       <artifactId>aether-impl</artifactId>
     </dependency>
     <dependency>
       <groupId>org.eclipse.aether</groupId>
-      <artifactId>aether-connector-file</artifactId>
-      <version>0.9.0.M2</version>
+      <artifactId>aether-connector-basic</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-transport-file</artifactId>
+      <version>${aetherVersion}</version>
+    </dependency>    
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-spi</artifactId>
+    </dependency>    
     <dependency>
       <groupId>io.takari.aether</groupId>
       <artifactId>aether-connector-okhttp</artifactId>
@@ -60,8 +72,13 @@
       <artifactId>guava</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model-builder</artifactId>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

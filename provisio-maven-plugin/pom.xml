@@ -1,38 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>io.provis</groupId>
     <artifactId>provisio</artifactId>
     <version>0.1.18-SNAPSHOT</version>
   </parent>
-  <packaging>maven-plugin</packaging>
+  <packaging>takari-maven-plugin</packaging>
   <groupId>io.takari.maven.plugins</groupId>
   <artifactId>provisio-maven-plugin</artifactId>
 
-  <prerequisites>
-    <maven>3.2.2</maven>
-  </prerequisites>
-
   <properties>
-    <mavenVersion>3.2.2</mavenVersion>
-    <aetherVersion>0.9.0.M2</aetherVersion>
     <incrementalbuild.version>0.7.0</incrementalbuild.version>
     <takariLifecyclePluginVersion>1.7.4</takariLifecyclePluginVersion>
   </properties>
 
   <dependencies>
     <dependency>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>
       <artifactId>maven-plugin-annotations</artifactId>
-      <version>3.2</version>
       <scope>provided</scope>
-    </dependency>   
+    </dependency>
     <dependency>
       <groupId>io.takari</groupId>
       <artifactId>incrementalbuild</artifactId>
       <version>${incrementalbuild.version}</version>
-    </dependency>    
+    </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
@@ -46,20 +44,24 @@
       <artifactId>maven-plugin-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.sonatype.sisu</groupId>
-      <artifactId>sisu-guice</artifactId>
-      <version>3.0.2</version>
-      <classifier>no_aop</classifier>
-      <exclusions>
-        <exclusion>
-          <groupId>javax.inject</groupId>
-          <artifactId>javax.inject</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>aopalliance</groupId>
-          <artifactId>aopalliance</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-artifact</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.provis</groupId>
+      <artifactId>provisio-model</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-classworlds</artifactId>
     </dependency>
     <dependency>
       <groupId>io.provis</groupId>
@@ -69,37 +71,18 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-spi</artifactId>
+    </dependency>
     <!-- Test -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>
   </dependencies>
-  
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-plugin-plugin</artifactId>
-          <version>3.3</version>
-          <configuration>
-            <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
-            <extractors>
-              <extractor>java-annotations</extractor>
-            </extractors>
-          </configuration>
-          <executions>
-            <execution>
-              <id>default-descriptor</id>
-              <phase>process-classes</phase>
-              <goals>
-                <goal>descriptor</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>  
 </project>

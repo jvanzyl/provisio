@@ -1,7 +1,5 @@
 package io.provis.testing;
 
-import io.takari.aether.connector.AetherRepositoryConnectorFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -27,13 +25,11 @@ import org.eclipse.aether.RequestTrace;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
-import org.eclipse.aether.connector.file.FileRepositoryConnectorFactory;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.impl.ArtifactResolver;
 import org.eclipse.aether.impl.DefaultServiceLocator;
 import org.eclipse.aether.impl.RemoteRepositoryManager;
-import org.eclipse.aether.internal.impl.DefaultFileProcessor;
 import org.eclipse.aether.internal.impl.SimpleLocalRepositoryManagerFactory;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.RemoteRepository;
@@ -41,8 +37,6 @@ import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
 import org.eclipse.aether.resolution.ArtifactDescriptorResult;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.DependencyRequest;
-import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
-import org.eclipse.aether.spi.io.FileProcessor;
 import org.eclipse.aether.spi.locator.ServiceLocator;
 import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.util.filter.DependencyFilterUtils;
@@ -202,9 +196,11 @@ public class RemoteRepositoryGenerator {
 
   private ServiceLocator serviceLocator() {
     DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
+    /*
     locator.addService(RepositoryConnectorFactory.class, FileRepositoryConnectorFactory.class);
     locator.addService(RepositoryConnectorFactory.class, AetherRepositoryConnectorFactory.class);
     locator.addService(FileProcessor.class, DefaultFileProcessor.class);
+    */
     return locator;
   }
 
