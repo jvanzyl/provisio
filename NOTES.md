@@ -1,0 +1,1 @@
+There some testing capabilities for generating repositories that i need to integrate into general maven provisioning testing.
