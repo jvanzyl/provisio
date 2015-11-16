@@ -1,0 +1,21 @@
+<assembly>    
+  <!-- 
+   | Logback classic >> Logback core >> SLF4J API so we expect the following
+   | shape:
+   |
+   | lib/
+   |   logback-classic
+   |   ext/
+   |     logback-core
+   |     slf4j-api
+   |
+   | In this case do we expect logback core to act as an exclude in the parent
+   | artifact set? This will prevent it from being resolved in the parent
+   -->
+  <artifactSet to="lib">
+    <artifact id="ch.qos.logback:logback-classic:${logbackVersion}"/>
+    <artifactSet to="ext">
+      <artifact id="ch.qos.logback:logback-core:${logbackVersion}"/>
+    </artifactSet>
+  </artifactSet>      
+</assembly>

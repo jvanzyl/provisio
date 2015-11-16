@@ -5,8 +5,6 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.aether.artifact.Artifact;
-
 public class Lookup {
     
   
@@ -38,9 +36,9 @@ public class Lookup {
     } else if(Boolean.class.isAssignableFrom(type)) {
       // We need to use an Object but we need to look at the target field
       type = boolean.class;
-    } else if (Artifact.class.isAssignableFrom(type)){
-      type = Artifact.class;
-    }
+    } //else if (Artifact.class.isAssignableFrom(type)){
+      //type = Artifact.class;
+    //}
 
     Method m = getMethod(c, methodName, new Class[] { type });
     if (m != null) {

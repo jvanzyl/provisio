@@ -1,12 +1,13 @@
 package io.provis.model;
 
 import java.io.File;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 public class ArtifactSet {
 
@@ -14,17 +15,17 @@ public class ArtifactSet {
   private String directory;
   private String reference;
 
-  private List<ProvisioArtifact> artifacts;
-  private List<Resource> resources;
+  private List<ProvisioArtifact> artifacts = Lists.newArrayList();
+  private List<Resource> resources = Lists.newArrayList();
   // children
-  private List<ArtifactSet> artifactSets;
-  private List<String> excludes;
+  private List<ArtifactSet> artifactSets = Lists.newArrayList();
+  private List<String> excludes = Lists.newArrayList();
 
   // runtime
   private ArtifactSet parent;
   private File outputDirectory;
-  private Map<String, ProvisioArtifact> artifactMap;
-  private Set<ProvisioArtifact> resolvedArtifacts;
+  private Map<String, ProvisioArtifact> artifactMap = Maps.newLinkedHashMap();
+  private Set<ProvisioArtifact> resolvedArtifacts = Sets.newHashSet();
 
   public String getDirectory() {
     return directory;
@@ -35,9 +36,6 @@ public class ArtifactSet {
   }
   
   public void addArtifact(ProvisioArtifact artifact) {
-    if (artifacts == null) {
-      artifacts = Lists.newArrayList();
-    }
     artifacts.add(artifact);
   }
 
@@ -86,9 +84,6 @@ public class ArtifactSet {
   }
 
   public Map<String, ProvisioArtifact> getArtifactMap() {
-    if (artifactMap == null) {
-      artifactMap = new LinkedHashMap<String, ProvisioArtifact>();
-    }
     if (artifacts != null) {
       for (ProvisioArtifact artifact : artifacts) {
         artifactMap.put(artifact.getCoordinate(), artifact);
@@ -99,7 +94,7 @@ public class ArtifactSet {
 
   @Override
   public String toString() {
-    return "ArtifactSet [directory=" + directory + ", artifacts=" + artifacts + "]";
+    return "ArtifactSet [directory=" + directory + ", artifacts=" + artifacts + ", artifactSets=" + artifactSets + ", parent=" + parent + ", resolvedArtifacts=" + resolvedArtifacts + "]";
   }
 
   //

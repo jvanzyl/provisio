@@ -1,0 +1,14 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.provis</groupId>
+    <artifactId>provisio-its</artifactId>
+    <version>0.1.18-SNAPSHOT</version>
+  </parent>
+  <artifactId>provisio-test-0001</artifactId>
+  <version>1.0</version>
+  <packaging>provisio</packaging>  
+  <properties>
+    <logbackVersion>1.0.7</logbackVersion>
+  </properties>          
+</project>

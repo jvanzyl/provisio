@@ -32,7 +32,7 @@ import io.provis.model.ProvisioArtifact;
 import io.provis.model.ProvisioningRequest;
 import io.provis.model.ProvisioningResult;
 import io.provis.model.Runtime;
-import io.provis.provision.DefaultMavenProvisioner;
+import io.provis.provision.MavenProvisioner;
 import io.provis.provision.MavenProvisioner;
 import io.takari.incrementalbuild.Incremental;
 import io.takari.incrementalbuild.Incremental.Configuration;
@@ -96,7 +96,7 @@ public class ProvisioningMojo extends AbstractMojo {
       request.setVariables(runtime.getVariables());
       request.setManagedDependencies(provisio.getManagedDependencies(project));
 
-      MavenProvisioner provisioner = new DefaultMavenProvisioner(repositorySystem, repositorySystemSession, project.getRemoteProjectRepositories());
+      MavenProvisioner provisioner = new MavenProvisioner(repositorySystem, repositorySystemSession, project.getRemoteProjectRepositories());
       ProvisioningResult result;
       try {
         result = provisioner.provision(request);

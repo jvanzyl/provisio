@@ -24,7 +24,6 @@ import com.google.common.primitives.Ints;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
 
-//@Immutable
 public class Command {
   private static final ImmutableSet<Integer> DEFAULT_SUCCESSFUL_EXIT_CODES = ImmutableSet.of(0);
   private static final File DEFAULT_DIRECTORY = new File(".").getAbsoluteFile();

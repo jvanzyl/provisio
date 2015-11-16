@@ -1,0 +1,30 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.provis</groupId>
+    <artifactId>provisio</artifactId>
+    <version>0.1.18-SNAPSHOT</version>
+  </parent>
+  <artifactId>provisio-its</artifactId>
+  <name>Provisio :: Integration Tests</name>
+  <packaging>pom</packaging>
+  <properties>
+    <provisioVersion>0.1.18-SNAPSHOT</provisioVersion>
+    <mavenVersion>3.3.1</mavenVersion>
+  </properties>
+  
+  <modules>
+    <module>provisio-it-0000</module>
+  </modules>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>io.takari.maven.plugins</groupId>
+        <artifactId>provisio-maven-plugin</artifactId>
+        <version>${provisioVersion}</version>
+        <extensions>true</extensions>
+      </plugin>         
+    </plugins>
+  </build>    
+</project>

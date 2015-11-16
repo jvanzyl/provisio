@@ -1,0 +1,5 @@
+<assembly>    
+  <fileSet to="/runtime/scripts">
+    <file path="src/main/scripts/script0.sh"/> 
+  </fileSet>      
+</assembly>

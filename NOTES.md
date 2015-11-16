@@ -1,5 +1,13 @@
 There some testing capabilities for generating repositories that i need to integrate into general maven provisioning testing.
 
+- create a declarative test mechanism where you need
+  1) a descriptor
+  2) a text file describing the exact shape of the runtime
+  3) a validator that makes sure the expected shape matches the actual shape
+
+- create a test for the maven distribution
+- create a test for the presto distribution
+
 - a way to test the provisioner with a real resolution setup and a repository and verify the output
 - how to distinguish between a project producing a single output which is the primary artifact vs producing many secondary
 - allow for non-transitive resolution: <artifact id="g:a:v" transitive="false"/>

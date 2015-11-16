@@ -1,9 +1,5 @@
 package io.provis.provision;
 
-import io.provis.model.Runtime;
-import io.provis.model.io.RuntimeReader;
-import io.takari.aether.connector.AetherRepositoryConnectorFactory;
-
 import java.io.File;
 import java.io.FileInputStream;
 
@@ -22,6 +18,10 @@ import org.eclipse.aether.util.repository.DefaultMirrorSelector;
 import org.junit.Before;
 
 import com.google.common.collect.ImmutableList;
+
+import io.provis.model.Runtime;
+import io.provis.model.io.RuntimeReader;
+import io.takari.aether.connector.AetherRepositoryConnectorFactory;
 
 public abstract class MavenProvisioningTest {
 
@@ -63,7 +63,7 @@ public abstract class MavenProvisioningTest {
     session.setLocalRepositoryManager(f.newInstance(session, localRepo));
 
     RemoteRepository remoteRepository = new RemoteRepository.Builder("central", "default", provisioningConfig.getRemoteRepositoryUrl()).build();
-    provisioner = new DefaultMavenProvisioner(system, session, ImmutableList.of(remoteRepository));
+    provisioner = new MavenProvisioner(system, session, ImmutableList.of(remoteRepository));
   }
 
   //
