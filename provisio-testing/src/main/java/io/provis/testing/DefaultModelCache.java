@@ -42,7 +42,7 @@ import com.google.common.cache.CacheBuilder;
 public class DefaultModelCache implements ModelCache {
 
   private final TeslaModelCache cache;
-  
+
   public DefaultModelCache() {
     //this.cache = new EntrySizeCache();
     this.cache = new SimpleCache();
@@ -100,15 +100,16 @@ public class DefaultModelCache implements ModelCache {
       return hash;
     }
   }
-  
+
   public interface TeslaModelCache {
     public void put(Key key, Object model);
+
     public Object get(Key key);
   }
-  
+
   public class SimpleCache implements TeslaModelCache {
 
-    private Map<Key, Object> cache = new ConcurrentHashMap<Key, Object>( 256 );
+    private Map<Key, Object> cache = new ConcurrentHashMap<Key, Object>(256);
 
     public void put(Key key, Object model) {
       cache.put(key, model);
@@ -117,25 +118,25 @@ public class DefaultModelCache implements ModelCache {
     public Object get(Key key) {
       return cache.get(key);
     }
-    
+
   }
-  
+
   public class EntrySizeCache implements TeslaModelCache {
 
     private static final long MAX_SIZE = 10000;
 
-    private final Cache<Key,Object> cache;
+    private final Cache<Key, Object> cache;
 
     public EntrySizeCache() {
       cache = CacheBuilder.newBuilder().maximumSize(MAX_SIZE).build();
     }
-    
+
     public void put(Key key, Object data) {
       cache.put(key, data);
     }
-    
-    public Object get(Key key) {      
+
+    public Object get(Key key) {
       return cache.getIfPresent(key);
     }
-  }  
+  }
 }

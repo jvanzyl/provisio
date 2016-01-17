@@ -22,10 +22,10 @@ import org.codehaus.plexus.util.FileUtils;
 public class MakeExecutableAction implements ProvisioningAction {
 
   private String includes;
-  private String excludes;  
+  private String excludes;
   private File fileSetDirectory;
   private File runtimeDirectory;
-  
+
   public void execute(ProvisioningContext context) throws Exception {
 
     if (fileSetDirectory.exists()) {
@@ -71,5 +71,5 @@ public class MakeExecutableAction implements ProvisioningAction {
 
   public void setRuntimeDirectory(File runtimeDirectory) {
     this.runtimeDirectory = runtimeDirectory;
-  }    
+  }
 }

@@ -29,14 +29,14 @@ public abstract class MavenProvisioningTest {
   protected String basedir;
 
   private RuntimeReader reader;
-  
+
   protected abstract ProvionsingConfig provisioningConfig() throws Exception;
-  
+
   @Before
   public void serviceLocator() throws Exception {
 
     reader = new RuntimeReader(Actions.defaultActionDescriptors());
-    
+
     ProvionsingConfig provisioningConfig = provisioningConfig();
 
     DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
@@ -69,13 +69,13 @@ public abstract class MavenProvisioningTest {
   //
   // Helpers
   //
-  
+
   protected Runtime runtime(String runtimeName) throws Exception {
-    return reader.read(new FileInputStream(new File(basedir, String.format("src/test/runtimes/%s/assembly.xml",runtimeName))));
+    return reader.read(new FileInputStream(new File(basedir, String.format("src/test/runtimes/%s/assembly.xml", runtimeName))));
   }
-  
+
   protected String getRemoteRepositoryUrl(String runtimeName) throws Exception {
-    return new File(basedir, String.format("src/test/runtimes/%s/repo",runtimeName)).toURI().toURL().toExternalForm();
+    return new File(basedir, String.format("src/test/runtimes/%s/repo", runtimeName)).toURI().toURL().toExternalForm();
   }
 
   protected final String getBasedir() {

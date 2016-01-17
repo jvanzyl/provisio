@@ -170,7 +170,7 @@ public class ProvisioningMojo extends AbstractMojo {
     }
 
     Artifact result = new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier(), artifact.getArtifactHandler().getExtension(), version, props,
-        newArtifactType(artifact.getType(), artifact.getArtifactHandler()));
+      newArtifactType(artifact.getType(), artifact.getArtifactHandler()));
     result = result.setFile(artifact.getFile());
 
     return result;

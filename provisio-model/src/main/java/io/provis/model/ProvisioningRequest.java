@@ -18,17 +18,17 @@ import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 
 public class ProvisioningRequest {
-  
+
   private File outputDirectory;
   private String localRepository;
   private Runtime model;
   private Map<String, String> versionMap;
   private List<String> managedDependencies = Collections.emptyList();
-  private Map<String,String> variables;
+  private Map<String, String> variables;
   //
   private RepositorySystemSession repositorySystemSession;
   private List<RemoteRepository> remoteRepositories;
-  
+
   public File getOutputDirectory() {
     return outputDirectory;
   }
@@ -58,7 +58,7 @@ public class ProvisioningRequest {
     this.model = runtime;
     return this;
   }
-  
+
   //
   // VersionMap
   //
@@ -70,7 +70,7 @@ public class ProvisioningRequest {
     this.versionMap = versionMap;
     return this;
   }
-  
+
   public void addVersionMap(Map<String, String> versionMap) {
     this.versionMap = versionMap;
   }
@@ -109,7 +109,7 @@ public class ProvisioningRequest {
 
   public void setVariables(Map<String, String> variables) {
     this.variables = variables;
-  }  
-  
-  
+  }
+
+
 }

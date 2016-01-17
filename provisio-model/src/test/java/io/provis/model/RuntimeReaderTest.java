@@ -140,7 +140,7 @@ public class RuntimeReaderTest {
     variables.put("prestoVersion", "0.74");
     RuntimeReader reader = new RuntimeReader(actionDescriptors());
     Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/assembly-with-runtime-actions.xml")), variables);
-    
+
     List<ArtifactSet> artifactSets = runtime.getArtifactSets();
     assertEquals(9, artifactSets.size());
     assertEquals("bin", artifactSets.get(0).getDirectory());
@@ -158,7 +158,7 @@ public class RuntimeReaderTest {
 
     artifacts = artifactSets.get(1).getArtifacts();
     assertEquals("com.facebook.presto:presto-main:0.74", artifacts.get(0).getCoordinate());
-    
+
     assertEquals(1, runtime.getActions().size());
     assertEquals("archive", runtime.getActions().get(0).getClass().getSimpleName().toLowerCase());
   }
@@ -167,11 +167,11 @@ public class RuntimeReaderTest {
   public void validateRuntimeUsingResourceSets() throws IOException {
     RuntimeReader reader = new RuntimeReader(actionDescriptors());
     Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/assembly-with-resourcesets.xml")));
-    
+
     ResourceSet resourceSet = runtime.getResourceSets().get(0);
     assertEquals(1, resourceSet.getResources().size());
     assertEquals("${project.artifactId}-${project.version}.jar", resourceSet.getResources().get(0).getName());
-    
+
     assertEquals(1, runtime.getActions().size());
     assertEquals("archive", runtime.getActions().get(0).getClass().getSimpleName().toLowerCase());
   }
@@ -185,25 +185,25 @@ public class RuntimeReaderTest {
     FileSet bin = fileSets.get(0);
     assertEquals("bin", bin.getDirectory());
     assertEquals("/path/to/file0", bin.getFiles().get(0).getPath());
-    
+
     FileSet conf = fileSets.get(1);
     assertEquals("conf", conf.getDirectory());
     Directory directory = conf.getDirectories().get(0);
     assertEquals("${basedir}/src/team/conf", directory.getPath());
     assertEquals("**/*.xml", directory.getIncludes().get(0));
-    assertEquals("**/pom.xml", directory.getExcludes().get(0));    
+    assertEquals("**/pom.xml", directory.getExcludes().get(0));
   }
 
   @Test
   public void validateRuntimeUsingReferences() throws IOException {
     RuntimeReader reader = new RuntimeReader(actionDescriptors());
     Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/assembly-with-refs.xml")));
-    
+
     List<ArtifactSet> artifactSets = runtime.getArtifactSets();
     assertEquals(1, artifactSets.size());
-    
+
     ArtifactSet artifactSet = artifactSets.get(0);
-    assertEquals("/", artifactSet.getDirectory());    
+    assertEquals("/", artifactSet.getDirectory());
     assertEquals("runtime.classpath", artifactSet.getReference());
 
     assertEquals(1, runtime.getActions().size());
@@ -211,22 +211,22 @@ public class RuntimeReaderTest {
   }
 
   @Test
-  public void validateAssemblyUsingChildArtifactSets() throws IOException {    
+  public void validateAssemblyUsingChildArtifactSets() throws IOException {
     Map<String, String> variables = Maps.newHashMap();
     variables.put("mavenVersion", "3.2.3");
     variables.put("tdmVersion", "3.2.1");
 
     RuntimeReader reader = new RuntimeReader(actionDescriptors());
     Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/assembly-with-child-artifactsets.xml")), variables);
-    
+
     List<ArtifactSet> artifactSets = runtime.getArtifactSets();
     assertEquals(4, artifactSets.size());
-    
+
     ArtifactSet artifactSet = artifactSets.get(0);
-    assertEquals("/", artifactSet.getDirectory());    
-    
+    assertEquals("/", artifactSet.getDirectory());
+
     ArtifactSet artifactSetWithChildren = artifactSets.get(3);
-        
+
     assertEquals(2, artifactSetWithChildren.getArtifactSets().size());
     ArtifactSet libExt = artifactSetWithChildren.getArtifactSets().get(0);
     assertNotNull(libExt.getParent());
@@ -234,37 +234,37 @@ public class RuntimeReaderTest {
     assertEquals("io.takari.aether:takari-concurrent-localrepo:0.0.7", libExt.getArtifacts().get(0).getCoordinate());
     assertEquals("io.takari.maven:takari-smart-builder:0.0.2", libExt.getArtifacts().get(1).getCoordinate());
     assertEquals("io.takari.maven:takari-workspace-reader:0.0.2", libExt.getArtifacts().get(2).getCoordinate());
-    
+
     ArtifactSet libDelta = artifactSetWithChildren.getArtifactSets().get(1);
-    assertNotNull(libDelta.getParent());    
+    assertNotNull(libDelta.getParent());
     assertEquals("lib/delta", libDelta.getDirectory());
     assertEquals("io.takari.tdm:tdm-delta:3.2.1", libDelta.getArtifacts().get(0).getCoordinate());
-    
+
   }
-  
+
   @Test
   public void validateRuntimeUsingArtifactReference() throws IOException {
     Map<String, String> variables = Maps.newHashMap();
     variables.put("mavenVersion", "3.2.3");
     variables.put("tdmVersion", "3.2.1");
-    
+
     RuntimeReader reader = new RuntimeReader(actionDescriptors());
     Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/runtime-with-artifact-ref.xml")), variables);
-    
+
     List<ArtifactSet> artifactSets = runtime.getArtifactSets();
     assertEquals(1, artifactSets.size());
-    
+
     ArtifactSet artifactSet = artifactSets.get(0);
-    assertEquals("/.mvn/wrapper", artifactSet.getDirectory());    
-    
+    assertEquals("/.mvn/wrapper", artifactSet.getDirectory());
+
     List<ProvisioArtifact> artifacts = artifactSet.getArtifacts();
     assertEquals(1, artifacts.size());
 
     ProvisioArtifact artifact = artifacts.get(0);
     assertEquals("this", artifact.getReference());
-    assertEquals("wrapper.jar", artifact.getName());    
+    assertEquals("wrapper.jar", artifact.getName());
   }
-  
+
   private List<ActionDescriptor> actionDescriptors() {
     List<ActionDescriptor> actionDescriptors = Lists.newArrayList();
     actionDescriptors.add(new ActionDescriptor() {
@@ -299,7 +299,7 @@ public class RuntimeReaderTest {
       @Override
       public String[] attributes() {
         return new String[] {
-          "name"
+            "name"
         };
       }
     });

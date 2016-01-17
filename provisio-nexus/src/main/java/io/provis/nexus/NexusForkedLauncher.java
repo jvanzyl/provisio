@@ -46,19 +46,19 @@ public class NexusForkedLauncher {
     cl = new Commandline();
     cl.setWorkingDirectory(nexusInstallationDirectory);
     cl.addArguments(new String[] {
-      "java", "-Xms256m", "-Xmx1024m", "-XX:PermSize=1024m", "-XX:MaxPermSize=1024m",
-    });    
-    
+        "java", "-Xms256m", "-Xmx1024m", "-XX:PermSize=1024m", "-XX:MaxPermSize=1024m",
+    });
+
     cl.addArguments(getVMArguments());
     cl.addArguments(new String[] {
-      "-cp"
+        "-cp"
     });
     cl.addArguments(classpath());
     cl.addArguments(new String[] {
-      getMainClass()
+        getMainClass()
     });
     cl.addArguments(new String[] {
-      getProgramArguments()
+        getProgramArguments()
     });
 
     command = new Command(cl.getArguments()).setDirectory(nexusInstallationDirectory);
@@ -102,7 +102,7 @@ public class NexusForkedLauncher {
       sb.append(s).append(pathSeparator);
     }
     return new String[] {
-      sb.toString()
+        sb.toString()
     };
   }
 

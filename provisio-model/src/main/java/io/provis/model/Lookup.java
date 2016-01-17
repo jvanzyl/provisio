@@ -13,41 +13,41 @@ import java.util.List;
 import java.util.Map;
 
 public class Lookup {
-    
-  
+
+
   // ----------------------------------------------------------------------
   // Implementation methods
   // ----------------------------------------------------------------------
 
   public void setObjectProperty(Object o, String propertyName, Object value) {
-            
+
     Class<?> c = o.getClass();
 
     // First see if name is a property ala javabeans
     String methodSuffix = Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1, propertyName.length());
     String methodName = "set" + methodSuffix;
-    
+
     //
     //TODO Handles bad case where in tests i set the output directory to null 
     //
-    if(value == null) {
+    if (value == null) {
       return;
     }
-    
+
     Class<? extends Object> type = value.getClass();
-    
+
     if (List.class.isAssignableFrom(type)) {
       type = List.class;
     } else if (Map.class.isAssignableFrom(type)) {
       type = Map.class;
-    } else if(Boolean.class.isAssignableFrom(type)) {
+    } else if (Boolean.class.isAssignableFrom(type)) {
       // We need to use an Object but we need to look at the target field
       type = boolean.class;
     } //else if (Artifact.class.isAssignableFrom(type)){
       //type = Artifact.class;
-    //}
+      //}
 
-    Method m = getMethod(c, methodName, new Class[] { type });
+    Method m = getMethod(c, methodName, new Class[] {type});
     if (m != null) {
       try {
         invokeMethod(m, o, value);
@@ -88,7 +88,7 @@ public class Lookup {
     Object[] args = null;
     if (value != null) {
       args = new Object[] {
-        value
+          value
       };
     }
     value = m.invoke(o, args);

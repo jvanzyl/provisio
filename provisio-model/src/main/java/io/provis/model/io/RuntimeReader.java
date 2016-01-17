@@ -198,12 +198,12 @@ public class RuntimeReader {
             coordinate += ":" + version;
           } else {
             throw new RuntimeException(
-                String.format("A version for %s cannot be found. You either need to specify one in your dependencyManagement section, or explicity set one in your assembly descriptor.", coordinate));
+              String.format("A version for %s cannot be found. You either need to specify one in your dependencyManagement section, or explicity set one in your assembly descriptor.", coordinate));
           }
         }
         artifact = new ProvisioArtifact(coordinate, name);
       }
-      
+
       while (reader.hasMoreChildren()) {
         reader.moveDown();
         String actionName = reader.getNodeName();

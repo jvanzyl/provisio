@@ -18,7 +18,7 @@ import javax.inject.Named;
 class MkdirsAction implements ProvisioningAction {
 
   private File directory;
-    
+
   public void execute(ProvisioningContext context) {
     new File(directory, "var/log").mkdirs();
     new File(directory, "var/tmp").mkdirs();

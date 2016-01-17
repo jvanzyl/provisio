@@ -75,7 +75,7 @@ public class DefaultModelResolver implements ModelResolver {
   private final Set<String> repositoryIds;
 
   public DefaultModelResolver(RepositorySystemSession session, RequestTrace trace, String context, ArtifactResolver resolver, RemoteRepositoryManager remoteRepositoryManager,
-      List<RemoteRepository> repositories) {
+    List<RemoteRepository> repositories) {
     this.session = session;
     this.trace = trace;
     this.context = context;
@@ -129,7 +129,7 @@ public class DefaultModelResolver implements ModelResolver {
       return;
     }
     List<RemoteRepository> newRepositories = Collections.singletonList(ArtifactDescriptorUtils.toRemoteRepository(repository));
-    this.repositories = remoteRepositoryManager.aggregateRepositories(session, repositories, newRepositories, true);    
+    this.repositories = remoteRepositoryManager.aggregateRepositories(session, repositories, newRepositories, true);
   }
 
   @Override

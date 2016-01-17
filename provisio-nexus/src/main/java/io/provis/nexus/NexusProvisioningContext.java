@@ -23,7 +23,7 @@ public class NexusProvisioningContext {
   private List<User> users;
   private int port = 8081;
   private boolean pro = false;
-  
+
   public NexusProvisioningContext() {
     this.plugins = Lists.newArrayList();
     this.pluginRepositories = Lists.newArrayList();
@@ -37,8 +37,8 @@ public class NexusProvisioningContext {
 
   public void setVersion(String version) {
     this.version = version;
-  }  
-  
+  }
+
   public File getInstallationDirectory() {
     return installationDirectory;
   }
@@ -58,15 +58,15 @@ public class NexusProvisioningContext {
   public List<String> getPluginRepositories() {
     return pluginRepositories;
   }
-  
+
   public void addPluginRepository(String pluginRepository) {
     pluginRepositories.add(pluginRepository);
   }
-  
+
   public List<String> getPlugins() {
     return plugins;
   }
-  
+
   public void addPlugin(String plugin) {
     plugins.add(plugin);
   }
@@ -90,35 +90,29 @@ public class NexusProvisioningContext {
   public boolean isPro() {
     return pro;
   }
-  
-  public void addUser(String username, String password)
-  {
+
+  public void addUser(String username, String password) {
     users.add(new User(username, password));
   }
 
-  public List<User> getUsers()
-  {
+  public List<User> getUsers() {
     return users;
   }
 
-  public class User
-  {
+  public class User {
     private final String username;
     private final String password;
 
-    public User(String username, String password)
-    {
+    public User(String username, String password) {
       this.username = username;
       this.password = password;
     }
 
-    public String getUsername()
-    {
+    public String getUsername() {
       return username;
     }
 
-    public String getPassword()
-    {
+    public String getPassword() {
       return password;
     }
   }

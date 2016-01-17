@@ -121,7 +121,7 @@ public class Runtime {
     for (ArtifactSet artifactSet : artifactSets) {
       if (artifactSet.getArtifacts() != null) {
         for (ProvisioArtifact artifact : artifactSet.getArtifacts()) {
-          if(artifact.getReference() == null) {
+          if (artifact.getReference() == null) {
             dependenciesInVersionlessForm.add(artifact.toVersionlessCoordinate());
           }
         }

@@ -35,7 +35,7 @@ public class MavenProvisioner extends SimpleProvisioner {
     } else {
       archive = resolveFromRepository("org.apache.maven:apache-maven:zip:bin:" + mavenVersion);
     }
-    
+
     installDirectory.mkdirs();
     if (!installDirectory.isDirectory()) {
       throw new IllegalStateException("Could not create Maven install directory " + installDirectory);

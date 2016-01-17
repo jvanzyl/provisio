@@ -101,7 +101,7 @@ public class AntRequest {
 
   public AntRequest setTargets(List<String> goals) {
     this.targets = goals;
-    return this;    
+    return this;
   }
 
   public AntRequest setTargets(String... goals) {

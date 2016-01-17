@@ -9,7 +9,7 @@ package io.provis.model;
 
 import java.util.Map;
 
-public class ProvisioningContext {   
+public class ProvisioningContext {
 
   private final ProvisioningRequest request;
   private final ProvisioningResult result;
@@ -22,11 +22,11 @@ public class ProvisioningContext {
   public ProvisioningRequest getRequest() {
     return request;
   }
-  
+
   public ProvisioningResult getResult() {
     return result;
   }
-  
+
   public Map<String, String> getVariables() {
     return request.getVariables();
   }

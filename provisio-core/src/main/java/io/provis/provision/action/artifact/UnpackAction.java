@@ -61,11 +61,11 @@ public class UnpackAction implements ProvisioningAction {
     try {
 
       UnArchiver unarchiver = UnArchiver.builder() //
-          .includes(split(includes)) //
-          .excludes(split(excludes)) // 
-          .useRoot(useRoot) //
-          .flatten(flatten) //
-          .build();
+        .includes(split(includes)) //
+        .excludes(split(excludes)) // 
+        .useRoot(useRoot) //
+        .flatten(flatten) //
+        .build();
 
       if (filter) {
         if (filterIncludes != null) {

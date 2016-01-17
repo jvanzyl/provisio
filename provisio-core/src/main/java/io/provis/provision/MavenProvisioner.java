@@ -431,7 +431,7 @@ public class MavenProvisioner {
   }
 
   private void copy(File source, File target) throws IOException {
-    if(!target.getParentFile().exists()) {
+    if (!target.getParentFile().exists()) {
       target.getParentFile().mkdirs();
     }
     Files.copy(source.toPath(), target.toPath(), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);

@@ -22,13 +22,13 @@ public class ProvisioArtifact extends AbstractArtifact {
   private String name;
   private List<ProvisioningAction> actions;
   private Artifact delegate;
-  private String coordinate;  
+  private String coordinate;
 
   private String reference;
 
   public ProvisioArtifact(String coordinate) {
     this(coordinate, null);
-  } 
+  }
 
   public ProvisioArtifact(String coordinate, String name) {
     if (coordinate.indexOf(":") > 0) {
@@ -38,7 +38,7 @@ public class ProvisioArtifact extends AbstractArtifact {
       this.reference = coordinate;
     }
     this.name = name;
-  } 
+  }
 
   public String getName() {
     return name;
@@ -179,6 +179,6 @@ public class ProvisioArtifact extends AbstractArtifact {
   }
 
   public void setName(String name) {
-    this.name = name;    
+    this.name = name;
   }
 }

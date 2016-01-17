@@ -46,9 +46,9 @@ public class Command {
   public Process getProcess() {
     return process;
   }
-  
+
   public Command(String... command) {
-    this(ImmutableList.copyOf(command), DEFAULT_SUCCESSFUL_EXIT_CODES, DEFAULT_DIRECTORY, ImmutableMap.<String, String> of(), DEFAULT_TIME_LIMIT);
+    this(ImmutableList.copyOf(command), DEFAULT_SUCCESSFUL_EXIT_CODES, DEFAULT_DIRECTORY, ImmutableMap.<String, String>of(), DEFAULT_TIME_LIMIT);
   }
 
   public Command(List<String> command, Set<Integer> successfulExitCodes, File directory, Map<String, String> environment, Duration timeLimit) {
@@ -79,7 +79,7 @@ public class Command {
 
   public Command addArgs(Iterable<String> args) {
     Preconditions.checkNotNull(args, "args is null");
-    ImmutableList.Builder<String> command = ImmutableList.<String> builder().addAll(this.command).addAll(args);
+    ImmutableList.Builder<String> command = ImmutableList.<String>builder().addAll(this.command).addAll(args);
     return new Command(command.build(), successfulExitCodes, directory, environment, timeLimit);
   }
 
@@ -90,13 +90,13 @@ public class Command {
   public Command addEnvironment(String name, String value) {
     Preconditions.checkNotNull(name, "name is null");
     Preconditions.checkNotNull(value, "value is null");
-    ImmutableMap.Builder<String, String> builder = ImmutableMap.<String, String> builder().putAll(this.environment).put(name, value);
+    ImmutableMap.Builder<String, String> builder = ImmutableMap.<String, String>builder().putAll(this.environment).put(name, value);
     return new Command(command, successfulExitCodes, directory, builder.build(), timeLimit);
   }
 
   public Command addEnvironment(Map<String, String> environment) {
     Preconditions.checkNotNull(environment, "environment is null");
-    ImmutableMap.Builder<String, String> builder = ImmutableMap.<String, String> builder().putAll(this.environment).putAll(environment);
+    ImmutableMap.Builder<String, String> builder = ImmutableMap.<String, String>builder().putAll(this.environment).putAll(environment);
     return new Command(command, successfulExitCodes, directory, builder.build(), timeLimit);
   }
 
@@ -149,7 +149,7 @@ public class Command {
   public void execute(Executor executor) throws CommandFailedException {
     Preconditions.checkNotNull(executor, "executor is null");
     Preconditions.checkNotNull(command, "command is null");
-    
+
     ProcessBuilder processBuilder = new ProcessBuilder(getCommand());
     processBuilder.directory(getDirectory());
     processBuilder.redirectErrorStream(true);
@@ -158,8 +158,8 @@ public class Command {
       process = processBuilder.start();
     } catch (IOException e) {
       throw new CommandFailedException(this, "failed to start", e);
-    }    
-    
+    }
+
     ProcessCallable processCallable = new ProcessCallable(executor, process);
     submit(executor, processCallable);
   }
@@ -222,7 +222,7 @@ public class Command {
     }
 
     @Override
-    public Integer call() throws CommandFailedException, InterruptedException {      
+    public Integer call() throws CommandFailedException, InterruptedException {
       OutputProcessor outputProcessor = null;
       try {
         outputProcessor = new OutputProcessor(process, executor);
@@ -279,7 +279,7 @@ public class Command {
     private void destroy() {
       // close input stream which will normally interrupt the reader
       Closeables.closeQuietly(inputStream);
-      
+
       if (outputFuture != null) {
         outputFuture.cancel(true);
       }

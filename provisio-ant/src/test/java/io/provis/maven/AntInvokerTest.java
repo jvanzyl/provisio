@@ -20,10 +20,10 @@ public class AntInvokerTest extends InjectedTest {
   @Inject
   @Named("forked")
   private AntInvoker ant;
-  
+
   @Inject
   private AntProvisioner provisioner;
-  
+
   @Inject
   @Named("${basedir}/target/ant")
   private File antHome;
@@ -31,25 +31,25 @@ public class AntInvokerTest extends InjectedTest {
   @Inject
   @Named("${basedir}/src/test/projects/ant/simple")
   private File projectDirectory;
-  
+
   @Test
   public void testAntExecution() throws Exception {
-    
+
     FileUtils.deleteDirectory(antHome.getAbsolutePath());
-    
+
     provisioner.provision("1.7.1", antHome);
-        
+
     AntRequest request = new AntRequest()
-     .setAntHome(antHome)
-     .addTargets("simple")
-     .setWorkDir(projectDirectory);
-    
+      .setAntHome(antHome)
+      .addTargets("simple")
+      .setWorkDir(projectDirectory);
+
     AntResult result = ant.invoke(request);
-    if(result.getErrors().isEmpty() == false) {
-      for(Throwable error : result.getErrors()) {
+    if (result.getErrors().isEmpty() == false) {
+      for (Throwable error : result.getErrors()) {
         error.printStackTrace();
       }
       fail();
-    }    
+    }
   }
 }

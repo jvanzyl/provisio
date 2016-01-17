@@ -8,6 +8,5 @@ public class Archive implements ProvisioningAction {
   private String name;
 
   @Override
-  public void execute(ProvisioningContext context) throws Exception {
-  }
+  public void execute(ProvisioningContext context) throws Exception {}
 }

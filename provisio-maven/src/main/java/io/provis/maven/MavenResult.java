@@ -77,5 +77,5 @@ public class MavenResult {
   public boolean hasErrors() {
     return errors != null;
   }
-  
+
 }

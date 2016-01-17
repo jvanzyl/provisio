@@ -25,7 +25,7 @@ public abstract class SimpleProvisioner {
 
   private static final String DEFAULT_REMOTE_REPO = "http://repo1.maven.org/maven2";
   private static final File DEFAULT_LOCAL_REPO = new File(System.getProperty("user.home"), ".m2/repository");
-  
+
   protected final UnArchiver unarchiver;
   protected final File localRepository;
   protected final String remoteRepository;

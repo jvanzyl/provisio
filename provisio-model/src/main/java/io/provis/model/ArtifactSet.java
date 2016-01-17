@@ -41,7 +41,7 @@ public class ArtifactSet {
   public String getReference() {
     return reference;
   }
-  
+
   public void addArtifact(ProvisioArtifact artifact) {
     artifacts.add(artifact);
   }

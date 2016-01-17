@@ -108,27 +108,27 @@ public class RemoteRepositoryGenerator {
   public void generateFromPomCoordinate(String coordinate) throws Exception {
     generateFromPomArtifact(new DefaultArtifact(coordinate));
   }
-    
+
   public void generateFromPom(File pomFile) throws Exception {
     Model model = resolveModel(pomFile);
     generateFromPomArtifact(new DefaultArtifact(model.getGroupId(), model.getArtifactId(), model.getPackaging(), model.getVersion()));
   }
 
-  public void generateFromPomArtifact(Artifact artifact) throws Exception {    
+  public void generateFromPomArtifact(Artifact artifact) throws Exception {
     ArtifactDescriptorRequest descriptorRequest = new ArtifactDescriptorRequest();
     descriptorRequest.setArtifact(artifact);
     ArtifactDescriptorResult descriptorResult = system.readArtifactDescriptor(session, descriptorRequest);
     DependencyRequest dependencyRequest = dependencyRequest(artifact);
     for (Dependency dependency : descriptorResult.getDependencies()) {
       dependencyRequest.getCollectRequest().addDependency(dependency);
-    } 
+    }
     resolveTransitively(dependencyRequest);
-  }  
-  
+  }
+
   private void resolveTransitively(String coordinate) throws Exception {
     Artifact artifact = new DefaultArtifact(coordinate);
     resolveTransitively(dependencyRequest(artifact));
-  }  
+  }
 
   private void resolveTransitively(DependencyRequest dependencyRequest) throws Exception {
     List<ArtifactResult> artifactResults = system.resolveDependencies(session, dependencyRequest).getArtifactResults();
@@ -149,20 +149,20 @@ public class RemoteRepositoryGenerator {
           return FileVisitResult.CONTINUE;
         }
       });
-    }    
+    }
   }
 
   //
   // Utilities for resolving
   //    
-  private DependencyRequest dependencyRequest(Artifact artifact) {    
-    DependencyFilter classpathFlter = DependencyFilterUtils.classpathFilter(JavaScopes.RUNTIME);    
+  private DependencyRequest dependencyRequest(Artifact artifact) {
+    DependencyFilter classpathFlter = DependencyFilterUtils.classpathFilter(JavaScopes.RUNTIME);
     CollectRequest collectRequest = new CollectRequest();
     collectRequest.setRoot(new Dependency(artifact, JavaScopes.RUNTIME));
     collectRequest.addRepository(remoteRepository);
-    return new DependencyRequest(collectRequest, classpathFlter);    
+    return new DependencyRequest(collectRequest, classpathFlter);
   }
-  
+
   public Model resolveModel(File pom) throws ModelBuildingException {
     RequestTrace trace = new RequestTrace(pom);
     ModelBuildingRequest modelRequest = new DefaultModelBuildingRequest();
@@ -173,7 +173,7 @@ public class RemoteRepositoryGenerator {
     //
     // The model cache and default model resolver should be injected
     //
-    modelRequest.setModelCache(new DefaultModelCache());    
+    modelRequest.setModelCache(new DefaultModelCache());
     modelRequest.setModelResolver(new DefaultModelResolver(session, trace.newChild(modelRequest), "bithub", artifactResolver, remoteRepositoryManager, remoteRepositories));
     modelRequest.setPomFile(pom);
     return modelBuilder.build(modelRequest).getEffectiveModel();
