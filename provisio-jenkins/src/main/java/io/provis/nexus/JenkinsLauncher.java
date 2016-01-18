@@ -20,75 +20,54 @@ import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.Commandline;
 
-public class NexusForkedLauncher {
+public class JenkinsLauncher {
 
-  private File nexusInstallationDirectory;
-  private File nexusWorkDirectory;
-  private int nexusPort;
+  private File installationDirectory;
+  private File jenkinsWar;
+  private File workDirectory;
+  private int port;
   private Commandline cl;
   private Command command;
 
-  public NexusForkedLauncher(NexusProvisioningContext context) throws Exception {
-    this.nexusInstallationDirectory = context.getInstallationDirectory();
-    this.nexusWorkDirectory = context.getWorkDirectory();
-    this.nexusPort = context.getPort();
+  public JenkinsLauncher(JenkinsProvisioningContext context) throws Exception {
+    this.installationDirectory = context.getInstallationDirectory();
+    this.jenkinsWar = new File(this.installationDirectory, String.format("jenkins-war-%s.war", context.getVersion()));
+    this.workDirectory = context.getWorkDirectory();
+    this.port = context.getPort();
   }
 
   public void start() throws Exception {
-    //
-    // Create the work directory as it's expected by Nexus. You get something like this otherwise:
-    // java.io.IOException: File ${nexusWorkDirectory}/access/ips.db.h2.db does not exist
-    //
-    FileUtils.mkdir(nexusWorkDirectory.getAbsolutePath());
-    //
+    FileUtils.mkdir(workDirectory.getAbsolutePath());
     // java $vmArgs -cp ${classPath} ${mainClass} ${programArguments}
-    //
     cl = new Commandline();
-    cl.setWorkingDirectory(nexusInstallationDirectory);
+    cl.setWorkingDirectory(installationDirectory);
     cl.addArguments(new String[] {
-        "java", "-Xms256m", "-Xmx1024m", "-XX:PermSize=1024m", "-XX:MaxPermSize=1024m",
+        "java", "-Xms256m", "-Xmx1024m",
     });
-
     cl.addArguments(getVMArguments());
     cl.addArguments(new String[] {
-        "-cp"
-    });
-    cl.addArguments(classpath());
-    cl.addArguments(new String[] {
-        getMainClass()
+        "-jar", jenkinsWar.getAbsolutePath(), String.format("--httpPort=%s", port)  
     });
     cl.addArguments(new String[] {
         getProgramArguments()
     });
-
-    command = new Command(cl.getArguments()).setDirectory(nexusInstallationDirectory);
+    command = new Command(cl.getArguments()).setDirectory(installationDirectory);
     //
     // One thread for the command being run
     // One thread for the processing of the command inputstream
     //
     ExecutorService executor = Executors.newFixedThreadPool(2);
-    //
     // Execute the command and let it run in the background
-    //
     command.execute(executor);
 
-    //
-    //
-    // http://localhost:8081/nexus/service/local/status" 
-    //
-    System.out.println("Attempting to determine if Nexus is ready!");    
+    System.out.println("Attempting to determine if Jenkins is ready!");    
     while (!readyToRespondToRequests()) {
       Thread.sleep(3000);
     }
   }
 
   public void stop() throws Exception {
-    //
-    // This unfortunately does not stop the sub-process that JSW creates. Eclipse launching must find child processes and kill them. We
-    // appear to need to kill the process we started, and use the Launcher to stop the Java process that it created.
-    //
-    command.stop(); // main JSW process
-    //new Launcher().commandStop(); // JVM sub-process
+    command.stop();
   }
 
   public String getMainClass() throws Exception {
@@ -108,22 +87,18 @@ public class NexusForkedLauncher {
 
   public String[] getClasspath() throws Exception {
     DirectoryScanner ds = new DirectoryScanner();
-    ds.setBasedir(nexusInstallationDirectory);
+    ds.setBasedir(installationDirectory);
     ds.setIncludes(new String[] {
         "lib/*.jar", "conf"
     });
     ds.scan();
-
     List<String> cp = new ArrayList<String>();
-
     for (String path : ds.getIncludedFiles()) {
       cp.add(path);
     }
-
     for (String path : ds.getIncludedDirectories()) {
       cp.add(path);
     }
-
     return cp.toArray(new String[cp.size()]);
   }
 
@@ -133,7 +108,7 @@ public class NexusForkedLauncher {
 
   public String[] getVMArguments() throws Exception {
     return new String[] {
-        "-Dnexus.nexus-work=" + quote(nexusWorkDirectory), "-Djetty.application-port=" + nexusPort + ""
+        "-DJENKINS_HOME=" + quote(workDirectory)
     };
   }
 
@@ -144,7 +119,7 @@ public class NexusForkedLauncher {
   private boolean readyToRespondToRequests() {
     HttpURLConnection connection = null;
     try {
-      URL serverAddress = new URL(String.format("http://localhost:%s/nexus/service/local/status", nexusPort));
+      URL serverAddress = new URL(String.format("http://localhost:%s", port));
       connection = (HttpURLConnection) serverAddress.openConnection();
       connection.setRequestMethod("GET");
       connection.setReadTimeout(2000);

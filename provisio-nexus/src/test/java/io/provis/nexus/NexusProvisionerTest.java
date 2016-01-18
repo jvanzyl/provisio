@@ -23,18 +23,16 @@ public class NexusProvisionerTest extends InjectedTest {
   private NexusProvisioner provisioner;
       
   @Test
-  public void testNexusExecution() throws Exception {
-    
-    FileUtils.deleteDirectory(baseDirectory);
-    
+  public void testNexusExecution() throws Exception {    
+    FileUtils.deleteDirectory(baseDirectory);    
     NexusProvisioningContext context = new NexusProvisioningContext();
-    context.setVersion("2.6.0");
+    context.setVersion("2.11.4-01");
     context.setInstallationDirectory(new File(baseDirectory,"installation"));
     context.setWorkDirectory(new File(baseDirectory,"work"));
     context.addUser("userA","admin123");
     context.setPort(9005);    
     provisioner.provision(context);
-        
+    // Launch Nexus with the provisioning context        
     NexusForkedLauncher launcher = new NexusForkedLauncher(context);
     launcher.start();
     launcher.stop();

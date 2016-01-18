@@ -18,7 +18,7 @@
     <artifactId>provisio</artifactId>
     <version>0.1.18-SNAPSHOT</version>
   </parent>
-  <artifactId>provisio-nexus</artifactId>
+  <artifactId>provisio-command</artifactId>
   <packaging>${lifecycle}</packaging>
   <name>Provisio :: Nexus</name>
 
@@ -38,11 +38,6 @@
     <dependency>
       <groupId>io.takari</groupId>
       <artifactId>takari-archiver</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.provis</groupId>
-      <artifactId>provisio-command</artifactId>
-      <version>0.1.18-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>io.provis</groupId>

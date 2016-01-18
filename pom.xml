@@ -27,7 +27,9 @@
 
   <modules>
     <module>provisio-ant</module>
+    <module>provisio-command</module>
     <module>provisio-core</module>
+    <module>provisio-jenkins</module>
     <module>provisio-maven</module>
     <module>provisio-maven-plugin</module>
     <module>provisio-model</module>
