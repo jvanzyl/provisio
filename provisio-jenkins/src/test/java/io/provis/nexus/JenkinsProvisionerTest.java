@@ -26,6 +26,7 @@ public class JenkinsProvisionerTest extends InjectedTest {
     context.setInstallationDirectory(new File(baseDirectory, "installation"));
     context.setWorkDirectory(new File(baseDirectory, "work"));
     context.addUser("userA", "admin123");
+    // Add Git capabilities to the Jenkins server
     context.addPlugin("org.jenkins-ci.plugins:scm-api:hpi:1.0");
     context.addPlugin("org.jenkins-ci.plugins:git-client:hpi:1.19.0");
     context.addPlugin("org.jenkins-ci.plugins:git:hpi:2.4.0");

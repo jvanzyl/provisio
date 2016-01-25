@@ -8,12 +8,19 @@
 package io.provis.nexus;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Map;
 
 import javax.inject.Named;
 
 import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.swizzle.stream.ReplaceVariablesInputStream;
 
+import com.google.common.collect.Maps;
+import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 
 import io.provis.provision.SimpleProvisioner;
@@ -33,7 +40,7 @@ public class JenkinsProvisioner extends SimpleProvisioner {
     }
     // http://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/1.644/jenkins-war-1.644.war
     File jenkinsWar = resolveFromServer(
-      String.format("%s/org/jenkins-ci/main/jenkins-war/1.644/jenkins-war-1.644.war", JENKINS_CENTRAL, version),
+      String.format("%s/org/jenkins-ci/main/jenkins-war/%s/jenkins-war-%s.war", JENKINS_CENTRAL, version, version),
       "org.jenkins-ci.main:jenkins-war:war:" + context.getVersion());
 
     // Create the installation and work directories
@@ -41,11 +48,22 @@ public class JenkinsProvisioner extends SimpleProvisioner {
     FileUtils.mkdir(workDirectory.getAbsolutePath());
     // Copy Jenkins WAR into the installation directory
     Files.copy(jenkinsWar, new File(installationDirectory, jenkinsWar.getName()));
-
+    // Create a startup script based on the provisioning context to help with debugging
+    File jenkinsScript = new File(installationDirectory, "jenkins.sh");
+    try (InputStream is = JenkinsProvisioner.class.getClassLoader().getResourceAsStream("scripts/jenkins.sh");
+      OutputStream os = new FileOutputStream(jenkinsScript)) {
+      if (is != null) {
+        Map<String,String> variables = Maps.newHashMap();
+        variables.put("PORT", context.getPort()+"");
+        InputStream replace = new ReplaceVariablesInputStream(is, "@", "@", variables);
+        ByteStreams.copy(replace, os);
+        jenkinsScript.setExecutable(true);
+      }
+    }
+    // Add plugins
     for (String plugin : context.getPlugins()) {
       addPlugin(plugin, workDirectory);
     }
-
     return installationDirectory;
   }
 

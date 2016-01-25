@@ -60,6 +60,10 @@
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
     </dependency>
+      <dependency>
+        <groupId>org.codehaus.swizzle</groupId>
+        <artifactId>swizzle-stream</artifactId>
+      </dependency>    
     <dependency>
       <groupId>org.eclipse.sisu</groupId>
       <artifactId>org.eclipse.sisu.inject</artifactId>
