@@ -30,11 +30,12 @@ public class NexusProvisionerTest extends InjectedTest {
     context.setInstallationDirectory(new File(baseDirectory,"installation"));
     context.setWorkDirectory(new File(baseDirectory,"work"));
     context.addUser("userA","admin123");
-    context.setPort(9005);    
+    context.setPort(9005);     
     provisioner.provision(context);
     // Launch Nexus with the provisioning context        
     NexusForkedLauncher launcher = new NexusForkedLauncher(context);
     launcher.start();
+    // Run Nexus tests
     launcher.stop();
   }  
 }
