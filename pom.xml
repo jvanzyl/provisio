@@ -3,8 +3,7 @@
   the accompanying materials are made available under the terms of the Eclipse 
   Public License v1.0 which accompanies this distribution, and is available 
   at http://www.eclipse.org/legal/epl-v10.html -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
 
@@ -16,7 +15,7 @@
 
   <groupId>io.provis</groupId>
   <artifactId>provisio</artifactId>
-  <version>0.1.19-SNAPSHOT</version>
+  <version>0.1.19</version>
   <packaging>pom</packaging>
   <name>Provisio</name>
 
@@ -49,7 +48,7 @@
     <connection>scm:git:git@github.com/takari/provisio.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/takari/provisio.git</developerConnection>
     <url>http://github.com/takari/provisio</url>
-    <tag>HEAD</tag>
+    <tag>provisio-0.1.19</tag>
   </scm>
 
   <dependencyManagement>
@@ -69,12 +68,12 @@
       <dependency>
         <groupId>io.provis</groupId>
         <artifactId>provisio-core</artifactId>
-        <version>0.1.19-SNAPSHOT</version>
+        <version>0.1.19</version>
       </dependency>
       <dependency>
         <groupId>io.provis</groupId>
         <artifactId>provisio-model</artifactId>
-        <version>0.1.19-SNAPSHOT</version>
+        <version>0.1.19</version>
       </dependency>
       <dependency>
         <groupId>io.takari</groupId>
