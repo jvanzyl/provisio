@@ -28,7 +28,7 @@ public abstract class SimpleProvisioner {
 
   protected final UnArchiver unarchiver;
   protected final File localRepository;
-  protected final String remoteRepository;
+  protected final String remoteRepositoryUrl;
 
   public SimpleProvisioner() {
     this(DEFAULT_LOCAL_REPO, DEFAULT_REMOTE_REPO);
@@ -36,18 +36,24 @@ public abstract class SimpleProvisioner {
 
   public SimpleProvisioner(File localRepository, String remoteRepository) {
     this.localRepository = localRepository;
-    this.remoteRepository = remoteRepository;
+    this.remoteRepositoryUrl = remoteRepository;
     this.unarchiver = UnArchiver.builder().useRoot(false).flatten(false).build();
   }
 
   protected File resolveFromRepository(String coordinate) throws IOException {
-    return resolveFromRepository(remoteRepository, coordinate);
+    return resolveFromRepository(remoteRepositoryUrl, coordinate);
   }
 
   @Deprecated
   protected File resolveFromRepository(String repositoryUrl, String coordinate) throws IOException {
+    String serverUrl;
+    if(repositoryUrl == null) {
+      serverUrl = remoteRepositoryUrl;
+    } else {
+      serverUrl = repositoryUrl;
+    }
     String path = coordinateToPath(coordinate);
-    String url = String.format("%s/%s", repositoryUrl, path);
+    String url = String.format("%s/%s", serverUrl, path);
     return resolveFromServer(url, coordinate);
   }
 

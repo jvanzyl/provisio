@@ -49,7 +49,7 @@ public class NexusProvisioner extends SimpleProvisioner {
     }
     // http://central.maven.org/maven2/org/sonatype/nexus/assemblies/nexus-bundle-template/
     File nexusDistribution = resolveFromServer(
-      String.format("http://www.sonatype.org/downloads/nexus-%s-bundle.zip", version), 
+      String.format("http://www.sonatype.org/downloads/nexus-%s-bundle.zip", version),
       "org.sonatype.nexus:nexus-bundle:zip:bin:" + context.getVersion());
 
     // Create the installation and work directories
@@ -59,7 +59,19 @@ public class NexusProvisioner extends SimpleProvisioner {
     unarchiver.unarchive(nexusDistribution, installationDirectory);
     // Provision any Nexus plugin required
     for (String plugin : context.getPlugins()) {
-      addPlugin(context.getPluginRepositories().get(0), plugin, workDirectory);
+      // null here means it will go to Maven Central
+      Artifact pluginArtifact = new DefaultArtifact(plugin);
+      String pluginDirectoryName = pluginArtifact.getArtifactId() + "-" + pluginArtifact.getVersion();
+      File pluginDirectory = new File(new File(installationDirectory, "nexus/WEB-INF/plugin-repository"), pluginDirectoryName);
+      File pluginZip = resolveFromRepository(null, plugin);
+      unarchiver.unarchive(pluginZip, pluginDirectory);
+    }
+    // Remove any requested plugins
+    for (String existingPluginToRemove : context.getExistingPluginsToRemove()) {
+      // Existing plugin directory is the artifactId-version
+      File pluginDirectory = new File(new File(installationDirectory, "nexus/WEB-INF/plugin-repository"), String.format("%s-%s", existingPluginToRemove, context.getVersion()));
+      System.out.println("!!!! REMOVING " + pluginDirectory);
+      FileUtils.deleteDirectory(pluginDirectory);
     }
     File securityConfigurationXml = setUpNexusConfigFile(workDirectory, "security-configuration.xml");
     File securityXml = setUpNexusConfigFile(workDirectory, "security.xml");
@@ -106,11 +118,11 @@ public class NexusProvisioner extends SimpleProvisioner {
   //    <securityManager>default</securityManager>                                                                                                                
   //  </security-configuration>
   //
-  public void addRealms(File securityConfigurationXml, List<String> realms) throws IOException {
+  private void addRealms(File securityConfigurationXml, List<String> realms) throws IOException {
     addRealms(securityConfigurationXml, realms.toArray(new String[realms.size()]));
   }
 
-  public void addRealms(File securityConfigurationXml, String... realms) throws IOException {
+  private void addRealms(File securityConfigurationXml, String... realms) throws IOException {
     Document document = XMLParser.parse(securityConfigurationXml);
     Element e = document.getChild("/security-configuration/realms");
     for (String realm : realms) {
@@ -134,19 +146,10 @@ public class NexusProvisioner extends SimpleProvisioner {
     writeResource(securityXml, document);
   }
 
-  // Add a plugin to the Nexus installation
-  public void addPlugin(String repositoryUrl, String coord, File workDirectory) throws IOException {
-    Artifact pluginArtifact = new DefaultArtifact(coord);
-    String pluginDirectoryName = pluginArtifact.getArtifactId() + "-" + pluginArtifact.getVersion();
-    File pluginDirectory = new File(new File(workDirectory, "plugin-repository"), pluginDirectoryName);
-    File pluginZip = resolveFromRepository(repositoryUrl, coord);
-    unarchiver.unarchive(pluginZip, pluginDirectory);
-  }
-
   private void writeResource(File pom, Document document) throws IOException {
     String encoding = document.getEncoding();
-    try(XMLWriter writer = new XMLWriter(encoding != null ? new OutputStreamWriter(new FileOutputStream(pom), encoding) : new OutputStreamWriter(new FileOutputStream(pom)))) {
-      document.toXML(writer);      
+    try (XMLWriter writer = new XMLWriter(encoding != null ? new OutputStreamWriter(new FileOutputStream(pom), encoding) : new OutputStreamWriter(new FileOutputStream(pom)))) {
+      document.toXML(writer);
     }
   }
 

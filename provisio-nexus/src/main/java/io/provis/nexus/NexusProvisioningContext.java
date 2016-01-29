@@ -23,12 +23,14 @@ public class NexusProvisioningContext {
   private List<User> users;
   private int port = 8081;
   private boolean pro = false;
+  private List<String> existingPluginsToRemove;
 
   public NexusProvisioningContext() {
     this.plugins = Lists.newArrayList();
     this.pluginRepositories = Lists.newArrayList();
     this.realms = Lists.newArrayList();
     this.users = Lists.newArrayList();
+    this.existingPluginsToRemove = Lists.newArrayList();
   }
 
   public String getVersion() {
@@ -119,5 +121,13 @@ public class NexusProvisioningContext {
 
   public void setPro(boolean pro) {
     this.pro = pro;
+  }
+
+  public void removeExistingPlugin(String artifactId) {
+    existingPluginsToRemove.add(artifactId);    
+  }
+
+  public List<String> getExistingPluginsToRemove() {
+    return existingPluginsToRemove;
   }
 }

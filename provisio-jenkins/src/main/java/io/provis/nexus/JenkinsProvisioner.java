@@ -24,6 +24,7 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 
 import io.provis.provision.SimpleProvisioner;
+import io.tesla.proviso.archive.UnArchiver;
 
 @Named(JenkinsProvisioner.ID)
 public class JenkinsProvisioner extends SimpleProvisioner {
@@ -60,21 +61,28 @@ public class JenkinsProvisioner extends SimpleProvisioner {
         jenkinsScript.setExecutable(true);
       }
     }
-    // Add plugins
-    for (String plugin : context.getPlugins()) {
-      addPlugin(plugin, workDirectory);
+    //
+    // Adding plugins accounting for default plugins packaged with the Jenkins WAR file 
+    // that we want to replace. We need to expand the plugin and place a .timestamp2 file
+    //
+    UnArchiver unarchiver = UnArchiver.builder().build();
+    for (String coord : context.getPlugins()) {
+      File pluginsDirectory = new File(workDirectory, "plugins");
+      File pluginFile = resolveFromRepository(JENKINS_CENTRAL, coord);
+      FileUtils.mkdir(pluginsDirectory.getAbsolutePath());
+      // git-client
+      String pluginNameWithoutVersion = pluginFile.getName().substring(0, pluginFile.getName().lastIndexOf("-"));
+      // git-client.hpi
+      String pluginFileNameWithoutVersion = pluginNameWithoutVersion  + ".hpi";
+      File pluginFileWithoutVersion = new File(pluginsDirectory, pluginFileNameWithoutVersion);
+      Files.copy(pluginFile, pluginFileWithoutVersion);
+      // Expand
+      File pluginDirectory = new File(pluginsDirectory, pluginNameWithoutVersion);
+      unarchiver.unarchive(pluginFileWithoutVersion, pluginDirectory);
+      // Add timestamp: this is what Jenkins appears to put in the file system to keep a plugin from getting overwritten
+      File timestamp2 = new File(pluginDirectory, ".timestamp2");
+      Files.touch(timestamp2);      
     }
     return installationDirectory;
-  }
-
-  // Add a plugin to the Jenkins installation
-  public void addPlugin(String coord, File workDirectory) throws IOException {
-    File pluginDirectory = new File(workDirectory, "plugins");
-    File pluginFile = resolveFromRepository(JENKINS_CENTRAL, coord);
-    FileUtils.mkdir(pluginDirectory.getAbsolutePath());
-    // git-client-1.9.2.hpi
-    String pluginNameWithoutVersion = pluginFile.getName().substring(0, pluginFile.getName().lastIndexOf("-")) + ".hpi";
-    File pluginFileWithoutVersion = new File(pluginDirectory, pluginNameWithoutVersion);
-    Files.copy(pluginFile, pluginFileWithoutVersion);
   }
 }
