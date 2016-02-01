@@ -44,7 +44,6 @@ public abstract class SimpleProvisioner {
     return resolveFromRepository(remoteRepositoryUrl, coordinate);
   }
 
-  @Deprecated
   protected File resolveFromRepository(String repositoryUrl, String coordinate) throws IOException {
     String serverUrl;
     if(repositoryUrl == null) {
