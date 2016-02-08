@@ -15,6 +15,15 @@ import com.google.common.collect.Lists;
 public class ProvisioningResult {
 
   private List<File> archives;
+  private final ProvisioningRequest request;
+  
+  public ProvisioningResult(ProvisioningRequest request) {
+    this.request = request;
+  }
+  
+  public File getOutputDirectory() {
+    return request.getOutputDirectory();
+  }
 
   public List<File> getArchives() {
     return archives;

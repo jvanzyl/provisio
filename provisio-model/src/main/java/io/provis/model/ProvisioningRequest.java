@@ -54,7 +54,7 @@ public class ProvisioningRequest {
     return model;
   }
 
-  public ProvisioningRequest setModel(Runtime runtime) {
+  public ProvisioningRequest setRuntimeDescriptor(Runtime runtime) {
     this.model = runtime;
     return this;
   }

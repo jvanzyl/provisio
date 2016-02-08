@@ -99,7 +99,7 @@ public class ProvisioningMojo extends AbstractMojo {
       //
       ProvisioningRequest request = new ProvisioningRequest();
       request.setOutputDirectory(outputDirectory);
-      request.setModel(runtime);
+      request.setRuntimeDescriptor(runtime);
       request.setVariables(runtime.getVariables());
       request.setManagedDependencies(provisio.getManagedDependencies(project));
 

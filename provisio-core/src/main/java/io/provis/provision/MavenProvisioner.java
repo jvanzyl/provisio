@@ -67,7 +67,7 @@ public class MavenProvisioner {
   }
 
   public ProvisioningResult provision(ProvisioningRequest request) throws Exception {
-    ProvisioningResult result = new ProvisioningResult();
+    ProvisioningResult result = new ProvisioningResult(request);
     ProvisioningContext context = new ProvisioningContext(request, result);
 
     processArtifactSets(context);
@@ -226,6 +226,8 @@ public class MavenProvisioner {
         type = new DefaultArtifactType("tar.gz", "tar.gz", "", "packaging", false, true);
       } else if (artifact.getExtension().equals("zip")) {
         type = new DefaultArtifactType("zip", "zip", "", "packaging", false, true);
+      }  else if (artifact.getExtension().equals("war")) {
+        type = new DefaultArtifactType("war", "war", "", "packaging", false, true);
       }
       //
       // TODO: Inside Maven this is not null but it should be ??? There is nothing in the type registry for it.
@@ -396,8 +398,7 @@ public class MavenProvisioner {
           if (!source.exists()) {
             throw new RuntimeException(String.format("The specified file %s does not exist.", source));
           }
-          //File target = new File(new File(context.getRequest().getOutputDirectory(), fileSet.getDirectory()), source.getName());          
-          File target = new File(context.getRequest().getOutputDirectory(), source.getName());
+          File target = new File(new File(context.getRequest().getOutputDirectory(), fileSet.getDirectory()), source.getName());          
           copy(source, target);
         }
         //
@@ -405,8 +406,7 @@ public class MavenProvisioner {
         //
         for (Directory directory : fileSet.getDirectories()) {
           File sourceDirectory = new File(directory.getPath());
-          File targetDirectory = context.getRequest().getOutputDirectory();
-          //File targetDirectory = new File(context.getRequest().getOutputDirectory(), fileSet.getDirectory());
+          File targetDirectory = new File(context.getRequest().getOutputDirectory(), fileSet.getDirectory());
           copyDirectoryStructure(sourceDirectory, targetDirectory, directory.getIncludes(), directory.getExcludes());
         }
       }

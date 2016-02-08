@@ -1,39 +1,109 @@
-<!--
-
-    Copyright (c) 2016 Takari, Inc.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the Eclipse Public License v1.0
-    which accompanies this distribution, and is available at
-    http://www.eclipse.org/legal/epl-v10.html
-
--->
+<!-- Copyright (c) 2016 Takari, Inc. All rights reserved. This program and 
+  the accompanying materials are made available under the terms of the Eclipse 
+  Public License v1.0 which accompanies this distribution, and is available 
+  at http://www.eclipse.org/legal/epl-v10.html -->
 <project>
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>io.provis</groupId>
     <artifactId>provisio</artifactId>
-    <version>0.1.18-SNAPSHOT</version>
+    <version>0.1.21-SNAPSHOT</version>
   </parent>
   <artifactId>provisio-its</artifactId>
   <name>Provisio :: Integration Tests</name>
-  <packaging>pom</packaging>
+
   <properties>
-    <provisioVersion>0.1.18-SNAPSHOT</provisioVersion>
-    <mavenVersion>3.3.1</mavenVersion>
+    <javaSourceVersion>1.8</javaSourceVersion>
+    <takariLifecycleVersion>1.11.11</takariLifecycleVersion>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <mavenVersion>3.3.9</mavenVersion>
+    <aetherVersion>1.0.2.v20150114</aetherVersion>
+    <okhttpConnectorVersion>0.16.0</okhttpConnectorVersion>
   </properties>
-  
-  <modules>
-    <module>provisio-it-0000</module>
-  </modules>
-  
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven</artifactId>
+        <version>${mavenVersion}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.provis</groupId>
+      <artifactId>provisio-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-aether-provider</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model-builder</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-settings</artifactId>
+    </dependency>
+    <!-- Aether -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-spi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-util</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-impl</artifactId>
+    </dependency>
+    <!-- We should add this to Maven so that I can use the import scoped 
+      POM above -->
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-transport-file</artifactId>
+      <version>${aetherVersion}</version>
+    </dependency>
+    <!-- Aether OkHttp Connector -->
+    <dependency>
+      <groupId>io.takari.aether</groupId>
+      <artifactId>aether-connector-okhttp</artifactId>
+      <version>${okhttpConnectorVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+  </dependencies>
+
   <build>
     <plugins>
       <plugin>
-        <groupId>io.takari.maven.plugins</groupId>
-        <artifactId>provisio-maven-plugin</artifactId>
-        <version>${provisioVersion}</version>
-        <extensions>true</extensions>
-      </plugin>         
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.7</source>
+          <target>1.7</target>
+        </configuration>
+      </plugin>
     </plugins>
-  </build>    
+  </build>
 </project>
