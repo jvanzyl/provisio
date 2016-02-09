@@ -78,6 +78,7 @@ public class RuntimeReader {
     // File
     xstream.alias("file", File.class);
     xstream.useAttributeFor(File.class, "path");
+    xstream.useAttributeFor(File.class, "touch");
     // Directory
     xstream.alias("directory", Directory.class);
     xstream.useAttributeFor(Directory.class, "path");

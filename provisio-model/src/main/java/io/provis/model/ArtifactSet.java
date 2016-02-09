@@ -21,6 +21,7 @@ public class ArtifactSet {
   // parse time
   private String directory;
   private String reference;
+  private String from;
 
   private List<ProvisioArtifact> artifacts = Lists.newArrayList();
   private List<Resource> resources = Lists.newArrayList();
@@ -42,6 +43,10 @@ public class ArtifactSet {
     return reference;
   }
 
+  public String getFrom() {
+    return from;
+  }
+  
   public void addArtifact(ProvisioArtifact artifact) {
     artifacts.add(artifact);
   }

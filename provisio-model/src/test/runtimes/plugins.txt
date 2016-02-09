@@ -1,0 +1,11 @@
+org.jenkins-ci.plugins:scm-api:hpi:1.0
+org.jenkins-ci.plugins:git-client:hpi:1.19.0
+org.jenkins-ci.plugins:git:hpi:2.4.0
+org.jenkins-ci.plugins:credentials:hpi:1.21
+org.jenkins-ci.plugins:github-pullrequest:hpi:0.0.1-rc3
+com.coravy.hudson.plugins.github:github:hpi:1.17.0
+org.jenkins-ci.plugins:github-api:hpi:1.69
+org.jenkins-ci.plugins:token-macro:hpi:1.11
+org.jenkins-ci.plugins:plain-credentials:hpi:1.1
+org.jenkins-ci.plugins:postbuildscript:hpi:0.17
+com.walmartlabs.looper:looper-jenkins-plugin:hpi:0.0.1-SNAPSHOT

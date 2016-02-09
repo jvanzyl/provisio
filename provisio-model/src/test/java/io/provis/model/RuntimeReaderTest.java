@@ -264,7 +264,7 @@ public class RuntimeReaderTest {
     assertEquals("this", artifact.getReference());
     assertEquals("wrapper.jar", artifact.getName());
   }
-
+  
   private List<ActionDescriptor> actionDescriptors() {
     List<ActionDescriptor> actionDescriptors = Lists.newArrayList();
     actionDescriptors.add(new ActionDescriptor() {

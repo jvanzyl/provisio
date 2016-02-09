@@ -10,9 +10,14 @@ package io.provis.model;
 public class File {
 
   private String path;
-
+  private String touch;
+  
   public String getPath() {
     return path;
+  }
+
+  public String getTouch() {
+    return touch;
   }
 
   @Override

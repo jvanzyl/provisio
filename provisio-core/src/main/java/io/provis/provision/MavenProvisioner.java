@@ -228,9 +228,9 @@ public class MavenProvisioner {
         type = new DefaultArtifactType("zip", "zip", "", "packaging", false, true);
       } else if (artifact.getExtension().equals("war")) {
         type = new DefaultArtifactType("war", "war", "", "packaging", false, true);
-      } else if (artifact.getExtension().equals("war")) {
+      } else if (artifact.getExtension().equals("hpi")) {
         type = new DefaultArtifactType("hpi", "hpi", "", "packaging", false, true);
-      } else if (artifact.getExtension().equals("war")) {
+      } else if (artifact.getExtension().equals("jpi")) {
         type = new DefaultArtifactType("jpi", "jpi", "", "packaging", false, true);
       }
       //
@@ -398,12 +398,20 @@ public class MavenProvisioner {
         // Files
         //
         for (io.provis.model.File file : fileSet.getFiles()) {
-          File source = new File(file.getPath());
-          if (!source.exists()) {
-            throw new RuntimeException(String.format("The specified file %s does not exist.", source));
+          if (file.getTouch() != null) {
+            File target = new File(new File(context.getRequest().getOutputDirectory(), fileSet.getDirectory()), file.getTouch());
+            if (!target.getParentFile().exists()) {
+              target.getParentFile().mkdirs();
+            }            
+            Files.createFile(target.toPath());
+          } else {
+            File source = new File(file.getPath());
+            if (!source.exists()) {
+              throw new RuntimeException(String.format("The specified file %s does not exist.", source));
+            }
+            File target = new File(new File(context.getRequest().getOutputDirectory(), fileSet.getDirectory()), source.getName());
+            copy(source, target);
           }
-          File target = new File(new File(context.getRequest().getOutputDirectory(), fileSet.getDirectory()), source.getName());
-          copy(source, target);
         }
         //
         // Directories
