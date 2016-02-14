@@ -30,6 +30,7 @@
     <module>provisio-nexus</module>
     <module>provisio-testing</module>
     <module>provisio-jsw</module>
+    <module>provisio-its</module>    
   </modules>
 
   <properties>
