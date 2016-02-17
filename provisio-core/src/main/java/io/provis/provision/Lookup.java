@@ -5,7 +5,7 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package io.provis.model;
+package io.provis.provision;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

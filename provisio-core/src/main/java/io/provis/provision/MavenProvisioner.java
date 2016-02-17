@@ -43,7 +43,6 @@ import com.google.common.collect.Sets;
 import io.provis.model.ArtifactSet;
 import io.provis.model.Directory;
 import io.provis.model.FileSet;
-import io.provis.model.Lookup;
 import io.provis.model.ProvisioArtifact;
 import io.provis.model.ProvisioningAction;
 import io.provis.model.ProvisioningContext;
