@@ -21,7 +21,7 @@
 
   <properties>
     <incrementalbuild.version>0.7.0</incrementalbuild.version>
-    <takariLifecyclePluginVersion>1.7.4</takariLifecyclePluginVersion>
+    <takariLifecyclePluginVersion>1.11.12</takariLifecyclePluginVersion>
   </properties>
 
   <dependencies>
