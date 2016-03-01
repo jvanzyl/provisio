@@ -15,7 +15,7 @@
   <parent>
     <groupId>io.provis</groupId>
     <artifactId>provisio</artifactId>
-    <version>0.1.25</version>
+    <version>0.1.26-SNAPSHOT</version>
   </parent>
   <artifactId>provisio-airlift</artifactId>
   <packaging>${lifecycle}</packaging>
@@ -46,7 +46,7 @@
     <dependency>
       <groupId>io.provis</groupId>
       <artifactId>provisio-airlift-testserver</artifactId>
-      <version>0.1.25</version>
+      <version>0.1.26-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>io.provis</groupId>
