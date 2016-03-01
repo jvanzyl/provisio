@@ -74,10 +74,6 @@ public class JenkinsLauncher {
     command.stop();
   }
 
-  public String getMainClass() throws Exception {
-    return "org.sonatype.nexus.bootstrap.Launcher";
-  }
-
   public String[] classpath() throws Exception {
     String pathSeparator = System.getProperty("path.separator");
     StringBuffer sb = new StringBuffer();
@@ -104,10 +100,6 @@ public class JenkinsLauncher {
       cp.add(path);
     }
     return cp.toArray(new String[cp.size()]);
-  }
-
-  private String getProgramArguments() throws Exception {
-    return "./conf/jetty.xml";
   }
 
   public String[] getVMArguments() throws Exception {

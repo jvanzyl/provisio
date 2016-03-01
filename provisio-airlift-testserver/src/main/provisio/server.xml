@@ -1,0 +1,29 @@
+<runtime>
+  <archive name="${project.artifactId}-${project.version}.tar.gz" />
+
+  <!-- Notices -->
+  <fileSet to="/">
+    <directory path="${basedir}">
+      <include>NOTICE</include>
+      <include>README.txt</include>
+    </directory>
+  </fileSet>
+
+  <!-- Launcher -->
+  <artifactSet to="bin">
+    <artifact id="io.airlift:launcher:tar.gz:bin:${launcherVersion}">
+      <unpack />
+    </artifact>
+    <artifact id="io.airlift:launcher:tar.gz:properties:${launcherVersion}">
+      <unpack filter="true" />
+    </artifact>
+  </artifactSet>
+
+  <fileSet to="/etc">
+    <directory path="${basedir}/src/main/etc"/>
+  </fileSet>
+
+  <!-- Server -->
+  <artifactSet to="/lib" ref="runtime.classpath"/>
+  
+</runtime>

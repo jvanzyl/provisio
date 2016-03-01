@@ -17,6 +17,7 @@
   </parent>
   <artifactId>provisio-model</artifactId>
   <packaging>${lifecycle}</packaging>  
+  <name>Provisio :: Model</name>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>

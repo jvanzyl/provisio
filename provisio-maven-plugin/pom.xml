@@ -15,10 +15,10 @@
     <artifactId>provisio</artifactId>
     <version>0.1.25-SNAPSHOT</version>
   </parent>
-  <packaging>takari-maven-plugin</packaging>
   <groupId>io.takari.maven.plugins</groupId>
   <artifactId>provisio-maven-plugin</artifactId>
-
+  <packaging>takari-maven-plugin</packaging>
+  <name>Provisio :: Maven Plugin</name>  
   <properties>
     <incrementalbuild.version>0.7.0</incrementalbuild.version>
     <takariLifecyclePluginVersion>1.11.12</takariLifecyclePluginVersion>

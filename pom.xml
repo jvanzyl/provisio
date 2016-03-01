@@ -31,6 +31,8 @@
     <module>provisio-testing</module>
     <module>provisio-jsw</module>
     <module>provisio-its</module>    
+    <module>provisio-airlift</module>    
+    <module>provisio-airlift-testserver</module>    
   </modules>
 
   <properties>
