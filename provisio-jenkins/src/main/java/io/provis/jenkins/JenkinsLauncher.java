@@ -5,7 +5,7 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package io.provis.nexus;
+package io.provis.jenkins;
 
 import java.io.File;
 import java.net.HttpURLConnection;
@@ -19,6 +19,8 @@ import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.Commandline;
+
+import io.provis.nexus.Command;
 
 public class JenkinsLauncher {
 
@@ -48,9 +50,11 @@ public class JenkinsLauncher {
     cl.addArguments(new String[] {
         "-jar", jenkinsWar.getAbsolutePath(), String.format("--httpPort=%s", port)  
     });
+    /*
     cl.addArguments(new String[] {
         getProgramArguments()
     });
+    */
     command = new Command(cl.getArguments()).setDirectory(installationDirectory);
     //
     // One thread for the command being run
@@ -102,7 +106,7 @@ public class JenkinsLauncher {
     return cp.toArray(new String[cp.size()]);
   }
 
-  public String getProgramArguments() throws Exception {
+  private String getProgramArguments() throws Exception {
     return "./conf/jetty.xml";
   }
 

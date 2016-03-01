@@ -33,7 +33,7 @@ public class ProvisioTest {
   public void prepare() {
     basedir = new File(new File("").getAbsolutePath());
     File localRepository = new File(basedir, "target/localRepository");
-    System s = new System(localRepository);
+    ResolutionSystem s = new ResolutionSystem(localRepository);
     provisioner = new MavenProvisioner(s.repositorySystem(), s.repositorySystemSession(), s.remoteRepositories());
   }
   

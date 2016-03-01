@@ -27,14 +27,14 @@ import com.google.common.collect.ImmutableList;
 
 import io.takari.aether.connector.AetherRepositoryConnectorFactory;
 
-public class System {
+public class ResolutionSystem {
 
   private File localRepository;
   private RepositorySystem system;
   private RepositorySystemSession session;
   private List<RemoteRepository> remoteRepositories;
 
-  public System(File localRepository) {
+  public ResolutionSystem(File localRepository) {
     DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
     locator.addService(RepositoryConnectorFactory.class, AetherRepositoryConnectorFactory.class);
     locator.addService(TransporterFactory.class, FileTransporterFactory.class);    

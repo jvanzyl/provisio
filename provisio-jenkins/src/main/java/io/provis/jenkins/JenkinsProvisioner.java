@@ -5,7 +5,7 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package io.provis.nexus;
+package io.provis.jenkins;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -44,9 +44,13 @@ public class JenkinsProvisioner extends SimpleProvisioner {
     if (version.length() <= 0) {
       throw new IllegalArgumentException("Jenkins version not specified");
     }
+    String repositoryUrl = context.getRepositoryUrl();
+    if(repositoryUrl == null) {
+      repositoryUrl = JENKINS_CENTRAL;
+    }
     // http://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/1.644/jenkins-war-1.644.war
     File jenkinsWar = resolveFromServer(
-      String.format("%s/org/jenkins-ci/main/jenkins-war/%s/jenkins-war-%s.war", JENKINS_CENTRAL, version, version),
+      String.format("%s/org/jenkins-ci/main/jenkins-war/%s/jenkins-war-%s.war", repositoryUrl, version, version),
       "org.jenkins-ci.main:jenkins-war:war:" + context.getVersion());
 
     // Create the installation and work directories
