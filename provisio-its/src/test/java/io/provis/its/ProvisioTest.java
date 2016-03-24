@@ -22,12 +22,14 @@ import io.provis.model.Runtime;
 import io.provis.model.io.RuntimeReader;
 import io.provis.provision.Actions;
 import io.provis.provision.MavenProvisioner;
+import io.tesla.proviso.archive.ArchiveValidator;
 import io.tesla.proviso.archive.FileMode;
+import io.tesla.proviso.archive.ZipArchiveValidator;
 
 public class ProvisioTest {
   
-  private File basedir;
-  private MavenProvisioner provisioner;
+  protected File basedir;
+  protected MavenProvisioner provisioner;
   
   @Before
   public void prepare() {
@@ -40,13 +42,22 @@ public class ProvisioTest {
   @Test
   public void validateToAttributeForFileSetAndDirectory() throws Exception {
     String name = "it-0002";
-    ProvisioningResult result = provisioner.provision(provisioningRequest(name));    
+    ProvisioningResult result = provisioner.provision(provisioningRequest(name));
     assertDirectoryExists(result, "etc");
     assertFilesExists(result, "etc/jvm.config");
     assertFilesExists(result, "etc/config.properties");
-  }
-  
-  private ProvisioningRequest provisioningRequest(String name) throws Exception {
+  }  
+
+  @Test
+  public void validateAlterationOfJarWithInsert() throws Exception {
+    String name = "it-0003";
+    ProvisioningResult result = provisioner.provision(provisioningRequest(name));
+    File war = new File(result.getOutputDirectory(), "lib/hudson-war-3.3.3.war");
+    ArchiveValidator validator = new ZipArchiveValidator(war);
+    validator.assertEntryExists("WEB-INF/lib/junit-4.12.jar");
+  }  
+
+  protected ProvisioningRequest provisioningRequest(String name) throws Exception {
     File projectBasedir = runtimeProject(name);
     File descriptor = new File(projectBasedir, "provisio.xml");
     File outputDirectory = outputDirectory(name);
@@ -57,7 +68,7 @@ public class ProvisioTest {
     return request;
   }  
   
-  public Runtime parseDescriptor(File descriptor) throws Exception {
+  public static Runtime parseDescriptor(File descriptor) throws Exception {
     RuntimeReader parser = new RuntimeReader(Actions.defaultActionDescriptors(), Maps.<String,String>newHashMap());
     try(InputStream is = new FileInputStream(descriptor)) {
       return parser.read(is, ImmutableMap.of("basedir",descriptor.getParentFile().getAbsolutePath()));      
@@ -160,7 +171,7 @@ public class ProvisioTest {
     return new File(getBasedir(), String.format("src/test/runtimes/%s", name));
   }
 
-  protected void assertFileMode(File outputDirectory, String string, String expectedUnix) {
+  protected void XassertFileMode(File outputDirectory, String string, String expectedUnix) {
     File f = new File(outputDirectory, string);
     String unix = FileMode.toUnix(FileMode.getFileMode(f));
     assertEquals(expectedUnix, unix);

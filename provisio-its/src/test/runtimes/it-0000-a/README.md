@@ -1,0 +1,3 @@
+An example of a custom Maven distribution with extensions and their dependencies being placed in the `lib/ext` artifact set. Any extension dependencies that are present in the parent `lib` artifact set should not be duplicated in the `lib/ext` artifact set.
+
+This represents a common use case where you develop an Aether-based extension and all the Aether JARs are already present in the `lib' artifact set. We don't want, or need, them duplicated.

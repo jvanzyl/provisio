@@ -1,3 +1,21 @@
-An example of a custom Maven distribution with extensions and their dependencies being placed in the `lib/ext` artifact set. Any extension dependencies that are present in the parent `lib` artifact set should not be duplicated in the `lib/ext` artifact set.
+Provide an action to alter the contents of an artifact: https://github.com/takari/provisio/issues/3
 
-This represents a common use case where you develop an Aether-based extension and all the Aether JARs are already present in the `lib' artifact set. We don't want, or need, them duplicated.
+In this specific case we want to take a Jenkins WAR file and insert additional libraries into the /WEB-INF/lib directory to change the behavior of Jenkins with a init-strategy. So we'd have an action that might look like the following:
+
+``` xml
+<runtime>
+  <!-- Jenkins -->
+  <artifactSet to="/lib">
+    <!-- We need to rename as the launcher doesn't pick up the .war extension -->
+    <artifact id="org.jenkins-ci.main:jenkins-war:war:1.648" as="jenkins-war-1.648.jar">
+      <alter>
+        <insert>
+          <artifact 
+            id="com.walmartlabs.looper:looper-jenkins-init-strategy:${looperVersion}" 
+            as="/WEB-INF/lib/jenkins-init-strategy:${looperVersion}"/>
+        </insert>
+      </alter>
+    </artifact>
+  </artifactSet>
+</runtime>
+```

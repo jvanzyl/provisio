@@ -7,11 +7,21 @@
  */
 package io.provis.model;
 
+import java.util.List;
+
+import com.google.common.collect.Lists;
 
 public interface ActionDescriptor {
   String getName();
-
   Class<?> getImplementation();
-
   String[] attributes();
+  
+  default List<Alias> aliases() { 
+    return Lists.newArrayList();
+  }
+  
+  default List<Implicit> implicits() { 
+    return Lists.newArrayList();
+  }
+  
 }

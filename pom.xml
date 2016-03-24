@@ -10,7 +10,7 @@
   <parent>
     <groupId>io.takari</groupId>
     <artifactId>takari</artifactId>
-    <version>17</version>
+    <version>19</version>
   </parent>
 
   <groupId>io.provis</groupId>
@@ -43,8 +43,10 @@
     <surefire.runOrder>alphabetical</surefire.runOrder>
     <surefire.mem>-Xmx256m</surefire.mem>
     <mavenVersion>3.3.3</mavenVersion>
-    <takariArchiverVersion>0.1.12</takariArchiverVersion>
+    <takariArchiverVersion>0.1.14</takariArchiverVersion>
     <aetherVersion>1.0.2.v20150114</aetherVersion>
+    <javaSourceVersion>1.8</javaSourceVersion>
+    <takariLifecycleVersion>1.11.12</takariLifecycleVersion>    
   </properties>
 
   <scm>
@@ -120,14 +122,6 @@
       </resource>
     </resources>
     <plugins>
-      <plugin>
-        <groupId>io.takari.maven.plugins</groupId>
-        <artifactId>takari-lifecycle-plugin</artifactId>
-        <extensions>true</extensions>
-        <configuration>
-          <proc>proc</proc>
-        </configuration>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>

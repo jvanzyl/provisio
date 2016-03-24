@@ -7,14 +7,19 @@
  */
 package io.provis.provision;
 
-import io.provis.model.ActionDescriptor;
-import io.provis.provision.action.artifact.UnpackAction;
-import io.provis.provision.action.fileset.MakeExecutableAction;
-import io.provis.provision.action.runtime.ArchiveAction;
-
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+
+import io.provis.model.ActionDescriptor;
+import io.provis.model.Alias;
+import io.provis.model.Implicit;
+import io.provis.provision.action.artifact.UnpackAction;
+import io.provis.provision.action.artifact.alter.AlterAction;
+import io.provis.provision.action.artifact.alter.Insert;
+import io.provis.provision.action.fileset.MakeExecutableAction;
+import io.provis.provision.action.runtime.ArchiveAction;
 
 public class Actions {
 
@@ -76,6 +81,33 @@ public class Actions {
       }
 
     });
+    actionDescriptors.add(new ActionDescriptor() {
+
+      @Override
+      public String getName() {
+        return "alter";
+      }
+
+      @Override
+      public Class<?> getImplementation() {
+        return AlterAction.class;
+      }
+
+      @Override
+      public String[] attributes() {
+        return new String[] {};
+      }
+
+      @Override
+      public List<Alias> aliases() {
+        return ImmutableList.of(new Alias("insert", Insert.class));
+      }
+
+      @Override
+      public List<Implicit> implicits() {
+        return ImmutableList.of(new Implicit("inserts", AlterAction.class), new Implicit("artifacts", Insert.class));
+      }
+    });    
     return actionDescriptors;
   }
 }

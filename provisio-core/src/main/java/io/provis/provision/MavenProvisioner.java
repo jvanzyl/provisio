@@ -37,6 +37,7 @@ import org.eclipse.aether.util.filter.DependencyFilterUtils;
 import org.eclipse.aether.util.filter.ExclusionsDependencyFilter;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -146,8 +147,6 @@ public class MavenProvisioner {
   // Resolving artifact sets
   //
   public Set<ProvisioArtifact> resolveArtifactSet(ProvisioningContext context, ArtifactSet artifactSet) {
-
-    CollectRequest request = new CollectRequest();
     //
     // Resolve versions
     //
@@ -176,10 +175,55 @@ public class MavenProvisioner {
     // </artifactSet>
     // </artifactSet>
     //
+    Set<ProvisioArtifact> parentResolved = artifactSet.getParent() != null ? artifactSet.getParent().getResolvedArtifacts() : Sets.newHashSet();
+    Set<ProvisioArtifact> resolvedArtifacts = resolveArtifacts(context, artifacts, parentResolved, artifactSet.getExcludes());
+
+    artifactSet.setResolvedArtifacts(resolvedArtifacts);
+
+    //
+    // Set Parent = [a, b, c]
+    // Set Child = [a, b, c, d, e, f]
+    //
+    // First we want to collect all the dependencies that an ArtifactSet may yield.
+    //
+    // We want to use this first in a calculation of overlapping dependencies between ArtifactSets that have a parent-->child relationship. We are making the assumption that a
+    // classloader relationship will be setup along the lines of the parent-->child relationship. So we only want to place in the child's directory the artifacts that
+    // are not present in the parent.
+    //
+    ArtifactSet parent = artifactSet.getParent();
+    if (parent != null) {
+      Set<ProvisioArtifact> parentArtifacts = artifactSet.getParent().getResolvedArtifacts();
+      //
+      // contained by childArtifacts and not contained in parentArtifacts
+      //
+      Set<ProvisioArtifact> childResolvedArtifacts = Sets.difference(resolvedArtifacts, parentArtifacts);
+      artifactSet.setResolvedArtifacts(childResolvedArtifacts);
+    } else {
+      artifactSet.setResolvedArtifacts(resolvedArtifacts);
+    }
+
+    return resolvedArtifacts;
+  }
+
+  public Set<ProvisioArtifact> resolveArtifact(ProvisioningContext context, ProvisioArtifact artifact) {
+    return resolveArtifacts(context, ImmutableList.of(artifact), Sets.<ProvisioArtifact>newHashSet(), Lists.<String>newArrayList());
+  }  
+  
+  public Set<ProvisioArtifact> resolveArtifacts(ProvisioningContext context, List<ProvisioArtifact> artifacts) {
+    return resolveArtifacts(context, artifacts, Sets.<ProvisioArtifact>newHashSet(), Lists.<String>newArrayList());
+  }
+
+  public Set<ProvisioArtifact> resolveArtifacts(ProvisioningContext context, List<ProvisioArtifact> artifacts, Set<ProvisioArtifact> managedArtifacts, List<String> excludes) {
+    CollectRequest request = new CollectRequest();
+    //
     // We need to defend against a null set
     //
     if (artifacts == null) {
       artifacts = Lists.newArrayList();
+    }
+    
+    if(managedArtifacts == null) {
+      managedArtifacts = Sets.newHashSet();
     }
 
     //
@@ -252,8 +296,8 @@ public class MavenProvisioner {
     // Add an exclude filter if necessary
     //
     DependencyRequest dependencyRequest = new DependencyRequest(request, null);
-    if (artifactSet.getExcludes() != null) {
-      dependencyRequest.setFilter(new ExclusionsDependencyFilter(artifactSet.getExcludes()));
+    if (excludes != null) {
+      dependencyRequest.setFilter(new ExclusionsDependencyFilter(excludes));
     }
 
     for (String coordinate : context.getRequest().getManagedDependencies()) {
@@ -264,10 +308,8 @@ public class MavenProvisioner {
     //
     // Treat the parent's resolved artifacts as set of managed dependencies for the child
     //
-    if (artifactSet.getParent() != null && artifactSet.getParent().getResolvedArtifacts() != null) {
-      for (Artifact artifact : artifactSet.getParent().getResolvedArtifacts()) {
-        request.addManagedDependency(new Dependency(artifact, "runtime"));
-      }
+    for (Artifact artifact : managedArtifacts) {
+      request.addManagedDependency(new Dependency(artifact, "runtime"));
     }
 
     List<Artifact> resultArtifacts;
@@ -292,30 +334,6 @@ public class MavenProvisioner {
         artifactMapKeyedByGa.put(ga, new ProvisioArtifact(a));
         resolvedArtifacts.add(new ProvisioArtifact(a));
       }
-    }
-
-    artifactSet.setResolvedArtifacts(resolvedArtifacts);
-
-    //
-    // Set Parent = [a, b, c]
-    // Set Child = [a, b, c, d, e, f]
-    //
-    // First we want to collect all the dependencies that an ArtifactSet may yield.
-    //
-    // We want to use this first in a calculation of overlapping dependencies between ArtifactSets that have a parent-->child relationship. We are making the assumption that a
-    // classloader relationship will be setup along the lines of the parent-->child relationship. So we only want to place in the child's directory the artifacts that
-    // are not present in the parent.
-    //
-    ArtifactSet parent = artifactSet.getParent();
-    if (parent != null) {
-      Set<ProvisioArtifact> parentArtifacts = artifactSet.getParent().getResolvedArtifacts();
-      //
-      // contained by childArtifacts and not contained in parentArtifacts
-      //
-      Set<ProvisioArtifact> childResolvedArtifacts = Sets.difference(resolvedArtifacts, parentArtifacts);
-      artifactSet.setResolvedArtifacts(childResolvedArtifacts);
-    } else {
-      artifactSet.setResolvedArtifacts(resolvedArtifacts);
     }
 
     return resolvedArtifacts;
@@ -401,7 +419,7 @@ public class MavenProvisioner {
             File target = new File(new File(context.getRequest().getOutputDirectory(), fileSet.getDirectory()), file.getTouch());
             if (!target.getParentFile().exists()) {
               target.getParentFile().mkdirs();
-            }            
+            }
             Files.createFile(target.toPath());
           } else {
             File source = new File(file.getPath());
@@ -472,12 +490,13 @@ public class MavenProvisioner {
     lookup.setObjectProperty(provisioningAction, "fileSetDirectory", outputDirectory);
     lookup.setObjectProperty(provisioningAction, "outputDirectory", outputDirectory);
     lookup.setObjectProperty(provisioningAction, "runtimeDirectory", outputDirectory);
+    lookup.setObjectProperty(provisioningAction, "provisioner", this);
   }
 
   private void configureArtifactAction(ProvisioArtifact artifact, ProvisioningAction provisioningAction, File outputDirectory) {
     lookup.setObjectProperty(provisioningAction, "artifact", artifact);
     lookup.setObjectProperty(provisioningAction, "fileSetDirectory", outputDirectory);
     lookup.setObjectProperty(provisioningAction, "outputDirectory", outputDirectory);
-    lookup.setObjectProperty(provisioningAction, "runtimeDirectory", outputDirectory);
+    lookup.setObjectProperty(provisioningAction, "provisioner", this);
   }
 }

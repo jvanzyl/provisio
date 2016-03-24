@@ -2,7 +2,8 @@
   the accompanying materials are made available under the terms of the Eclipse 
   Public License v1.0 which accompanies this distribution, and is available 
   at http://www.eclipse.org/legal/epl-v10.html -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>io.provis</groupId>
@@ -11,13 +12,9 @@
   </parent>
   <artifactId>provisio-its</artifactId>
   <name>Provisio :: Integration Tests</name>
+  <packaging>takari-jar</packaging>
 
   <properties>
-    <javaSourceVersion>1.8</javaSourceVersion>
-    <takariLifecycleVersion>1.11.11</takariLifecycleVersion>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <mavenVersion>3.3.9</mavenVersion>
-    <aetherVersion>1.0.2.v20150114</aetherVersion>
     <okhttpConnectorVersion>0.16.0</okhttpConnectorVersion>
   </properties>
 
@@ -75,6 +72,28 @@
       <groupId>org.eclipse.aether</groupId>
       <artifactId>aether-impl</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.provis</groupId>
+      <artifactId>provisio-model</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.takari</groupId>
+      <artifactId>takari-archiver</artifactId>
+    </dependency>        
+    <dependency>
+      <groupId>io.takari</groupId>
+      <artifactId>takari-archiver</artifactId>
+      <version>${takariArchiverVersion}</version>
+      <classifier>tests</classifier>
+    </dependency>        
     <!-- We should add this to Maven so that I can use the import scoped 
       POM above -->
     <dependency>
@@ -93,17 +112,4 @@
       <artifactId>junit</artifactId>
     </dependency>
   </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 </project>

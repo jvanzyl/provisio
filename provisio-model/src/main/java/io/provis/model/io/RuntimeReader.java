@@ -21,10 +21,12 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 
 import io.provis.model.ActionDescriptor;
+import io.provis.model.Alias;
 import io.provis.model.ArtifactSet;
 import io.provis.model.Directory;
 import io.provis.model.File;
 import io.provis.model.FileSet;
+import io.provis.model.Implicit;
 import io.provis.model.ProvisioArtifact;
 import io.provis.model.ProvisioningAction;
 import io.provis.model.Resource;
@@ -93,8 +95,14 @@ public class RuntimeReader {
       for (String attributeForProperty : action.attributes()) {
         xstream.useAttributeFor(action.getImplementation(), attributeForProperty);
       }
+      for(Alias alias : action.aliases()) {
+        xstream.alias(alias.getName(), alias.getType());
+      }
+      for(Implicit implicit : action.implicits()) {
+        xstream.addImplicitCollection(implicit.getType(), implicit.getName());
+      }
     }
-
+    
     this.versionMap = versionMap;
     this.actionMap = Maps.newHashMap();
     for (ActionDescriptor actionDescriptor : actions) {

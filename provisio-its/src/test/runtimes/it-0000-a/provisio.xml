@@ -1,0 +1,77 @@
+<!--
+
+    Copyright (c) 2016 Takari, Inc.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the Eclipse Public License v1.0
+    which accompanies this distribution, and is available at
+    http://www.eclipse.org/legal/epl-v10.html
+
+-->
+<assembly>
+  
+  <artifactSet to="/">
+    <artifact id="org.apache.maven:apache-maven:tar.gz:bin:${mavenVersion}">
+      <unpack useRoot="false" excludes="LICENSE,NOTICE,README.txt,**/*.license"/>
+      <!--    
+      When we use our connector we will omit any Wagon implementations and use Aether directly.
+      <unpack useRoot="false" excludes="LICENSE,NOTICE,README.txt,lib/slf4j-simple**,lib/wagon-file*,lib/wagon-http*,conf/logging/**,**/*.license"/>
+*.license"/>
+      -->
+    </artifact>
+  </artifactSet>  
+  
+  <!-- Additional libraries -->  
+  <artifactSet to="lib">
+    <!--     
+    This allows us to do a proper set difference with the lib and ext directory using coordinates. The standard Apache Maven distribution
+    carries with it no information about the coordinates it was made from so this hack gives me back those coordinates that are required.    
+    -->
+    <artifact id="org.apache.maven:maven-embedder:${mavenVersion}"/>    
+    <!-- We use logback for logging
+    
+    Another variation we have in our distribution that we need to align in the near term
+    
+    <artifact id="ch.qos.logback:logback-core:${logbackVersion}"/>
+    <artifact id="ch.qos.logback:logback-classic:${logbackVersion}"/>
+    <artifact id="org.fusesource.jansi:jansi:jar:1.8"/>
+    -->
+    
+    <!-- We use OkHttp for transport 
+    
+    We have not switch over to OkHttp at SFDC yet and with it the more standard Aether connectors, omitting these
+    helps us arrive at the shape of the distribution we want to match what we have. Once this is working correctly
+    we can slowly change the shape and test with the producers.
+    
+    <artifact id="io.takari.aether:aether-connector-okhttp:${okHttpConnectorVersion}"/>    
+    <artifact id="org.eclipse.aether:aether-transport-file:${aetherVersion}"/>
+    
+    -->
+    <!-- TEAM features in lib/ext: transitive different between these artifacts and our "lib" parent -->    
+    <artifactSet to="ext">
+      <artifact id="io.takari.aether:takari-local-repository:${takariLocalRepoVersion}"/>
+      <artifact id="io.takari.maven:takari-smart-builder:${smartBuilderVersion}"/>
+      <artifact id="io.takari.maven:takari-workspace-reader:${generationsVersion}"/>
+      <!-- SFDC -->
+      <artifact id="com.sfdc.core:aether-connector-ext:${extConnectorVersion}"/>
+      <artifact id="io.takari.generations:generations-graph-builder:${generationsVersion}"/>
+      <artifact id="io.takari.generations:generations-provider-file:${generationsVersion}"/>
+      <artifact id="com.sfdc.maven:artifact-immutability-validator:${immutabilityValidatorVersion}"/>
+      <artifact id="io.takari.workspace:workspace-model:${generationsVersion}"/>
+    </artifactSet>
+    <!-- Pick up the JAR that we produced in this build -->
+    <artifactSet to="ext" ref="runtime.classpath"/>    
+  </artifactSet>    
+  
+  <fileSet to="/">
+    <directory path="${basedir}/src/team"/>
+  </fileSet>
+
+  <fileSet to="/">
+    <directory path="${basedir}">
+      <include>LICENSE.txt</include>
+    </directory>    
+  </fileSet>
+  
+  <archive name="${project.artifactId}-${project.version}.tar.gz" executable="**/bin/mvn,**/bin/mvnDebug,**/bin/mvnyjp"/>
+  
+</assembly>

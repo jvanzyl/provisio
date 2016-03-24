@@ -11,11 +11,15 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import io.provis.model.action.Archive;
 import io.provis.model.action.Unpack;
+import io.provis.model.action.alter.Alter;
+import io.provis.model.action.alter.Insert;
 import io.provis.model.io.RuntimeReader;
 
 public class RuntimeReaderTest {
@@ -264,7 +268,27 @@ public class RuntimeReaderTest {
     assertEquals("this", artifact.getReference());
     assertEquals("wrapper.jar", artifact.getName());
   }
-  
+
+  @Test
+  public void validateRuntimeInsert() throws IOException {
+    Map<String, String> variables = ImmutableMap.of("looperVersion", "0.0.1-SNAPSHOT");
+    RuntimeReader reader = new RuntimeReader(actionDescriptors());
+    Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/insert.xml")), variables);
+
+    List<ArtifactSet> artifactSets = runtime.getArtifactSets();
+    assertEquals(1, artifactSets.size());
+
+    ArtifactSet artifactSet = artifactSets.get(0);
+    assertEquals("/lib", artifactSet.getDirectory());
+
+    List<ProvisioArtifact> artifacts = artifactSet.getArtifacts();
+    assertEquals(1, artifacts.size());
+
+    ProvisioArtifact artifact = artifacts.get(0);
+    List<ProvisioningAction> actions = artifact.getActions();
+    assertEquals(1, actions.size());
+  }
+
   private List<ActionDescriptor> actionDescriptors() {
     List<ActionDescriptor> actionDescriptors = Lists.newArrayList();
     actionDescriptors.add(new ActionDescriptor() {
@@ -301,6 +325,33 @@ public class RuntimeReaderTest {
         return new String[] {
             "name"
         };
+      }
+    });
+    actionDescriptors.add(new ActionDescriptor() {
+
+      @Override
+      public String getName() {
+        return "alter";
+      }
+
+      @Override
+      public Class<?> getImplementation() {
+        return Alter.class;
+      }
+
+      @Override
+      public String[] attributes() {
+        return new String[] {};
+      }
+
+      @Override
+      public List<Alias> aliases() {
+        return ImmutableList.of(new Alias("insert", Insert.class));
+      }
+
+      @Override
+      public List<Implicit> implicits() {
+        return ImmutableList.of(new Implicit("inserts", Alter.class), new Implicit("artifacts", Insert.class));
       }
     });
     return actionDescriptors;
