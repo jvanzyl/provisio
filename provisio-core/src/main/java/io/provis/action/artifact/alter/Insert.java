@@ -1,4 +1,4 @@
-package io.provis.provision.action.artifact.alter;
+package io.provis.action.artifact.alter;
 
 import java.util.List;
 

@@ -5,21 +5,21 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package io.provis.provision;
+package io.provis;
 
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
+import io.provis.action.artifact.UnpackAction;
+import io.provis.action.artifact.alter.AlterAction;
+import io.provis.action.artifact.alter.Insert;
+import io.provis.action.fileset.MakeExecutableAction;
+import io.provis.action.runtime.ArchiveAction;
 import io.provis.model.ActionDescriptor;
 import io.provis.model.Alias;
 import io.provis.model.Implicit;
-import io.provis.provision.action.artifact.UnpackAction;
-import io.provis.provision.action.artifact.alter.AlterAction;
-import io.provis.provision.action.artifact.alter.Insert;
-import io.provis.provision.action.fileset.MakeExecutableAction;
-import io.provis.provision.action.runtime.ArchiveAction;
 
 public class Actions {
 

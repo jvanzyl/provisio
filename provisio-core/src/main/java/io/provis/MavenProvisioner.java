@@ -5,7 +5,7 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package io.provis.provision;
+package io.provis;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +41,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import io.provis.action.artifact.WriteToDiskAction;
 import io.provis.model.ArtifactSet;
 import io.provis.model.Directory;
 import io.provis.model.FileSet;
@@ -52,7 +53,6 @@ import io.provis.model.ProvisioningResult;
 import io.provis.model.Resource;
 import io.provis.model.ResourceSet;
 import io.provis.model.Runtime;
-import io.provis.provision.action.artifact.WriteToDiskAction;
 
 public class MavenProvisioner {
 

@@ -5,7 +5,7 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package io.provis.provision;
+package io.provis;
 
 import io.tesla.proviso.archive.UnArchiver;
 

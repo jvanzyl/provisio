@@ -7,12 +7,12 @@
  */
 package io.provis.ant;
 
-import io.provis.provision.SimpleProvisioner;
-
 import java.io.File;
 import java.io.IOException;
 
 import javax.inject.Named;
+
+import io.provis.SimpleProvisioner;
 
 @Named
 public class AntProvisioner extends SimpleProvisioner {

@@ -29,9 +29,9 @@ import org.codehaus.plexus.util.FileUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import io.provis.Actions;
 import io.provis.model.Runtime;
 import io.provis.model.io.RuntimeReader;
-import io.provis.provision.Actions;
 
 @Named
 @Singleton

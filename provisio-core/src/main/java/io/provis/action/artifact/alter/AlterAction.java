@@ -5,22 +5,30 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package io.provis.provision.action.artifact.alter;
+package io.provis.action.artifact.alter;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Named;
 
 import org.codehaus.plexus.util.FileUtils;
 
+import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 
+import io.provis.MavenProvisioner;
 import io.provis.model.ProvisioArtifact;
 import io.provis.model.ProvisioningAction;
 import io.provis.model.ProvisioningContext;
-import io.provis.provision.MavenProvisioner;
+import io.provis.perms.PosixModes;
 import io.tesla.proviso.archive.Archiver;
 import io.tesla.proviso.archive.UnArchiver;
 
@@ -59,16 +67,38 @@ public class AlterAction implements ProvisioningAction {
           Files.copy(source, target);
         }
       }
+      // Set all the files readable so we can repack them
+      setFilesReadable(unpackDirectory);
       // Pack the archive back up      
       Archiver archiver = Archiver.builder()
         .useRoot(false)
         .build();
-      File alteredArtifact = new File(outputDirectory, archive.getName());
+      File alteredArtifact = new File(outputDirectory, artifact.getName());
       archiver.archive(alteredArtifact, unpackDirectory);
       FileUtils.deleteDirectory(unpackDirectory);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private void setFilesReadable(File directory) throws IOException {
+    java.nio.file.Files.walkFileTree(directory.toPath(), new SimpleFileVisitor<Path>() {
+      @Override
+      public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
+        setPermissionsOn(path, 0755);
+        return FileVisitResult.CONTINUE;
+      }
+
+      @Override
+      public FileVisitResult postVisitDirectory(Path path, IOException exc) throws IOException {
+        setPermissionsOn(path, 0755);
+        return FileVisitResult.CONTINUE;
+      }
+    });
+  }
+
+  void setPermissionsOn(Path p, int intMode) throws IOException {
+    java.nio.file.Files.setPosixFilePermissions(p, PosixModes.intModeToPosix(intMode));
   }
 
   public List<Insert> getInserts() {
@@ -101,5 +131,14 @@ public class AlterAction implements ProvisioningAction {
 
   public void setProvisioner(MavenProvisioner provisioner) {
     this.provisioner = provisioner;
+  }
+
+  public static void main(String[] args) throws IOException {
+    Archiver archiver = Archiver.builder()
+      .useRoot(false)
+      .build();
+    File dir = new File("/Users/jvanzyl/js/DEVPROD/looper/looper-distribution/target/looper-distribution-0.0.1-SNAPSHOT/lib/unpack");
+    File archive = new File("/Users/jvanzyl/js/DEVPROD/looper/looper-distribution/target/looper-distribution-0.0.1-SNAPSHOT/lib/hudson.war");
+    archiver.archive(archive, dir);
   }
 }

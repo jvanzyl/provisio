@@ -5,7 +5,7 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package io.provis.provision.action.fileset;
+package io.provis.action.fileset;
 
 import io.provis.model.ProvisioningAction;
 import io.provis.model.ProvisioningContext;

@@ -28,7 +28,7 @@ import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 
-import io.provis.provision.SimpleProvisioner;
+import io.provis.SimpleProvisioner;
 import io.tesla.proviso.archive.UnArchiver;
 
 @Named(JenkinsProvisioner.ID)

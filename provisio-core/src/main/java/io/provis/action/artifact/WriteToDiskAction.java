@@ -5,7 +5,7 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package io.provis.provision.action.artifact;
+package io.provis.action.artifact;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,10 +15,10 @@ import javax.inject.Named;
 import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
 
+import io.provis.ProvisioningException;
 import io.provis.model.ProvisioArtifact;
 import io.provis.model.ProvisioningAction;
 import io.provis.model.ProvisioningContext;
-import io.provis.provision.ProvisioningException;
 
 @Named("write")
 public class WriteToDiskAction implements ProvisioningAction {

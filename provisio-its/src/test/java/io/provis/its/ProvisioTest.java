@@ -16,12 +16,12 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import io.provis.Actions;
+import io.provis.MavenProvisioner;
 import io.provis.model.ProvisioningRequest;
 import io.provis.model.ProvisioningResult;
 import io.provis.model.Runtime;
 import io.provis.model.io.RuntimeReader;
-import io.provis.provision.Actions;
-import io.provis.provision.MavenProvisioner;
 import io.tesla.proviso.archive.ArchiveValidator;
 import io.tesla.proviso.archive.FileMode;
 import io.tesla.proviso.archive.ZipArchiveValidator;
@@ -52,7 +52,7 @@ public class ProvisioTest {
   public void validateAlterationOfJarWithInsert() throws Exception {
     String name = "it-0003";
     ProvisioningResult result = provisioner.provision(provisioningRequest(name));
-    File war = new File(result.getOutputDirectory(), "lib/hudson-war-3.3.3.war");
+    File war = new File(result.getOutputDirectory(), "lib/hudson-war-3.3.3.jar");
     ArchiveValidator validator = new ZipArchiveValidator(war);
     validator.assertEntryExists("WEB-INF/lib/junit-4.12.jar");
   }  

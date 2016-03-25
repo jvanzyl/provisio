@@ -14,7 +14,7 @@ import javax.inject.Named;
 
 import org.codehaus.plexus.util.FileUtils;
 
-import io.provis.provision.SimpleProvisioner;
+import io.provis.SimpleProvisioner;
 import io.tesla.proviso.archive.UnArchiver;
 
 @Named(AirliftProvisioner.ID)

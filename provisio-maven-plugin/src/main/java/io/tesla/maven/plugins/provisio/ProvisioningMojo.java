@@ -34,13 +34,12 @@ import org.eclipse.aether.artifact.DefaultArtifactType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.provis.MavenProvisioner;
 import io.provis.model.ArtifactSet;
 import io.provis.model.ProvisioArtifact;
 import io.provis.model.ProvisioningRequest;
 import io.provis.model.ProvisioningResult;
 import io.provis.model.Runtime;
-import io.provis.provision.MavenProvisioner;
-import io.provis.provision.MavenProvisioner;
 import io.takari.incrementalbuild.Incremental;
 import io.takari.incrementalbuild.Incremental.Configuration;
 

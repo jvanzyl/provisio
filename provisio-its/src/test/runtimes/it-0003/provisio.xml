@@ -1,6 +1,6 @@
 <runtime>
   <artifactSet to="/lib">
-    <artifact id="org.eclipse.hudson:hudson-war:war:3.3.3" as="jenkins-war-1.648.jar">
+    <artifact id="org.eclipse.hudson:hudson-war:war:3.3.3" as="hudson-war-3.3.3.jar">
       <alter>
         <insert>
           <artifact

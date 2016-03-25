@@ -32,7 +32,7 @@ import de.pdark.decentxml.Document;
 import de.pdark.decentxml.Element;
 import de.pdark.decentxml.XMLParser;
 import de.pdark.decentxml.XMLWriter;
-import io.provis.provision.SimpleProvisioner;
+import io.provis.SimpleProvisioner;
 
 @Named(NexusProvisioner.ID)
 public class NexusProvisioner extends SimpleProvisioner {
