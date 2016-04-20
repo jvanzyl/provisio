@@ -132,13 +132,4 @@ public class AlterAction implements ProvisioningAction {
   public void setProvisioner(MavenProvisioner provisioner) {
     this.provisioner = provisioner;
   }
-
-  public static void main(String[] args) throws IOException {
-    Archiver archiver = Archiver.builder()
-      .useRoot(false)
-      .build();
-    File dir = new File("/Users/jvanzyl/js/DEVPROD/looper/looper-distribution/target/looper-distribution-0.0.1-SNAPSHOT/lib/unpack");
-    File archive = new File("/Users/jvanzyl/js/DEVPROD/looper/looper-distribution/target/looper-distribution-0.0.1-SNAPSHOT/lib/hudson.war");
-    archiver.archive(archive, dir);
-  }
 }

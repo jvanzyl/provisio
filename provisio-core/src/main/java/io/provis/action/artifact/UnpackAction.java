@@ -51,20 +51,16 @@ public class UnpackAction implements ProvisioningAction {
 
   @Override
   public void execute(ProvisioningContext context) {
-
     if (!outputDirectory.exists()) {
       outputDirectory.mkdirs();
     }
-
     File archive = artifact.getFile();
-
     try {
-
-      UnArchiver unarchiver = UnArchiver.builder() //
-        .includes(split(includes)) //
-        .excludes(split(excludes)) // 
-        .useRoot(useRoot) //
-        .flatten(flatten) //
+      UnArchiver unarchiver = UnArchiver.builder()
+        .includes(split(includes))
+        .excludes(split(excludes)) 
+        .useRoot(useRoot)
+        .flatten(flatten)        
         .build();
 
       if (filter) {

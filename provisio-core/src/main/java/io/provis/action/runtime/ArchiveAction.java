@@ -26,13 +26,10 @@ public class ArchiveAction implements ProvisioningAction {
 
   public void execute(ProvisioningContext context) {
     ArchiverBuilder builder = Archiver.builder();
-
     if (executable != null) {
       builder.executable(StringUtils.split(executable, ","));
     }
-
-    Archiver archiver = builder.build();
-
+    Archiver archiver = builder.posixLongFileMode(true).build();
     try {
       File archive = new File(runtimeDirectory, "../" + name).getCanonicalFile();
       archiver.archive(archive, runtimeDirectory);
