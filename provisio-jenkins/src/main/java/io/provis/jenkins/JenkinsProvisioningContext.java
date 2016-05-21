@@ -14,6 +14,7 @@ import com.google.common.collect.Lists;
 
 public class JenkinsProvisioningContext {
   private String version;
+  private File dist;
   private File installationDirectory;
   private File workDirectory;
   private List<String> pluginRepositories;
@@ -29,11 +30,24 @@ public class JenkinsProvisioningContext {
   public String getVersion() {
     return version;
   }
-
+  
   public void setVersion(String version) {
     this.version = version;
   }
 
+  public File getDist() {
+    return dist;
+  }
+  
+  public void setDist(File dist) {
+    
+    if (dist == null)
+      return;
+    
+    this.dist = dist.getAbsoluteFile();
+    
+  }
+  
   public File getInstallationDirectory() {
     return installationDirectory;
   }
@@ -81,4 +95,8 @@ public class JenkinsProvisioningContext {
   public void setRepositoryUrl(String repositoryUrl) {
     this.repositoryUrl = repositoryUrl;
   }    
+  
+  public String getJenkinsFileName() {
+    return String.format("jenkins-war-%s.war", this.getVersion());
+  }
 }
