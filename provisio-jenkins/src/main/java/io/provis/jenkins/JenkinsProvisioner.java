@@ -15,6 +15,8 @@ import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -25,6 +27,7 @@ import org.codehaus.swizzle.stream.ReplaceVariablesInputStream;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.io.ByteSource;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 
@@ -36,6 +39,13 @@ public class JenkinsProvisioner extends SimpleProvisioner {
 
   public static final String ID = "jenkins";
   private static final String JENKINS_CENTRAL = "http://repo.jenkins-ci.org/public";
+  
+  //  had to overrid this for some reason to test via the injected instance
+  @Override
+  protected
+  String coordinateToPath(String coords) {
+    return super.coordinateToPath(coords);
+  }
 
   public File provision(JenkinsProvisioningContext context) throws IOException {
     String version = context.getVersion();

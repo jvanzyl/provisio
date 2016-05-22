@@ -8,9 +8,11 @@
 package io.provis.jenkins;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.List;
 
 import com.google.common.collect.Lists;
+import com.google.common.io.ByteSource;
 
 public class JenkinsProvisioningContext {
   private String version;
@@ -44,7 +46,7 @@ public class JenkinsProvisioningContext {
     if (dist == null)
       return;
     
-    this.dist = dist.getAbsoluteFile();
+    this.dist = dist;
     
   }
   
@@ -97,6 +99,10 @@ public class JenkinsProvisioningContext {
   }    
   
   public String getJenkinsFileName() {
+    
+    if (this.getVersion() == null || this.version.length() <= 0)
+      return String.format("jenkins-war.war");
+      
     return String.format("jenkins-war-%s.war", this.getVersion());
   }
 }
