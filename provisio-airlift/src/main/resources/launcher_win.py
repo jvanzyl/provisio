@@ -69,35 +69,28 @@ def open_read_write(f, mode):
 def pid_exists(pid):
     kernel32 = ctypes.windll.kernel32
     
-    HANDLE = ctypes.c_void_p
-    DWORD = ctypes.c_ulong
-    LPDWORD = ctypes.POINTER(DWORD)
-    class ExitCodeProcess(ctypes.Structure):
-        _fields_ = [ ('hProcess', HANDLE),
-            ('lpExitCode', LPDWORD)]
-    
+    STILL_ACTIVE = 259
     PROCESS_QUERY_INFORMATION = 0x1000
     process = kernel32.OpenProcess(PROCESS_QUERY_INFORMATION, 0, pid)
     if not process:
         return False
     
-    ec = ExitCodeProcess()
-    out = kernel32.GetExitCodeProcess(process, ctypes.byref(ec))
-    if not out:
-        err = kernel32.GetLastError()
-        if kernel32.GetLastError() == 5:
-            # Access is denied.
-            logging.warning("Access is denied to get pid info.")
+    try:
+        i = ctypes.c_int(0)
+        pi = ctypes.pointer(i)
+        out = kernel32.GetExitCodeProcess(process, pi)
+        
+        if not out:
+            err = kernel32.GetLastError()
+            if kernel32.GetLastError() == 5:
+                # Access is denied.
+                logging.warning("Access is denied to get pid info.")
+            return False
+            
+        return i.value == STILL_ACTIVE
+        
+    finally:
         kernel32.CloseHandle(process)
-        return False
-    elif bool(ec.lpExitCode):
-        # print ec.lpExitCode.contents
-        # There is an exist code, it quit
-        kernel32.CloseHandle(process)
-        return False
-    # No exit code, it's running.
-    kernel32.CloseHandle(process)
-    return True
 
 class Process:
     def __init__(self, path):
