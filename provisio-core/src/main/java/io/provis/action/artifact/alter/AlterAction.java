@@ -98,6 +98,8 @@ public class AlterAction implements ProvisioningAction {
   }
 
   void setPermissionsOn(Path p, int intMode) throws IOException {
+    // noop on windows
+    if (File.pathSeparatorChar == ';') return;
     java.nio.file.Files.setPosixFilePermissions(p, PosixModes.intModeToPosix(intMode));
   }
 

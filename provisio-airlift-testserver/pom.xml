@@ -19,7 +19,7 @@
     <dependency>
       <groupId>io.takari</groupId>
       <artifactId>webserver</artifactId>
-      <version>0.0.3</version>
+      <version>0.0.5-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.jboss.spec.javax.ws.rs</groupId>

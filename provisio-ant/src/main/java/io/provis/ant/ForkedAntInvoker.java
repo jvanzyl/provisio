@@ -36,8 +36,15 @@ public class ForkedAntInvoker implements AntInvoker {
 
     File antHome = request.getAntHome();
     Commandline cli = new Commandline();
-
-    cli.setExecutable(new File(antHome, "bin/ant").getAbsolutePath());
+    
+    String cmd;
+    if(File.pathSeparatorChar == ';') {
+      cmd = "ant.bat";
+    } else {
+      cmd = "ant";
+    }
+    
+    cli.setExecutable(new File(antHome, "bin/" + cmd).getAbsolutePath());
 
     cli.addEnvironment("ANT_HOME", antHome.getAbsolutePath());
     cli.addEnvironment("JAVA_HOME", javaHome.getAbsolutePath());

@@ -28,7 +28,7 @@ public class AirliftProvisionerTest extends InjectedTest {
     AirliftProvisioningContext context = new AirliftProvisioningContext();
     context.setPort(8000);
     context.setServerHome(new File(baseDirectory, "server"));
-    context.setServerCoordinate("io.provis:provisio-airlift-testserver:tar.gz:0.1.25-SNAPSHOT");
+    context.setServerCoordinate("io.provis:provisio-airlift-testserver:tar.gz:0.1.29-SNAPSHOT");
     context.setStatusUrl(String.format("http://localhost:%s/api/status", context.getPort()));
     provisioner.provision(context);
     AirliftLauncher launcher = new AirliftLauncher(context);
