@@ -59,7 +59,8 @@ public class AirliftLauncher {
   }
   
   public boolean isRunning() throws Exception {
-    CommandResult res = createCmd("status", false).execute(executor);
+    CommandResult res = createCmd("status", false)
+        .setSuccessfulExitCodes(0, 3).execute(executor);
     return res.getExitCode() == 0;
   }
 
