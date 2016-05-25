@@ -32,7 +32,10 @@ public class AirliftProvisionerTest extends InjectedTest {
     context.setStatusUrl(String.format("http://localhost:%s/api/status", context.getPort()));
     provisioner.provision(context);
     AirliftLauncher launcher = new AirliftLauncher(context);
-    launcher.start();
-    launcher.stop();
+    try {
+      launcher.start();
+    } finally {
+      launcher.stop();
+    }
   }
 }

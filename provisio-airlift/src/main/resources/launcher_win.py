@@ -17,7 +17,7 @@ from stat import S_ISLNK
 from time import sleep
 from multiprocessing import Process as MProcess
 
-COMMANDS = ['run', 'stop', 'restart', 'kill', 'status']
+COMMANDS = ['run', 'start', 'stop', 'restart', 'kill', 'status']
 
 LSB_NOT_RUNNING = 3
 LSB_STATUS_UNKNOWN = 4
@@ -301,8 +301,8 @@ def handle_command(command, options):
     elif command == 'stop':
         kill(process)
     elif command == 'restart':
-        stop(process)
-        kill(process, options)
+        kill(process)
+        doStart()
     elif command == 'kill':
         kill(process)
     elif command == 'status':
@@ -354,6 +354,11 @@ def print_options(options):
 class Options:
     pass
 
+def doStart():
+    args = sys.argv
+    args[1] = 'run' # replace start with run
+    args = ['cmd.exe', '/c', 'start', sys.executable] + args
+    subprocess.call(args)
 
 def main():
     parser = create_parser()
@@ -369,6 +374,10 @@ def main():
 
     if command not in COMMANDS:
         parser.error('unsupported command: %s' % command)
+    
+    if command == 'start':
+        doStart()
+        return
 
     try:
         install_path = find_install_path(sys.argv[0])

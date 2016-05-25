@@ -44,6 +44,11 @@
       <version>0.2</version>
     </dependency>
     <dependency>
+      <groupId>io.airlift</groupId>
+      <artifactId>units</artifactId>
+      <version>0.84</version>
+    </dependency>
+    <dependency>
       <groupId>io.provis</groupId>
       <artifactId>provisio-airlift-testserver</artifactId>
       <version>0.1.29-SNAPSHOT</version>

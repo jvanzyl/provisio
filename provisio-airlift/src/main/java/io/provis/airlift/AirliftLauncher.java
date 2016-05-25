@@ -8,10 +8,6 @@
 package io.provis.airlift;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.Executor;
@@ -21,6 +17,8 @@ import java.util.concurrent.TimeUnit;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import io.airlift.command.Command;
+import io.airlift.command.CommandFailedException;
+import io.airlift.command.CommandResult;
 
 public class AirliftLauncher {
 
@@ -34,36 +32,51 @@ public class AirliftLauncher {
   }
 
   public void start() throws Exception {
+    Command cmd = createCmd("start", true);
     
-    Command cmd;
-    if(File.pathSeparatorChar == ';') {
-      createWin32LauncherPy(new File(serverHome, "bin"));
-      cmd = new Command("cmd", "/c", "start", "bin/launcher_win.py", "run");
-    } else {
-      cmd = new Command("bin/launcher", "start");
-    }
+    long maxTime = cmd.getTimeLimit().toMillis();
+    long start = System.currentTimeMillis();
     
-    cmd.setDirectory(serverHome)
-      .setTimeLimit(5, TimeUnit.MINUTES)
-      .execute(executor);
+    cmd.execute(executor);
+    
     System.out.println("Attempting to determine if Airlift server is ready!");
     while (!readyToRespondToRequests()) {
+      if(!isRunning()) {
+        throw new CommandFailedException(cmd, "Process terminated unexpectedly", null);
+      }
+      
+      long total = System.currentTimeMillis() - start;
+      if(total > maxTime) {
+        throw new CommandFailedException(cmd, "Process did not start in timely manner", null);
+      }
+      
       Thread.sleep(3000);
     }
   }
 
   public void stop() throws Exception {
+    createCmd("stop", false).execute(executor);
+  }
+  
+  public boolean isRunning() throws Exception {
+    CommandResult res = createCmd("status", false).execute(executor);
+    return res.getExitCode() == 0;
+  }
+
+  private Command createCmd(String command, boolean forks) {
     Command cmd;
     if(File.pathSeparatorChar == ';') {
-      // the new launcher should have already been created
-      cmd = new Command("python.exe", "bin/launcher_win.py", "stop");
+      if(forks) {
+        cmd = new Command("cmd", "/c", "start", "bin/launcher_win.py", command);
+      } else {
+        cmd = new Command("cmd", "/c", "python.exe", "bin/launcher_win.py", command);
+      }
     } else {
-      cmd = new Command("bin/launcher", "stop");
+      cmd = new Command("bin/launcher", command);
     }
     
-    cmd.setDirectory(serverHome)
-      .setTimeLimit(5, TimeUnit.MINUTES)
-      .execute(executor);
+    return cmd.setDirectory(serverHome)
+        .setTimeLimit(5, TimeUnit.MINUTES);
   }
 
   private boolean readyToRespondToRequests() {
@@ -84,22 +97,5 @@ public class AirliftLauncher {
       connection = null;
     }
     return true;
-  }
-  
-  private void createWin32LauncherPy(File dir) throws IOException {
-    
-    File outFile = new File(dir, "launcher_win.py");
-    if(outFile.exists()) {
-      return;
-    }
-    
-    try(InputStream in = this.getClass().getResourceAsStream("/launcher_win.py"); OutputStream out = new FileOutputStream(outFile) ) {
-      
-      byte[] buf = new byte[4096];
-      int l;
-      while((l = in.read(buf)) != -1) {
-        out.write(buf, 0, l);
-      }
-    }
   }
 }
