@@ -42,6 +42,7 @@ import io.tesla.proviso.archive.UnArchiver;
 @Named("insert")
 public class AlterAction implements ProvisioningAction {
   private List<Insert> inserts;
+  private List<Delete> deletes;
   private ProvisioArtifact artifact;
   private File outputDirectory;
   private MavenProvisioner provisioner;
@@ -58,15 +59,28 @@ public class AlterAction implements ProvisioningAction {
         .build();
       File unpackDirectory = new File(outputDirectory, "unpack");
       unarchiver.unarchive(archive, unpackDirectory);
+      
       // Make any modifications to the archive
-      for (Insert insert : inserts) {
-        for (ProvisioArtifact insertArtifact : insert.getArtifacts()) {
-          provisioner.resolveArtifact(context, insertArtifact);
-          File source = insertArtifact.getFile();
-          File target = new File(unpackDirectory, insertArtifact.getName());
-          Files.copy(source, target);
+      if (inserts != null) {
+        for (Insert insert : inserts) {
+          for (ProvisioArtifact insertArtifact : insert.getArtifacts()) {
+            provisioner.resolveArtifact(context, insertArtifact);
+            File source = insertArtifact.getFile();
+            File target = new File(unpackDirectory, insertArtifact.getName());
+            Files.copy(source, target);
+          }
         }
       }
+      
+      if(deletes != null) {
+        for (Delete delete : deletes) {
+          for (io.provis.model.File fileModel : delete.getFiles()) {
+            File target = new File(unpackDirectory, fileModel.getPath());
+            FileUtils.forceDelete(target);
+          }
+        }
+      }
+      
       // Set all the files readable so we can repack them
       setFilesReadable(unpackDirectory);
       // Pack the archive back up      
@@ -109,6 +123,14 @@ public class AlterAction implements ProvisioningAction {
 
   public void setInserts(List<Insert> inserts) {
     this.inserts = inserts;
+  }
+  
+  public List<Delete> getDeletes() {
+    return deletes;
+  }
+  
+  public void setDeletes(List<Delete> deletes) {
+    this.deletes = deletes;
   }
 
   public ProvisioArtifact getArtifact() {

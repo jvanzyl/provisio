@@ -14,6 +14,7 @@ import com.google.common.collect.Lists;
 
 import io.provis.action.artifact.UnpackAction;
 import io.provis.action.artifact.alter.AlterAction;
+import io.provis.action.artifact.alter.Delete;
 import io.provis.action.artifact.alter.Insert;
 import io.provis.action.fileset.MakeExecutableAction;
 import io.provis.action.runtime.ArchiveAction;
@@ -100,12 +101,14 @@ public class Actions {
 
       @Override
       public List<Alias> aliases() {
-        return ImmutableList.of(new Alias("insert", Insert.class));
+        return ImmutableList.of(new Alias("insert", Insert.class), new Alias("delete", Delete.class));
       }
 
       @Override
       public List<Implicit> implicits() {
-        return ImmutableList.of(new Implicit("inserts", AlterAction.class), new Implicit("artifacts", Insert.class));
+        return ImmutableList.of(
+            new Implicit("inserts", AlterAction.class, Insert.class), new Implicit("artifacts", Insert.class),
+            new Implicit("deletes", AlterAction.class, Delete.class), new Implicit("files", Delete.class));
       }
     });    
     return actionDescriptors;

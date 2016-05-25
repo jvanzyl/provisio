@@ -99,7 +99,11 @@ public class RuntimeReader {
         xstream.alias(alias.getName(), alias.getType());
       }
       for(Implicit implicit : action.implicits()) {
-        xstream.addImplicitCollection(implicit.getType(), implicit.getName());
+        if(implicit.getItemType() != null) {
+          xstream.addImplicitCollection(implicit.getType(), implicit.getName(), implicit.getItemType());
+        } else {
+          xstream.addImplicitCollection(implicit.getType(), implicit.getName());
+        }
       }
     }
     

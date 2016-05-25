@@ -57,6 +57,15 @@ public class ProvisioTest {
     validator.assertEntryExists("WEB-INF/lib/junit-4.12.jar");
   }  
 
+  @Test
+  public void validateAlterationOfJarWithDelete() throws Exception {
+    String name = "it-0004";
+    ProvisioningResult result = provisioner.provision(provisioningRequest(name));
+    File war = new File(result.getOutputDirectory(), "lib/hudson-war-3.3.3.jar");
+    ArchiveValidator validator = new ZipArchiveValidator(war);
+    validator.assertEntryDoesntExist("WEB-INF/lib/hudson-core-3.3.3.jar");
+  }  
+
   protected ProvisioningRequest provisioningRequest(String name) throws Exception {
     File projectBasedir = runtimeProject(name);
     File descriptor = new File(projectBasedir, "provisio.xml");
