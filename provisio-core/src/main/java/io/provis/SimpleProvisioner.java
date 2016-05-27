@@ -23,8 +23,8 @@ import com.squareup.okhttp.Response;
 
 public abstract class SimpleProvisioner {
 
-  private static final String DEFAULT_REMOTE_REPO = "http://repo1.maven.org/maven2";
-  private static final File DEFAULT_LOCAL_REPO = new File(System.getProperty("user.home"), ".m2/repository");
+  public static final String DEFAULT_REMOTE_REPO = "http://repo1.maven.org/maven2";
+  public static final File DEFAULT_LOCAL_REPO = new File(System.getProperty("user.home"), ".m2/repository");
 
   protected final UnArchiver unarchiver;
   protected final File localRepository;
@@ -57,7 +57,6 @@ public abstract class SimpleProvisioner {
   }
 
   protected File resolveFromServer(String archiveUrl, String coordinate) throws IOException {
-    File localRepository = new File(System.getProperty("user.home"), ".m2/repository");
     String path = coordinateToPath(coordinate);
     File file = new File(localRepository, path);
     if (file.exists()) {

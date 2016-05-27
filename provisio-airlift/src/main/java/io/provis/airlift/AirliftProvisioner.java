@@ -24,6 +24,14 @@ import io.tesla.proviso.archive.UnArchiver;
 public class AirliftProvisioner extends SimpleProvisioner {
 
   public static final String ID = "airlift";
+  
+  public AirliftProvisioner() {
+    super();
+  }
+  
+  public AirliftProvisioner(File localRepository, String remoteRepository) {
+    super(localRepository, remoteRepository);
+  }
 
   public File provision(AirliftProvisioningContext context) throws IOException {
     File serverHome = context.getServerHome();
