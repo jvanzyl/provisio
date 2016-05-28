@@ -27,7 +27,7 @@ public class ArtifactSet {
   private List<Resource> resources = Lists.newArrayList();
   // children
   private List<ArtifactSet> artifactSets = Lists.newArrayList();
-  private List<String> excludes = Lists.newArrayList();
+  private List<Exclusion> exclusions; 
 
   // runtime
   private ArtifactSet parent;
@@ -64,9 +64,10 @@ public class ArtifactSet {
   }
 
   // runtime
-
-  public List<String> getExcludes() {
-    return excludes;
+  
+  
+  public List<Exclusion> getExcludes() {
+    return exclusions;
   }
 
   public File getOutputDirectory() {

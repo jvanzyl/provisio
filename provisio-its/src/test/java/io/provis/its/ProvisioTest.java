@@ -44,8 +44,8 @@ public class ProvisioTest {
     String name = "it-0002";
     ProvisioningResult result = provisioner.provision(provisioningRequest(name));
     assertDirectoryExists(result, "etc");
-    assertFilesExists(result, "etc/jvm.config");
-    assertFilesExists(result, "etc/config.properties");
+    assertFileExists(result, "etc/jvm.config");
+    assertFileExists(result, "etc/config.properties");
   }  
 
   @Test
@@ -64,6 +64,29 @@ public class ProvisioTest {
     File war = new File(result.getOutputDirectory(), "lib/hudson-war-3.3.3.jar");
     ArchiveValidator validator = new ZipArchiveValidator(war);
     validator.assertEntryDoesntExist("WEB-INF/lib/hudson-core-3.3.3.jar");
+  }  
+
+  @Test
+  public void validateArtifactWithExclude() throws Exception {
+    String name = "it-0006";
+    deleteOutputDirectory(name);
+    ProvisioningResult result = provisioner.provision(provisioningRequest(name));
+    assertFileExists(result, "lib/maven-core-3.3.9.jar");
+    assertFileDoesntExists(result, "lib/plexus-utils-3.0.22.jar");
+    assertFileDoesntExists(result, "lib/maven-model-3.3.9.jar");
+  }  
+
+  @Test
+  public void validateArtifactSetWithExclude() throws Exception {
+    String name = "it-0007";
+    deleteOutputDirectory(name);
+    ProvisioningResult result = provisioner.provision(provisioningRequest(name));
+    assertFileExists(result, "lib/maven-core-3.3.9.jar");
+    // excluded from maven
+    assertFileDoesntExists(result, "lib/plexus-utils-3.0.22.jar");
+    assertFileDoesntExists(result, "lib/maven-model-3.3.9.jar");
+    // excluded from modello
+    assertFileDoesntExists(result, "lib/plexus-utils-3.0.13.jar");
   }  
 
   protected ProvisioningRequest provisioningRequest(String name) throws Exception {
@@ -98,10 +121,16 @@ public class ProvisioTest {
     assertFalse(String.format("We expect not to find the directory %s, but it is there.", directoryName), directory.exists() && directory.isDirectory());
   }
 
-  protected void assertFilesExists(ProvisioningResult result, String fileName) {
+  protected void assertFileExists(ProvisioningResult result, String fileName) {
     File outputDirectory = result.getOutputDirectory();
     File file = new File(outputDirectory, fileName);
     assertTrue(String.format("We expect to find the file %s, but it doesn't exist or is not a file.", fileName), file.exists() && file.isFile());
+  }
+
+  protected void assertFileDoesntExists(ProvisioningResult result, String fileName) {
+    File outputDirectory = result.getOutputDirectory();
+    File file = new File(outputDirectory, fileName);
+    assertFalse(String.format("We don't expect to find the file %s, but it does exist.", fileName), file.exists() && file.isFile());
   }
 
   protected void assertPresenceAndSizeOf(File file, int size) {
@@ -152,6 +181,11 @@ public class ProvisioTest {
     return outputDirectory;
   }
 
+  protected final void deleteOutputDirectory(String name) throws IOException {
+    File outputDirectory = outputDirectory(name);
+    FileUtils.deleteDirectory(outputDirectory);
+  }
+  
   protected final File getSourceArchiveDirectory() {
     return new File(getBasedir(), "src/test/archives");
   }

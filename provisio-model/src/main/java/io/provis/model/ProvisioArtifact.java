@@ -23,6 +23,7 @@ public class ProvisioArtifact extends AbstractArtifact {
   private List<ProvisioningAction> actions;
   private Artifact delegate;
   private String coordinate;
+  private List<String> exclusions;
 
   private String reference;
 
@@ -181,4 +182,17 @@ public class ProvisioArtifact extends AbstractArtifact {
   public void setName(String name) {
     this.name = name;
   }
+  
+  public void addExclusion(String exclude) {
+    if(exclusions == null) {
+      exclusions = Lists.newArrayList();
+    }
+    exclusions.add(exclude);
+  }
+
+  public List<String> getExclusions() {
+    return exclusions;
+  }
+  
+  
 }

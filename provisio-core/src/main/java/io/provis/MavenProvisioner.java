@@ -18,22 +18,20 @@ import java.util.Map;
 import java.util.Set;
 
 import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.ArtifactType;
-import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.artifact.DefaultArtifactType;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.graph.Dependency;
-import org.eclipse.aether.graph.DependencyFilter;
+import org.eclipse.aether.graph.Exclusion;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.resolution.DependencyResult;
-import org.eclipse.aether.util.artifact.JavaScopes;
-import org.eclipse.aether.util.filter.DependencyFilterUtils;
 import org.eclipse.aether.util.filter.ExclusionsDependencyFilter;
 
 import com.google.common.base.Joiner;
@@ -146,7 +144,7 @@ public class MavenProvisioner {
   //
   // Resolving artifact sets
   //
-  public Set<ProvisioArtifact> resolveArtifactSet(ProvisioningContext context, ArtifactSet artifactSet) {
+  private Set<ProvisioArtifact> resolveArtifactSet(ProvisioningContext context, ArtifactSet artifactSet) {
     //
     // Resolve versions
     //
@@ -169,10 +167,10 @@ public class MavenProvisioner {
     // If the user happens to create an artifactSet in the configuration and then leaves it empty, like the "ext" configuration below:
     //
     // <artifactSet to="lib">
-    // <artifact id="ch.qos.logback:logback-core:${logbackVersion}"/>
-    // <artifact id="ch.qos.logback:logback-classic:${logbackVersion}"/>
-    // <artifactSet to="ext">
-    // </artifactSet>
+    //   <artifact id="ch.qos.logback:logback-core:${logbackVersion}"/>
+    //   <artifact id="ch.qos.logback:logback-classic:${logbackVersion}"/>
+    //   <artifactSet to="ext">
+    //   </artifactSet>
     // </artifactSet>
     //
     Set<ProvisioArtifact> parentResolved = artifactSet.getParent() != null ? artifactSet.getParent().getResolvedArtifacts() : Sets.newHashSet();
@@ -206,14 +204,10 @@ public class MavenProvisioner {
   }
 
   public Set<ProvisioArtifact> resolveArtifact(ProvisioningContext context, ProvisioArtifact artifact) {
-    return resolveArtifacts(context, ImmutableList.of(artifact), Sets.<ProvisioArtifact>newHashSet(), Lists.<String>newArrayList());
-  }  
-  
-  public Set<ProvisioArtifact> resolveArtifacts(ProvisioningContext context, List<ProvisioArtifact> artifacts) {
-    return resolveArtifacts(context, artifacts, Sets.<ProvisioArtifact>newHashSet(), Lists.<String>newArrayList());
+    return resolveArtifacts(context, ImmutableList.of(artifact), Sets.<ProvisioArtifact>newHashSet(), Lists.<io.provis.model.Exclusion>newArrayList());
   }
 
-  public Set<ProvisioArtifact> resolveArtifacts(ProvisioningContext context, List<ProvisioArtifact> artifacts, Set<ProvisioArtifact> managedArtifacts, List<String> excludes) {
+  private Set<ProvisioArtifact> resolveArtifacts(ProvisioningContext context, List<ProvisioArtifact> artifacts, Set<ProvisioArtifact> managedArtifacts, List<io.provis.model.Exclusion> excludes) {
     CollectRequest request = new CollectRequest();
     //
     // We need to defend against a null set
@@ -221,8 +215,8 @@ public class MavenProvisioner {
     if (artifacts == null) {
       artifacts = Lists.newArrayList();
     }
-    
-    if(managedArtifacts == null) {
+
+    if (managedArtifacts == null) {
       managedArtifacts = Sets.newHashSet();
     }
 
@@ -290,14 +284,52 @@ public class MavenProvisioner {
         artifact.setProperties(type.getProperties());
       }
       Dependency dependency = new Dependency(artifact, "runtime");
-      request.addDependency(dependency);
+      //
+      // Equivalent of something like:
+      //
+      // <project>
+      //   ...
+      //   <dependencies>
+      //     <dependency>
+      //       <groupId>org.apache.maven</groupId>
+      //       <artifactId>maven-core</artifactId>
+      //       <version>3.3.9</version>
+      //       <exclusions>
+      //         <exclusion>
+      //           <groupId>org.codehaus.plexus</groupId>
+      //           <artifactId>plexus-utils</artifactId>
+      //         </exclusion>
+      //       </exclusions>
+      //     </dependency>
+      //   </dependencies>
+      // </project>
+      //
+      if (artifact.getExclusions() != null) {
+        Set<Exclusion> exclusions = Sets.newHashSet();
+        for (String exclusion : artifact.getExclusions()) {
+          String[] ga = StringUtils.split(exclusion, ":");
+          if (ga.length == 2) {
+            exclusions.add(new Exclusion(ga[0], ga[1], "*", "*"));
+          } else if (ga.length == 1) {
+            exclusions.add(new Exclusion(null, ga[0], "*", "*"));
+          }
+        }
+        dependency = dependency.setExclusions(exclusions);
+      }
+      request.setRoot(dependency);
+      //request.addDependency(dependency);
     }
     //
     // Add an exclude filter if necessary
     //
     DependencyRequest dependencyRequest = new DependencyRequest(request, null);
     if (excludes != null) {
-      dependencyRequest.setFilter(new ExclusionsDependencyFilter(excludes));
+      List<String> exclusions = Lists.newArrayList();
+      for (io.provis.model.Exclusion exclusion : excludes) {
+        System.out.println(exclusion.getId());
+        exclusions.add(exclusion.getId());
+      }
+      dependencyRequest.setFilter(new ExclusionsDependencyFilter(exclusions));
     }
 
     for (String coordinate : context.getRequest().getManagedDependencies()) {
@@ -339,22 +371,7 @@ public class MavenProvisioner {
     return resolvedArtifacts;
   }
 
-  public List<Artifact> resolveArtifacts(String coordinate) throws DependencyResolutionException {
-    return resolveArtifacts(new DefaultArtifact(coordinate));
-  }
-
-  public List<Artifact> resolveArtifacts(Artifact artifact) throws DependencyResolutionException {
-    DependencyFilter classpathFlter = DependencyFilterUtils.classpathFilter(JavaScopes.RUNTIME);
-    CollectRequest collectRequest = new CollectRequest();
-    collectRequest.setRoot(new Dependency(artifact, JavaScopes.RUNTIME));
-    for (RemoteRepository remoteRepository : remoteRepositories) {
-      collectRequest.addRepository(remoteRepository);
-    }
-    DependencyRequest dependencyRequest = new DependencyRequest(collectRequest, classpathFlter);
-    return resolveArtifacts(dependencyRequest);
-  }
-
-  public List<Artifact> resolveArtifacts(DependencyRequest request) throws DependencyResolutionException {
+  private List<Artifact> resolveArtifacts(DependencyRequest request) throws DependencyResolutionException {
     //
     // We are attempting to encapsulate everything about resolution with this library. The dependency request requires
     // the collect request to have repositories set but this is all injected within this component so we have to set them.
@@ -373,7 +390,7 @@ public class MavenProvisioner {
     return artifacts;
   }
 
-  public ArtifactType getArtifactType(String typeId) {
+  private ArtifactType getArtifactType(String typeId) {
     return repositorySystemSession.getArtifactTypeRegistry().get(typeId);
   }
 

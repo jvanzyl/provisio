@@ -24,6 +24,7 @@ import io.provis.model.ActionDescriptor;
 import io.provis.model.Alias;
 import io.provis.model.ArtifactSet;
 import io.provis.model.Directory;
+import io.provis.model.Exclusion;
 import io.provis.model.File;
 import io.provis.model.FileSet;
 import io.provis.model.Implicit;
@@ -61,8 +62,12 @@ public class RuntimeReader {
     xstream.alias("artifactSet", ArtifactSet.class);
     xstream.aliasAttribute(ArtifactSet.class, "directory", "to");
     xstream.aliasAttribute(ArtifactSet.class, "reference", "ref");
-    xstream.alias("artifact", ProvisioArtifact.class);
     xstream.addImplicitCollection(ArtifactSet.class, "artifacts", ProvisioArtifact.class);
+    xstream.alias("exclude", Exclusion.class);
+    xstream.useAttributeFor(Exclusion.class, "id");    
+    xstream.addImplicitCollection(ArtifactSet.class, "exclusions", "exclusion", Exclusion.class);
+    // Artifact
+    xstream.alias("artifact", ProvisioArtifact.class);
     // Child ArtifactSets
     xstream.addImplicitCollection(ArtifactSet.class, "artifactSets", ArtifactSet.class);
 
@@ -95,18 +100,18 @@ public class RuntimeReader {
       for (String attributeForProperty : action.attributes()) {
         xstream.useAttributeFor(action.getImplementation(), attributeForProperty);
       }
-      for(Alias alias : action.aliases()) {
+      for (Alias alias : action.aliases()) {
         xstream.alias(alias.getName(), alias.getType());
       }
-      for(Implicit implicit : action.implicits()) {
-        if(implicit.getItemType() != null) {
+      for (Implicit implicit : action.implicits()) {
+        if (implicit.getItemType() != null) {
           xstream.addImplicitCollection(implicit.getType(), implicit.getName(), implicit.getItemType());
         } else {
           xstream.addImplicitCollection(implicit.getType(), implicit.getName());
         }
       }
     }
-    
+
     this.versionMap = versionMap;
     this.actionMap = Maps.newHashMap();
     for (ActionDescriptor actionDescriptor : actions) {
@@ -219,10 +224,13 @@ public class RuntimeReader {
 
       while (reader.hasMoreChildren()) {
         reader.moveDown();
-        String actionName = reader.getNodeName();
-        ActionDescriptor actionDescriptor = actionMap.get(actionName);
+        String nodeName = reader.getNodeName();
+        ActionDescriptor actionDescriptor = actionMap.get(nodeName);
         if (actionDescriptor != null) {
           artifact.addAction((ProvisioningAction) context.convertAnother(artifact, actionDescriptor.getImplementation()));
+        } else if (nodeName.equals("exclusion")) {
+          String exclude = reader.getAttribute("id");
+          artifact.addExclusion(exclude);
         }
         reader.moveUp();
       }
