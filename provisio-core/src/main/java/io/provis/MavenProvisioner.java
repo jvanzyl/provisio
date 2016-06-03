@@ -316,8 +316,8 @@ public class MavenProvisioner {
         }
         dependency = dependency.setExclusions(exclusions);
       }
-      request.setRoot(dependency);
-      //request.addDependency(dependency);
+      //request.setRoot(dependency);
+      request.addDependency(dependency);
     }
     //
     // Add an exclude filter if necessary
@@ -326,7 +326,6 @@ public class MavenProvisioner {
     if (excludes != null) {
       List<String> exclusions = Lists.newArrayList();
       for (io.provis.model.Exclusion exclusion : excludes) {
-        System.out.println(exclusion.getId());
         exclusions.add(exclusion.getId());
       }
       dependencyRequest.setFilter(new ExclusionsDependencyFilter(exclusions));

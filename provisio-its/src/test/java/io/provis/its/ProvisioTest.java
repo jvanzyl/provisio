@@ -81,6 +81,7 @@ public class ProvisioTest {
     String name = "it-0007";
     deleteOutputDirectory(name);
     ProvisioningResult result = provisioner.provision(provisioningRequest(name));
+    assertFileExists(result, "lib/modello-core-1.8.3.jar");
     assertFileExists(result, "lib/maven-core-3.3.9.jar");
     // excluded from maven
     assertFileDoesntExists(result, "lib/plexus-utils-3.0.22.jar");
