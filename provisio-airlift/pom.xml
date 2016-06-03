@@ -51,7 +51,6 @@
     <dependency>
       <groupId>io.provis</groupId>
       <artifactId>provisio-airlift-testserver</artifactId>
-      <version>0.1.31-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>io.provis</groupId>

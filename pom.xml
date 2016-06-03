@@ -81,6 +81,16 @@
         <version>0.1.32-SNAPSHOT</version>
       </dependency>
       <dependency>
+        <groupId>io.provis</groupId>
+        <artifactId>provisio-command</artifactId>
+        <version>0.1.32-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>io.provis</groupId>
+        <artifactId>provisio-airlift-testserver</artifactId>
+        <version>0.1.32-SNAPSHOT</version>
+      </dependency>      
+      <dependency>
         <groupId>io.takari</groupId>
         <artifactId>takari-archiver</artifactId>
         <version>${takariArchiverVersion}</version>
