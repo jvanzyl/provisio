@@ -40,13 +40,24 @@ public class AirliftLauncher {
     cmd.execute(executor);
     
     System.out.println("Attempting to determine if Airlift server is ready!");
+    boolean seenRunning = false;
     while (!readyToRespondToRequests()) {
-      if(!isRunning()) {
+      boolean running = isRunning();
+      
+      if(seenRunning && !running) {
         throw new CommandFailedException(cmd, "Process terminated unexpectedly", null);
       }
+      seenRunning |= running;
       
       long total = System.currentTimeMillis() - start;
-      if(total > maxTime) {
+      
+      // if the process doesn't start in 10s
+      if(!seenRunning && total > 10000L) {
+        throw new CommandFailedException(cmd, "Process did not start in timely manner", null);
+      }
+      
+      // if it doesn't start accepting connections during maxTime
+      if(total > maxTime) { 
         throw new CommandFailedException(cmd, "Process did not start in timely manner", null);
       }
       
