@@ -23,6 +23,8 @@
     <module>provisio-ant</module>
     <module>provisio-command</module>
     <module>provisio-core</module>
+    <module>provisio-jenkins-spi</module>
+    <module>provisio-jenkins-runtime</module>
     <module>provisio-jenkins</module>
     <module>provisio-maven</module>
     <module>provisio-maven-plugin</module>
@@ -71,6 +73,11 @@
         <version>1</version>
       </dependency>
       <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>servlet-api</artifactId>
+        <version>2.4</version>
+      </dependency>
+      <dependency>
         <groupId>io.provis</groupId>
         <artifactId>provisio-core</artifactId>
         <version>0.1.33-SNAPSHOT</version>
@@ -89,16 +96,41 @@
         <groupId>io.provis</groupId>
         <artifactId>provisio-airlift-testserver</artifactId>
         <version>0.1.33-SNAPSHOT</version>
-      </dependency>      
+      </dependency>
+      <dependency>
+        <groupId>io.provis</groupId>
+        <artifactId>provisio-jenkins</artifactId>
+        <version>0.1.33-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>io.provis</groupId>
+        <artifactId>provisio-jenkins-spi</artifactId>
+        <version>0.1.33-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>io.provis</groupId>
+        <artifactId>provisio-jenkins-runtime</artifactId>
+        <version>0.1.33-SNAPSHOT</version>
+      </dependency>
       <dependency>
         <groupId>io.takari</groupId>
         <artifactId>takari-archiver</artifactId>
         <version>${takariArchiverVersion}</version>
       </dependency>
       <dependency>
+        <groupId>de.pdark</groupId>
+        <artifactId>decentxml</artifactId>
+        <version>1.4</version>
+      </dependency>
+      <dependency>
         <groupId>org.codehaus.swizzle</groupId>
         <artifactId>swizzle-stream</artifactId>
         <version>1.6.2</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.10</version>
       </dependency>
       <!-- Guice -->
       <dependency>

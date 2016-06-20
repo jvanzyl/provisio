@@ -23,6 +23,35 @@
 
   <dependencies>
     <dependency>
+      <groupId>io.provis</groupId>
+      <artifactId>provisio-jenkins-spi</artifactId>
+    </dependency>
+    <!-- Just to cause it to be built before current project -->
+    <dependency>
+      <groupId>io.provis</groupId>
+      <artifactId>provisio-jenkins-runtime</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.github.spullara.mustache.java</groupId>
+      <artifactId>compiler</artifactId>
+      <version>0.8.17</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-classworlds</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
@@ -53,7 +82,6 @@
     <dependency>
       <groupId>de.pdark</groupId>
       <artifactId>decentxml</artifactId>
-      <version>1.4</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
@@ -68,6 +96,11 @@
       <artifactId>org.eclipse.sisu.inject</artifactId>
     </dependency>
     <!-- Test -->
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
