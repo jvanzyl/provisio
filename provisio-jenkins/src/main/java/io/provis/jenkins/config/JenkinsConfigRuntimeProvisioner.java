@@ -69,17 +69,27 @@ public class JenkinsConfigRuntimeProvisioner extends SimpleProvisioner {
     realm.addURL(runtimeJar.toURI().toURL());
     
     try {
-    
-      JenkinsRuntimeSPI spi = ServiceLoader.load(JenkinsRuntimeSPI.class, realm).iterator().next();
-      JenkinsRuntime runtime = spi.createRuntime(rootDir, secretKey);
+      
+      JenkinsRuntime runtime;
+      ClassLoader ccl = Thread.currentThread().getContextClassLoader();
+      try {
+        Thread.currentThread().setContextClassLoader(realm);
+        JenkinsRuntimeSPI spi = ServiceLoader.load(JenkinsRuntimeSPI.class, realm).iterator().next();
+        runtime = spi.createRuntime(rootDir, secretKey);
+      } finally {
+        Thread.currentThread().setContextClassLoader(ccl);
+      }
       
       return new JenkinsRuntime(){
         
         @Override
         public void close() throws IOException {
+          ClassLoader ccl = Thread.currentThread().getContextClassLoader();
           try {
+            Thread.currentThread().setContextClassLoader(realm);
             runtime.close();
           } finally {
+            Thread.currentThread().setContextClassLoader(ccl);
             try {
               cw.disposeRealm(realm.getId());
             } catch (NoSuchRealmException e) {
@@ -89,12 +99,24 @@ public class JenkinsConfigRuntimeProvisioner extends SimpleProvisioner {
 
         @Override
         public void writeCredentials(CredentialContainer creds) throws IOException {
-          runtime.writeCredentials(creds);
+          ClassLoader ccl = Thread.currentThread().getContextClassLoader();
+          try {
+            Thread.currentThread().setContextClassLoader(realm);
+            runtime.writeCredentials(creds);
+          } finally {
+            Thread.currentThread().setContextClassLoader(ccl);
+          }
         }
 
         @Override
         public String encrypt(String value) {
-          return runtime.encrypt(value);
+          ClassLoader ccl = Thread.currentThread().getContextClassLoader();
+          try {
+            Thread.currentThread().setContextClassLoader(realm);
+            return runtime.encrypt(value);
+          } finally {
+            Thread.currentThread().setContextClassLoader(ccl);
+          }
         }
       };
       

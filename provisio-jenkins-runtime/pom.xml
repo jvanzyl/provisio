@@ -60,12 +60,6 @@
 
   <build>
     <plugins>
-      <!-- Using 2.11 works, releases after break our tests -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.11</version>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
@@ -79,14 +73,19 @@
             <configuration>
               <dependencyReducedPomLocation>${project.build.directory}/dependency-reduced-pom.xml</dependencyReducedPomLocation>
               <minimizeJar>true</minimizeJar>
+              
               <artifactSet>
                 <includes>
-                  <include>org.jenkins-ci.*:*</include>
+                  <include>org.jenkins-ci*:*</include>
+                  <!-- jenkins uses forked version of those -->
+                  <include>commons-fileupload:commons-fileupload</include>
+                  <include>org.jvnet.hudson:xstream</include>
+                  <include>org.jvnet.localizer:localizer</include>
                 </includes>
               </artifactSet>
               <filters>
                 <filter>
-                  <artifact>org.jenkins-ci.*:*</artifact>
+                  <artifact>*:*</artifact>
                   <excludes>
                     <exclude>**/*.properties</exclude>
                     <exclude>**/*.jelly</exclude>
@@ -97,17 +96,23 @@
                     <exclude>**/*.html</exclude>
                     <exclude>**/*.css</exclude>
                     <exclude>**/*.js</exclude>
+                    <exclude>**/*.gif</exclude>
                     <exclude>**/taglib</exclude>
                     <exclude>windows-service/**</exclude>
                     <exclude>lib/**</exclude>
                     <exclude>dsld/**</exclude>
                     <exclude>META-INF/annotations/**</exclude>
-                    <exclude>META-INF/services/**</exclude>
                     <exclude>META-INF/exposed.stapler-beans</exclude>
                     <exclude>META-INF/MANIFEST.MF</exclude>
                     <exclude>META-INF/*.RSA</exclude>
                     <exclude>META-INF/*.SF</exclude>
                   </excludes>
+                </filter>
+                <filter>
+                  <artifact>org.jvnet.hudson:xstream</artifact>
+                  <includes>
+                    <include>**</include>
+                  </includes>
                 </filter>
               </filters>
             </configuration>
