@@ -15,6 +15,8 @@ import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -25,6 +27,7 @@ import org.codehaus.swizzle.stream.ReplaceVariablesInputStream;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.io.ByteSource;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 
@@ -36,6 +39,13 @@ public class JenkinsProvisioner extends SimpleProvisioner {
 
   public static final String ID = "jenkins";
   private static final String JENKINS_CENTRAL = "http://repo.jenkins-ci.org/public";
+  
+  //  had to overrid this for some reason to test via the injected instance
+  @Override
+  protected
+  String coordinateToPath(String coords) {
+    return super.coordinateToPath(coords);
+  }
 
   public File provision(JenkinsProvisioningContext context) throws IOException {
     String version = context.getVersion();
@@ -45,19 +55,30 @@ public class JenkinsProvisioner extends SimpleProvisioner {
       throw new IllegalArgumentException("Jenkins version not specified");
     }
     String repositoryUrl = context.getRepositoryUrl();
-    if(repositoryUrl == null) {
+    if (repositoryUrl == null) {
       repositoryUrl = JENKINS_CENTRAL;
     }
-    // http://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/1.644/jenkins-war-1.644.war
-    File jenkinsWar = resolveFromServer(
-      String.format("%s/org/jenkins-ci/main/jenkins-war/%s/jenkins-war-%s.war", repositoryUrl, version, version),
-      "org.jenkins-ci.main:jenkins-war:war:" + context.getVersion());
+
+    File jenkinsWar;
+
+    File dist = context.getDist();
+
+    if (dist != null) {
+      jenkinsWar = dist;
+    } else {
+
+      // http://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/1.644/jenkins-war-1.644.war
+      jenkinsWar = resolveFromServer(
+        String.format("%s/org/jenkins-ci/main/jenkins-war/%s/%s", repositoryUrl, version, context.getJenkinsFileName()),
+        "org.jenkins-ci.main:jenkins-war:war:" + context.getVersion());
+      
+    }
 
     // Create the installation and work directories
     FileUtils.mkdir(installationDirectory.getAbsolutePath());
     FileUtils.mkdir(workDirectory.getAbsolutePath());
     // Copy Jenkins WAR into the installation directory
-    Files.copy(jenkinsWar, new File(installationDirectory, jenkinsWar.getName()));
+    Files.copy(jenkinsWar, new File(installationDirectory, context.getJenkinsFileName()));
     // Create a startup script based on the provisioning context to help with debugging
     File jenkinsScript = new File(installationDirectory, "jenkins.sh");
     try (InputStream is = JenkinsProvisioner.class.getClassLoader().getResourceAsStream("scripts/jenkins.sh");

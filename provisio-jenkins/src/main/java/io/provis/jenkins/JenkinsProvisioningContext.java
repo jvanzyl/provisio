@@ -8,12 +8,15 @@
 package io.provis.jenkins;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.List;
 
 import com.google.common.collect.Lists;
+import com.google.common.io.ByteSource;
 
 public class JenkinsProvisioningContext {
   private String version;
+  private File dist;
   private File installationDirectory;
   private File workDirectory;
   private List<String> pluginRepositories;
@@ -29,11 +32,24 @@ public class JenkinsProvisioningContext {
   public String getVersion() {
     return version;
   }
-
+  
   public void setVersion(String version) {
     this.version = version;
   }
 
+  public File getDist() {
+    return dist;
+  }
+  
+  public void setDist(File dist) {
+    
+    if (dist == null)
+      return;
+    
+    this.dist = dist;
+    
+  }
+  
   public File getInstallationDirectory() {
     return installationDirectory;
   }
@@ -81,4 +97,12 @@ public class JenkinsProvisioningContext {
   public void setRepositoryUrl(String repositoryUrl) {
     this.repositoryUrl = repositoryUrl;
   }    
+  
+  public String getJenkinsFileName() {
+    
+    if (this.getVersion() == null || this.version.length() <= 0)
+      return String.format("jenkins-war.war");
+      
+    return String.format("jenkins-war-%s.war", this.getVersion());
+  }
 }

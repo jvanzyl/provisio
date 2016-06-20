@@ -33,7 +33,7 @@ public class JenkinsLauncher {
 
   public JenkinsLauncher(JenkinsProvisioningContext context) throws Exception {
     this.installationDirectory = context.getInstallationDirectory();
-    this.jenkinsWar = new File(this.installationDirectory, String.format("jenkins-war-%s.war", context.getVersion()));
+    this.jenkinsWar = new File(this.installationDirectory, context.getJenkinsFileName());
     this.workDirectory = context.getWorkDirectory();
     this.port = context.getPort();
   }
@@ -47,6 +47,7 @@ public class JenkinsLauncher {
         "java", "-Xms256m", "-Xmx1024m",
     });
     cl.addArguments(getVMArguments());
+    cl.addArguments(getJenkinsArguments());
     cl.addArguments(new String[] {
         "-jar", jenkinsWar.getAbsolutePath(), String.format("--httpPort=%s", port)  
     });
@@ -102,6 +103,12 @@ public class JenkinsLauncher {
     return cp.toArray(new String[cp.size()]);
   }
 
+  public String[] getJenkinsArguments() throws Exception {
+    return new String[] {
+        "-Djenkins.install.runSetupWizard=false"
+    };
+  }
+  
   public String[] getVMArguments() throws Exception {
     return new String[] {
         "-DJENKINS_HOME=" + quote(workDirectory)
