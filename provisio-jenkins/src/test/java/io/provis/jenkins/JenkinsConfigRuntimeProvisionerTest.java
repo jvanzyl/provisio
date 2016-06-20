@@ -1,6 +1,8 @@
 package io.provis.jenkins;
 
 import java.io.File;
+import java.io.InputStream;
+import java.util.Properties;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -23,11 +25,17 @@ public class JenkinsConfigRuntimeProvisionerTest extends InjectedTest {
   @Named("${basedir}/target/jenkins-config")
   private File baseDirectory;
 
-  @Inject
-  private JenkinsConfigRuntimeProvisioner provisioner;
-
   @Test
   public void validateConfigProvisioner() throws Exception {
+    
+    Properties config = new Properties();
+    try(InputStream in = getClass().getResourceAsStream("/test-config.properties")) {
+      config.load(in);
+    }
+    String localRepository = config.getProperty("localRepository");
+    
+    JenkinsConfigRuntimeProvisioner provisioner = new JenkinsConfigRuntimeProvisioner(
+        new File(localRepository), JenkinsConfigRuntimeProvisioner.DEFAULT_REMOTE_REPO);
     
     String key = "0102030405060708090A0B0C0D0E0F1112131415161718191A1B1C1D1E1F";
     

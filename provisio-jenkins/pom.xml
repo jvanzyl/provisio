@@ -114,6 +114,15 @@
   </dependencies>
   
   <build>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+      </testResource>
+      <testResource>
+        <directory>src/test/resources-filtered</directory>
+        <filtering>true</filtering>
+      </testResource>
+    </testResources>
     <plugins>
        <!-- Using 2.11 works, releases after break our tests -->
        <plugin>
