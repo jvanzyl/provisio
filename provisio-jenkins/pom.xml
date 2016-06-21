@@ -26,14 +26,14 @@
       <groupId>io.provis</groupId>
       <artifactId>provisio-jenkins-spi</artifactId>
     </dependency>
+    
     <!-- Just to cause it to be built before current project -->
-    <!-- 
     <dependency>
       <groupId>io.provis</groupId>
       <artifactId>provisio-jenkins-runtime</artifactId>
       <scope>provided</scope>
     </dependency>
-    -->
+    
     <dependency>
       <groupId>com.github.spullara.mustache.java</groupId>
       <artifactId>compiler</artifactId>
