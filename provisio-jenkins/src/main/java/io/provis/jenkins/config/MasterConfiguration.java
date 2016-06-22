@@ -9,10 +9,12 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Queue;
+import java.util.Set;
 
 import com.google.common.collect.Lists;
 
@@ -34,7 +36,6 @@ public class MasterConfiguration implements Closeable {
   private final List<String> templates;
   private final Properties properties;
   
-  private final SecretCredential gitHubServiceUserToken;
   private final List<UsernamePassword> usernamePasswordCredentials;
   private final List<SecretCredential> secretCredentials;
   private final List<GitHubCredential> gitHubCredentials;
@@ -47,8 +48,7 @@ public class MasterConfiguration implements Closeable {
       Properties properties,
       List<UsernamePassword> usernamePasswordCredentials,
       List<SecretCredential> secretCredentials,
-      List<GitHubCredential> gitHubCredentials,
-      SecretCredential gitHubServiceUserToken) {
+      List<GitHubCredential> gitHubCredentials) {
 
       this.runtime = runtime;
       this.templateDirectory = templateDirectory;
@@ -58,15 +58,10 @@ public class MasterConfiguration implements Closeable {
       this.secretCredentials = secretCredentials;
       this.gitHubCredentials = gitHubCredentials;
       this.properties = properties;
-      this.gitHubServiceUserToken = gitHubServiceUserToken;
     }
 
   public void write() throws IOException {
-    List<SecretCredential> sc = new ArrayList<>();
-    if(gitHubServiceUserToken != null) sc.add(gitHubServiceUserToken);
-    if(secretCredentials != null) sc.addAll(secretCredentials);
-    
-    runtime.writeCredentials(new CredentialContainer(sc, usernamePasswordCredentials, gitHubCredentials));
+    runtime.writeCredentials(new CredentialContainer(secretCredentials, usernamePasswordCredentials, gitHubCredentials));
     writeGlobalConfiguration();
   }
   
@@ -79,9 +74,11 @@ public class MasterConfiguration implements Closeable {
     outputDirectory.mkdirs();
 
     if(properties != null) {
-      String ghSecret = properties.getProperty("githubAppClientSecret");
-      if(ghSecret != null) {
-        properties.setProperty("githubAppClientSecretEnc", runtime.encrypt(ghSecret));
+      Set<Object> keys = new HashSet<>(properties.keySet());
+      for(Object k: keys) {
+        if(k instanceof String) {
+          properties.put(k + ".encrypted", runtime.encrypt(k.toString()));
+        }
       }
     }
     
@@ -138,7 +135,6 @@ public class MasterConfiguration implements Closeable {
     List<UsernamePassword> usernamePasswordCredentials = Lists.newArrayList();
     List<SecretCredential> secretCredentials = Lists.newArrayList();
     List<GitHubCredential> gitHubCredentials = Lists.newArrayList();
-    SecretCredential gitHubServiceUserToken;
 
     public MasterConfigurationBuilder outputDirectory(File outputDirectory) {
       this.outputDirectory = outputDirectory;
@@ -203,12 +199,6 @@ public class MasterConfiguration implements Closeable {
       return this;
     }
 
-    public MasterConfigurationBuilder gitHubServiceUserToken(String id, String gitHubServiceUserToken) {
-      this.gitHubServiceUserToken = new SecretCredential(id, gitHubServiceUserToken);
-      properties.setProperty("githubServiceUserCredentialsId", id);
-      return this;
-    }
-
     public MasterConfiguration build(JenkinsRuntime runtime) throws IOException {
       return new MasterConfiguration(runtime,
           templateDirectory,
@@ -217,8 +207,7 @@ public class MasterConfiguration implements Closeable {
           properties,
           usernamePasswordCredentials,
           secretCredentials,
-          gitHubCredentials, 
-          gitHubServiceUserToken);
+          gitHubCredentials);
     }
     
     public MasterConfiguration build() throws IOException {
@@ -239,22 +228,6 @@ public class MasterConfiguration implements Closeable {
       
       return build(p.provision(outputDirectory, key));
       
-    }
-  }
-
-  public static void main(String[] args) throws Exception {
-    File basedir = new File(new File("").getAbsolutePath());
-    File outputDirectory = new File(basedir, "target/jenkins");
-    outputDirectory.mkdirs();
-    try(MasterConfiguration jenkinsConfiguration = MasterConfiguration.builder()
-      .outputDirectory(outputDirectory)
-      .properties(new File(basedir, "walmart.properties"))
-      .usernamePasswordCredential("user1", "username", "password")
-      .gitHubServiceUserToken("ghtoken", "secretText")
-      .gitHubCredential("ghoauth1", "username1", "oauthtoken1", "http://api.github.com")
-      .gitHubCredential("ghoauth2", "username2", "oauthtoken2", "http://api.github.com")
-      .build()) {
-      jenkinsConfiguration.write();
     }
   }
 }

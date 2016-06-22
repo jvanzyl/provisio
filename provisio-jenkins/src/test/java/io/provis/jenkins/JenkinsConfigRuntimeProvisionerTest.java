@@ -41,11 +41,16 @@ public class JenkinsConfigRuntimeProvisionerTest extends InjectedTest {
     
     byte[] secretKey = Hex.decodeHex(key.toCharArray());
     
+    Properties props = new Properties();
+    props.put("key", "value");
+    
     try(MasterConfiguration mc = MasterConfiguration.builder()
       .provisioner(provisioner)
       .outputDirectory(baseDirectory)
       .secretKey(secretKey)
       .secretCredential("testCredential", "testSecret")
+      .templates("testConfig.txt")
+      .properties(props)
       .build()) {
       mc.write();
     }
@@ -68,6 +73,9 @@ public class JenkinsConfigRuntimeProvisionerTest extends InjectedTest {
     
     assertNotNull(elem);
     assertEquals("XPCos9cftJPN29xfrvZtz0zCflnHzcU4DmAadATYw3M=", elem.getText());
+    
+    File textConfig = assertExists("testConfig.txt");
+    assertEquals("value:Jz7E6bHP5KUs2vktvOYrl9US1pyob2AXPZf25mY5IFU=", FileUtils.fileRead(textConfig));
   }
   
   private File assertExists(String file) {
