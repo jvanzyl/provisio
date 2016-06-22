@@ -198,6 +198,21 @@ public class MasterConfiguration implements Closeable {
       gitHubCredentials.add(new GitHubCredential(id, username, oauthToken, gitHubApiUrl));
       return this;
     }
+    
+    public MasterConfigurationBuilder usernamePasswordCredentials(Collection<UsernamePassword> credentials) {
+      usernamePasswordCredentials.addAll(credentials);
+      return this;
+    }
+
+    public MasterConfigurationBuilder secretCredentials(Collection<SecretCredential> credentials) {
+      secretCredentials.addAll(credentials);
+      return this;
+    }
+
+    public MasterConfigurationBuilder gitHubCredentials(Collection<GitHubCredential> credentials) {
+      gitHubCredentials.addAll(credentials);
+      return this;
+    }
 
     public MasterConfiguration build(JenkinsRuntime runtime) throws IOException {
       return new MasterConfiguration(runtime,
