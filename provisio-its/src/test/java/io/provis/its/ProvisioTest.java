@@ -23,64 +23,80 @@ import io.provis.model.ProvisioningResult;
 import io.provis.model.Runtime;
 import io.provis.model.io.RuntimeReader;
 import io.tesla.proviso.archive.ArchiveValidator;
-import io.tesla.proviso.archive.FileMode;
 import io.tesla.proviso.archive.ZipArchiveValidator;
+import io.tesla.proviso.archive.perms.FileMode;
 
 public class ProvisioTest {
-  
+
   protected File basedir;
   protected MavenProvisioner provisioner;
-  
+  protected ResolutionSystem resolutionSystem;
+
   @Before
   public void prepare() {
     basedir = new File(new File("").getAbsolutePath());
-    File localRepository = new File(basedir, "target/localRepository");
-    ResolutionSystem s = new ResolutionSystem(localRepository);
-    provisioner = new MavenProvisioner(s.repositorySystem(), s.repositorySystemSession(), s.remoteRepositories());
   }
-  
+
+  private ProvisioningResult provision(String name) throws Exception {
+    return provision(name, new String[] {});
+  }
+
+  private ProvisioningResult provision(String name, String... remoteRepositories) throws Exception {
+    File localRepository = new File(basedir, "target/localRepository");
+    resolutionSystem = new ResolutionSystem(localRepository);
+    if (remoteRepositories.length > 0) {
+      for (String remoteRepository : remoteRepositories) {
+        resolutionSystem.remoteRepository(remoteRepository);        
+      }
+    } else {
+      resolutionSystem.remoteRepository("https://repo1.maven.org/maven2");
+    }
+    provisioner = new MavenProvisioner(resolutionSystem.repositorySystem(), resolutionSystem.repositorySystemSession(), resolutionSystem.remoteRepositories());
+    return provisioner.provision(provisioningRequest(name));
+  }
+
   @Test
   public void validateToAttributeForFileSetAndDirectory() throws Exception {
     String name = "it-0002";
-    ProvisioningResult result = provisioner.provision(provisioningRequest(name));
+    ProvisioningResult result = provision(name);
     assertDirectoryExists(result, "etc");
     assertFileExists(result, "etc/jvm.config");
     assertFileExists(result, "etc/config.properties");
-  }  
+  }
 
   @Test
   public void validateAlterationOfJarWithInsert() throws Exception {
     String name = "it-0003";
-    ProvisioningResult result = provisioner.provision(provisioningRequest(name));
+    ProvisioningResult result = provision(name);
     File war = new File(result.getOutputDirectory(), "lib/hudson-war-3.3.3.jar");
     ArchiveValidator validator = new ZipArchiveValidator(war);
     validator.assertEntryExists("WEB-INF/lib/junit-4.12.jar");
-  }  
+  }
 
   @Test
   public void validateAlterationOfJarWithDelete() throws Exception {
     String name = "it-0004";
-    ProvisioningResult result = provisioner.provision(provisioningRequest(name));
+    ProvisioningResult result = provision(name);
     File war = new File(result.getOutputDirectory(), "lib/hudson-war-3.3.3.jar");
     ArchiveValidator validator = new ZipArchiveValidator(war);
     validator.assertEntryDoesntExist("WEB-INF/lib/hudson-core-3.3.3.jar");
-  }  
+  }
 
   @Test
   public void validateArtifactWithExclude() throws Exception {
     String name = "it-0006";
     deleteOutputDirectory(name);
-    ProvisioningResult result = provisioner.provision(provisioningRequest(name));
+    ProvisioningResult result = provision(name);
     assertFileExists(result, "lib/maven-core-3.3.9.jar");
     assertFileDoesntExists(result, "lib/plexus-utils-3.0.22.jar");
     assertFileDoesntExists(result, "lib/maven-model-3.3.9.jar");
-  }  
+  }
 
   @Test
   public void validateArtifactSetWithExclude() throws Exception {
     String name = "it-0007";
     deleteOutputDirectory(name);
-    ProvisioningResult result = provisioner.provision(provisioningRequest(name));
+    ProvisioningResult result = provision(name);
     assertFileExists(result, "lib/modello-core-1.8.3.jar");
     assertFileExists(result, "lib/maven-core-3.3.9.jar");
     // excluded from maven
@@ -88,7 +104,14 @@ public class ProvisioTest {
     assertFileDoesntExists(result, "lib/maven-model-3.3.9.jar");
     // excluded from modello
     assertFileDoesntExists(result, "lib/plexus-utils-3.0.13.jar");
-  }  
+  }
+
+  @Test
+  public void validateExtractionOfJenkinsWar() throws Exception {
+    String name = "it-0008";
+    deleteOutputDirectory(name);
+    ProvisioningResult result = provision(name, "http://repo.jenkins-ci.org/public");
+  }
 
   protected ProvisioningRequest provisioningRequest(String name) throws Exception {
     File projectBasedir = runtimeProject(name);
@@ -97,17 +120,17 @@ public class ProvisioTest {
     ProvisioningRequest request = new ProvisioningRequest();
     request.setOutputDirectory(outputDirectory);
     request.setRuntimeDescriptor(parseDescriptor(descriptor));
-    request.setVariables(ImmutableMap.of("basedir",basedir.getAbsolutePath()));
+    request.setVariables(ImmutableMap.of("basedir", basedir.getAbsolutePath()));
     return request;
-  }  
-  
+  }
+
   public static Runtime parseDescriptor(File descriptor) throws Exception {
-    RuntimeReader parser = new RuntimeReader(Actions.defaultActionDescriptors(), Maps.<String,String>newHashMap());
-    try(InputStream is = new FileInputStream(descriptor)) {
-      return parser.read(is, ImmutableMap.of("basedir",descriptor.getParentFile().getAbsolutePath()));      
+    RuntimeReader parser = new RuntimeReader(Actions.defaultActionDescriptors(), Maps.<String, String>newHashMap());
+    try (InputStream is = new FileInputStream(descriptor)) {
+      return parser.read(is, ImmutableMap.of("basedir", descriptor.getParentFile().getAbsolutePath()));
     }
-  }  
-  
+  }
+
   //
   // Assertions for tests
   //
@@ -186,7 +209,7 @@ public class ProvisioTest {
     File outputDirectory = outputDirectory(name);
     FileUtils.deleteDirectory(outputDirectory);
   }
-  
+
   protected final File getSourceArchiveDirectory() {
     return new File(getBasedir(), "src/test/archives");
   }
@@ -219,5 +242,5 @@ public class ProvisioTest {
     File f = new File(outputDirectory, string);
     String unix = FileMode.toUnix(FileMode.getFileMode(f));
     assertEquals(expectedUnix, unix);
-  }  
+  }
 }

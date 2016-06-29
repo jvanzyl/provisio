@@ -45,7 +45,7 @@
     <surefire.runOrder>alphabetical</surefire.runOrder>
     <surefire.mem>-Xmx256m</surefire.mem>
     <mavenVersion>3.3.3</mavenVersion>
-    <takariArchiverVersion>0.1.16</takariArchiverVersion>
+    <takariArchiverVersion>0.1.17-SNAPSHOT</takariArchiverVersion>
     <aetherVersion>1.0.2.v20150114</aetherVersion>
     <javaSourceVersion>1.8</javaSourceVersion>
     <takariLifecycleVersion>1.11.12</takariLifecycleVersion>    

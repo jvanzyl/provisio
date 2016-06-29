@@ -24,6 +24,7 @@ import org.eclipse.aether.transport.file.FileTransporterFactory;
 import org.eclipse.aether.util.repository.AuthenticationBuilder;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 import io.takari.aether.connector.AetherRepositoryConnectorFactory;
 
@@ -42,17 +43,17 @@ public class ResolutionSystem {
     this.localRepository = localRepository;
     this.system = locator.getService(RepositorySystem.class);
     this.session = repositorySystemSession();
-    this.remoteRepositories = ImmutableList.of(central());
+    this.remoteRepositories = Lists.newArrayList();
   }
 
   public ArtifactType getArtifactType(String typeId) {
     return session.getArtifactTypeRegistry().get(typeId);
   }
 
-  private RemoteRepository central() {
-    return remoteRepository(new Repository("central", "https://repo1.maven.org/maven2"));
+  public void remoteRepository(String remoteRepository) {
+    remoteRepositories.add(remoteRepository(new Repository(remoteRepository.substring(0, remoteRepository.indexOf("//")), remoteRepository)));
   }
-  
+    
   private RemoteRepository remoteRepository(Repository r) {
     RemoteRepository.Builder builder = new RemoteRepository.Builder(r.getId(), "default", r.getUrl());
     if (r.getUsername() != null && r.getPassword() != null) {
