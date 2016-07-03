@@ -15,7 +15,7 @@
   <parent>
     <groupId>io.provis</groupId>
     <artifactId>provisio</artifactId>
-    <version>0.1.34-SNAPSHOT</version>
+    <version>0.1.34</version>
   </parent>
   <artifactId>provisio-testing</artifactId>
   <packaging>${lifecycle}</packaging>
