@@ -106,13 +106,6 @@ public class ProvisioTest {
     assertFileDoesntExists(result, "lib/plexus-utils-3.0.13.jar");
   }
 
-  @Test
-  public void validateExtractionOfJenkinsWar() throws Exception {
-    String name = "it-0008";
-    deleteOutputDirectory(name);
-    ProvisioningResult result = provision(name, "http://repo.jenkins-ci.org/public");
-  }
-
   protected ProvisioningRequest provisioningRequest(String name) throws Exception {
     File projectBasedir = runtimeProject(name);
     File descriptor = new File(projectBasedir, "provisio.xml");

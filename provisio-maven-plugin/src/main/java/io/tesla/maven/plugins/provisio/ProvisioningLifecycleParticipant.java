@@ -72,7 +72,11 @@ public class ProvisioningLifecycleParticipant extends AbstractMavenLifecyclePart
                 dependency.setGroupId(dependentProject.getGroupId());
                 dependency.setArtifactId(dependentProject.getArtifactId());
                 dependency.setVersion(dependentProject.getVersion());
-                dependency.setScope("runtime");
+                if (dependentProject.getPackaging().equals("hpi")) {
+                  dependency.setScope("provided");
+                } else {
+                  dependency.setScope("runtime");                  
+                }
                 project.getDependencies().add(dependency);
               }
             }
