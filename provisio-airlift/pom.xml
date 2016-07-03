@@ -42,15 +42,26 @@
       <groupId>io.airlift</groupId>
       <artifactId>command</artifactId>
       <version>0.2</version>
-    </dependency>
+    </dependency>    
     <dependency>
       <groupId>io.airlift</groupId>
       <artifactId>units</artifactId>
       <version>0.84</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>validation-api</artifactId>
+          <groupId>javax.validation</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>bval-jsr303</artifactId>
+          <groupId>org.apache.bval</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>io.provis</groupId>
       <artifactId>provisio-airlift-testserver</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.provis</groupId>
