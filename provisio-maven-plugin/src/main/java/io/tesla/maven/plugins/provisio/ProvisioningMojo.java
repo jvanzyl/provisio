@@ -43,7 +43,7 @@ import io.provis.model.Runtime;
 import io.takari.incrementalbuild.Incremental;
 import io.takari.incrementalbuild.Incremental.Configuration;
 
-@Mojo(name = "provision", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.RUNTIME)
+@Mojo(name = "provision", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class ProvisioningMojo extends AbstractMojo {
 
   protected final Logger logger = LoggerFactory.getLogger(getClass());
