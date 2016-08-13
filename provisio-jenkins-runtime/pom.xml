@@ -10,7 +10,7 @@
   <parent>
     <groupId>io.provis</groupId>
     <artifactId>provisio</artifactId>
-    <version>0.1.38-SNAPSHOT</version>
+    <version>0.1.38</version>
   </parent>
   <artifactId>provisio-jenkins-runtime</artifactId>
   <packaging>${lifecycle}</packaging>
