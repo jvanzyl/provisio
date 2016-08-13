@@ -26,13 +26,17 @@ import org.eclipse.aether.artifact.ArtifactType;
 import org.eclipse.aether.artifact.DefaultArtifactType;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.graph.Exclusion;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.resolution.DependencyResult;
+import org.eclipse.aether.util.artifact.JavaScopes;
+import org.eclipse.aether.util.filter.AndDependencyFilter;
 import org.eclipse.aether.util.filter.ExclusionsDependencyFilter;
+import org.eclipse.aether.util.filter.ScopeDependencyFilter;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
@@ -322,13 +326,17 @@ public class MavenProvisioner {
     //
     // Add an exclude filter if necessary
     //
+    DependencyFilter systemScopeFilter = new ScopeDependencyFilter(JavaScopes.SYSTEM);
     DependencyRequest dependencyRequest = new DependencyRequest(request, null);
     if (excludes != null) {
       List<String> exclusions = Lists.newArrayList();
       for (io.provis.model.Exclusion exclusion : excludes) {
         exclusions.add(exclusion.getId());
       }
-      dependencyRequest.setFilter(new ExclusionsDependencyFilter(exclusions));
+      DependencyFilter exclusionsFilter = new ExclusionsDependencyFilter(exclusions);
+      dependencyRequest.setFilter(new AndDependencyFilter(exclusionsFilter, systemScopeFilter));
+    } else {
+      dependencyRequest.setFilter(systemScopeFilter);      
     }
 
     for (String coordinate : context.getRequest().getManagedDependencies()) {
