@@ -147,7 +147,9 @@ public class ProvisioningMojo extends AbstractMojo {
     //
     ArtifactSet artifactSet = new ArtifactSet();
     for (org.apache.maven.artifact.Artifact mavenArtifact : project.getArtifacts()) {
-      artifactSet.addArtifact(new ProvisioArtifact(toArtifact(mavenArtifact)));
+      if (!mavenArtifact.getScope().equals("system")) {
+        artifactSet.addArtifact(new ProvisioArtifact(toArtifact(mavenArtifact)));
+      }
     }
     return artifactSet;
   }
