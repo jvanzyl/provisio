@@ -7,7 +7,7 @@
   <parent>
     <groupId>io.provis</groupId>
     <artifactId>provisio</artifactId>
-    <version>0.1.39</version>
+    <version>0.1.40-SNAPSHOT</version>
   </parent>
   <artifactId>provisio-its</artifactId>
   <name>Provisio :: Integration Tests</name>
