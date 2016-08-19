@@ -72,6 +72,7 @@ public class ProvisioningLifecycleParticipant extends AbstractMavenLifecyclePart
                 dependency.setGroupId(dependentProject.getGroupId());
                 dependency.setArtifactId(dependentProject.getArtifactId());
                 dependency.setVersion(dependentProject.getVersion());
+                dependency.setType(dependentProject.getPackaging());
                 // It is expect that we are finding dependencies in the provisio descriptor and we want a 
                 // contribution to the build order but we don't want it affecting the classpath of this
                 // project. If it's not provided it's going to contribute to the runtime.classpath which
