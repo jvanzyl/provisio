@@ -15,7 +15,7 @@
 
   <groupId>io.provis</groupId>
   <artifactId>provisio</artifactId>
-  <version>0.1.40-SNAPSHOT</version>
+  <version>0.1.40</version>
   <packaging>pom</packaging>
   <name>Provisio</name>
 
@@ -55,7 +55,7 @@
     <connection>scm:git:git@github.com/takari/provisio.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/takari/provisio.git</developerConnection>
     <url>http://github.com/takari/provisio</url>
-    <tag>HEAD</tag>
+    <tag>provisio-0.1.40</tag>
   </scm>
 
   <dependencyManagement>
@@ -80,37 +80,37 @@
       <dependency>
         <groupId>io.provis</groupId>
         <artifactId>provisio-core</artifactId>
-        <version>0.1.40-SNAPSHOT</version>
+        <version>0.1.40</version>
       </dependency>
       <dependency>
         <groupId>io.provis</groupId>
         <artifactId>provisio-model</artifactId>
-        <version>0.1.40-SNAPSHOT</version>
+        <version>0.1.40</version>
       </dependency>
       <dependency>
         <groupId>io.provis</groupId>
         <artifactId>provisio-command</artifactId>
-        <version>0.1.40-SNAPSHOT</version>
+        <version>0.1.40</version>
       </dependency>
       <dependency>
         <groupId>io.provis</groupId>
         <artifactId>provisio-airlift-testserver</artifactId>
-        <version>0.1.40-SNAPSHOT</version>
+        <version>0.1.40</version>
       </dependency>
       <dependency>
         <groupId>io.provis</groupId>
         <artifactId>provisio-jenkins</artifactId>
-        <version>0.1.40-SNAPSHOT</version>
+        <version>0.1.40</version>
       </dependency>
       <dependency>
         <groupId>io.provis</groupId>
         <artifactId>provisio-jenkins-spi</artifactId>
-        <version>0.1.40-SNAPSHOT</version>
+        <version>0.1.40</version>
       </dependency>
       <dependency>
         <groupId>io.provis</groupId>
         <artifactId>provisio-jenkins-runtime</artifactId>
-        <version>0.1.40-SNAPSHOT</version>
+        <version>0.1.40</version>
       </dependency>
       <dependency>
         <groupId>io.takari</groupId>
