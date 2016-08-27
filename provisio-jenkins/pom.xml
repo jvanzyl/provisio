@@ -22,22 +22,11 @@
   <name>Provisio :: Jenkins</name>
 
   <dependencies>
-    <dependency>
-      <groupId>io.provis</groupId>
-      <artifactId>provisio-jenkins-spi</artifactId>
-    </dependency>
-    
-    <!-- Just to cause it to be built before current project -->
-    <dependency>
-      <groupId>io.provis</groupId>
-      <artifactId>provisio-jenkins-runtime</artifactId>
-      <scope>provided</scope>
-    </dependency>
     
     <dependency>
       <groupId>com.github.spullara.mustache.java</groupId>
       <artifactId>compiler</artifactId>
-      <version>0.8.17</version>
+      <version>0.9.3</version>
     </dependency>
     
     <dependency>
@@ -51,6 +40,10 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -90,11 +83,6 @@
     </dependency>
     <!-- Test -->
     <dependency>
-      <groupId>commons-codec</groupId>
-      <artifactId>commons-codec</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
@@ -104,58 +92,6 @@
       <artifactId>org.eclipse.sisu.inject.tests</artifactId>
       <scope>test</scope>
     </dependency>
-    
-    <!-- dependencies of jenkins-core that are available from central and not bundled into jenkins-runtime -->
-    <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-      <version>2.6</version>
-    </dependency>
-    <dependency> 
-      <groupId>commons-beanutils</groupId>
-      <artifactId>commons-beanutils</artifactId>
-      <version>1.8.3</version>
-    </dependency>
-    <dependency>
-      <groupId>net.sf.ezmorph</groupId>
-      <artifactId>ezmorph</artifactId>
-      <version>1.0.6</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.ant</groupId>
-      <artifactId>ant</artifactId>
-      <version>1.8.4</version>
-    </dependency>
-    <dependency>
-      <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>stapler</artifactId>
-      <version>1.237</version>
-    </dependency>
-    <dependency>
-      <groupId>org.acegisecurity</groupId>
-      <artifactId>acegi-security</artifactId>
-      <version>1.0.7</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring-remoting</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring-support</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>xpp3</groupId>
-      <artifactId>xpp3</artifactId>
-      <version>1.1.4c</version>
-    </dependency>
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
-    </dependency>
-    
   </dependencies>
   
   <build>

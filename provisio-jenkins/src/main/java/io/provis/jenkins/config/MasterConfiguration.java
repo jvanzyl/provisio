@@ -1,248 +1,220 @@
 package io.provis.jenkins.config;
 
-import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
-import java.util.Queue;
-import java.util.Set;
+import java.util.ServiceLoader;
+import java.util.function.Function;
 
-import com.google.common.collect.Lists;
-
-import io.provis.jenkins.runtime.JenkinsRuntime;
-import io.provis.jenkins.runtime.JenkinsRuntime.CredentialContainer;
-import io.provis.jenkins.runtime.JenkinsRuntime.GitHubCredential;
-import io.provis.jenkins.runtime.JenkinsRuntime.SecretCredential;
-import io.provis.jenkins.runtime.JenkinsRuntime.UsernamePassword;
+import io.provis.jenkins.config.credentials.JenkinsCredentials;
+import io.provis.jenkins.config.crypto.SecretEncryptor;
+import io.provis.jenkins.config.crypto.SecretEncryptorFactory;
+import io.provis.jenkins.config.templates.TemplateList;
+import io.provis.jenkins.config.templates.TemplateSource;
 
 // Credentials
 // Users
 // Security
-public class MasterConfiguration implements Closeable {
-  
-  private final JenkinsRuntime runtime;
-  
-  private final File outputDirectory;
-  private final File templateDirectory;
-  private final List<String> templates;
-  private final Properties properties;
-  
-  private final List<UsernamePassword> usernamePasswordCredentials;
-  private final List<SecretCredential> secretCredentials;
-  private final List<GitHubCredential> gitHubCredentials;
+public class MasterConfiguration {
+
+  private String url;
+  private int port;
+
+  private final Configuration configuration;
+  private final String masterKey;
+  private final JenkinsCredentials credentials;
+  private final List<TemplateList> templates;
+  private final List<ConfigurationMixin> mixins;
 
   public MasterConfiguration(
-      JenkinsRuntime runtime,
-      File templateDirectory,
-      List<String> templates,
-      File outputDirectory,
-      Properties properties,
-      List<UsernamePassword> usernamePasswordCredentials,
-      List<SecretCredential> secretCredentials,
-      List<GitHubCredential> gitHubCredentials) {
+    String url,
+    int port,
+    Configuration configuration,
+    String masterKey,
+    JenkinsCredentials credentials,
+    List<TemplateList> templates,
+    List<ConfigurationMixin> mixins) {
 
-      this.runtime = runtime;
-      this.templateDirectory = templateDirectory;
-      this.templates = templates;
-      this.outputDirectory = outputDirectory;
-      this.usernamePasswordCredentials = usernamePasswordCredentials;
-      this.secretCredentials = secretCredentials;
-      this.gitHubCredentials = gitHubCredentials;
-      this.properties = properties;
+    this.url = url;
+    this.port = port;
+    this.configuration = configuration;
+    this.masterKey = masterKey;
+    this.credentials = credentials;
+    this.templates = templates;
+    this.mixins = mixins;
+  }
+
+  public String getUrl() {
+    return url;
+  }
+
+  public int getPort() {
+    return port;
+  }
+
+  public JenkinsCredentials getCredentials() {
+    return credentials;
+  }
+  
+  public <T extends ConfigurationMixin> T getConfig(Class<T> cl) {
+    for(ConfigurationMixin c: mixins) {
+      if(cl.isInstance(c)) {
+        return cl.cast(c);
+      }
     }
+    return null;
+  }
 
-  public void write() throws IOException {
-    runtime.writeCredentials(new CredentialContainer(secretCredentials, usernamePasswordCredentials, gitHubCredentials));
-    writeGlobalConfiguration();
-  }
-  
-  @Override
-  public void close() throws IOException {
-    runtime.close();    
-  }
-  
-  private void writeGlobalConfiguration() throws IOException {
+  public void write(File outputDirectory) throws IOException {
     outputDirectory.mkdirs();
 
-    if(properties != null) {
-      Set<Object> keys = new HashSet<>(properties.keySet());
-      for(Object k: keys) {
-        if(k instanceof String) {
-          properties.put(k + ".encrypted", runtime.encrypt(k.toString()));
-        }
+    SecretEncryptorFactory sef = new SecretEncryptorFactory(new File(outputDirectory, "secrets"), masterKey);
+    SecretEncryptor secret = sef.newEncryptor("hudson.util.Secret", true);
+    Map<String, Object> context = new HashMap<>();
+    if (configuration != null) {
+      for (Map.Entry<String, String> e : configuration.entrySet()) {
+        context.put(e.getKey(), e.getValue());
       }
     }
-    
-    Template template = new Template(templateDirectory);
-    if(templates != null) {
-      for(String templateName: templates) {
-        template.fromTemplate(templateName, properties, outputDirectory);
-      }
-    }
-    for (String templateName : collectTemplates()) {
-      if(templates == null && !templates.contains(templateName)) {
-        template.fromTemplate(templateName, properties, outputDirectory);
-      }
-    }
-  }
+    context.put("encryptSecret", (Function<String, String>) t -> secret.encrypt(t));
 
-  private Collection<String> collectTemplates() {
-    if(templateDirectory != null) {
-      List<String> templates = new ArrayList<>();
-      
-      Queue<File> q = new LinkedList<>();
-      q.add(templateDirectory);
-      
-      while(!q.isEmpty()) {
-        File dir = q.remove();
-        for(File f: dir.listFiles()) {
-          if(f.isDirectory()) {
-            q.add(f);
-          } else {
-            String path = f.toURI().relativize(templateDirectory.toURI()).getPath();
-            templates.add(path);
-          }
-        }
-      }
-      return templates;
+    for (ConfigurationMixin mixin : mixins) {
+      context.put(mixin.getId(), mixin);
     }
-    return Collections.emptyList();
+
+    Object[] contexts = new Object[] {this, context};
+
+    // combine templates
+    TemplateProcessor processor = new TemplateProcessor();
+    List<TemplateList> templates = new ArrayList<>();
+    templates.add(TemplateList.list(MasterConfiguration.class, "base"));
+    templates.addAll(this.templates);
+
+    for (TemplateSource ts : TemplateList.combined(templates).getTemplates()) {
+      processor.fromTemplate(ts, contexts, outputDirectory);
+    }
   }
-  
-  // Credentials
 
   public static MasterConfigurationBuilder builder() {
     return new MasterConfigurationBuilder();
   }
   
+  public static MasterConfigurationBuilder builder(Properties props) {
+    return builder().properties(props);
+  }
+
   public static class MasterConfigurationBuilder {
 
-    JenkinsConfigRuntimeProvisioner provisioner;
-    File templateDirectory;
-    List<String> templates = Lists.newArrayList();
-    File outputDirectory;
-    Properties properties;
-    byte[] secretKey;
-    List<UsernamePassword> usernamePasswordCredentials = Lists.newArrayList();
-    List<SecretCredential> secretCredentials = Lists.newArrayList();
-    List<GitHubCredential> gitHubCredentials = Lists.newArrayList();
+    String url;
+    int port = -1;
+    Configuration configuration;
+    String masterKey;
+    JenkinsCredentials credentials = new JenkinsCredentials();
+    List<TemplateList> templates = new ArrayList<>();
+    List<ConfigurationMixin> mixins = new ArrayList<>();
 
-    public MasterConfigurationBuilder outputDirectory(File outputDirectory) {
-      this.outputDirectory = outputDirectory;
-      return this;
-    }
-
-    public MasterConfigurationBuilder properties(File propertiesFile) throws IOException {
-      Properties properties = new Properties();
-      if (propertiesFile != null && propertiesFile.exists()) {
-        try (InputStream is = new FileInputStream(propertiesFile)) {
-          properties.load(is);
-        }
-      }
-      this.properties = properties;
-      return this;
-    }
+    boolean servicesLoaded = false;
     
-    public MasterConfigurationBuilder provisioner(JenkinsConfigRuntimeProvisioner provisioner) {
-      this.provisioner = provisioner;
-      return this;
-    }
-    
-    public MasterConfigurationBuilder secretKey(byte[] secretKey) {
-      this.secretKey = secretKey;
-      return this;
-    }
-    
-    public MasterConfigurationBuilder templates(File templateDirectory) {
-      this.templateDirectory = templateDirectory;
-      return this;
-    }
-    
-    public MasterConfigurationBuilder templates(String ... templates) {
-      Collections.addAll(this.templates, templates);
+    public MasterConfigurationBuilder jenkins(String url, int port) {
+      this.url = url;
+      this.port = port;
       return this;
     }
 
-    public MasterConfigurationBuilder templates(Collection<String> templates) {
-      this.templates.addAll(templates);
-      return this;
+    public MasterConfigurationBuilder configuration(File propertiesFile) throws IOException {
+      return configuration(new Configuration(propertiesFile));
     }
 
     public MasterConfigurationBuilder properties(Properties properties) {
       Properties props = new Properties();
       props.putAll(properties);
-      this.properties = props;
+      return configuration(new Configuration(props));
+    }
+    
+    public MasterConfigurationBuilder configuration(Configuration configuration) {
+      this.configuration = configuration;
+      if(url == null) {
+        url = configuration.get("jenkins.url");
+      }
+      if(port == -1) {
+        port = configuration.getInt("jenkins.port");
+      }
       return this;
     }
 
-    public MasterConfigurationBuilder usernamePasswordCredential(String id, String username, String password) {
-      usernamePasswordCredentials.add(new UsernamePassword(id, username, password));
+    public MasterConfigurationBuilder masterKey(String masterKey) {
+      this.masterKey = masterKey;
       return this;
     }
 
-    public MasterConfigurationBuilder secretCredential(String id, String secret) {
-      secretCredentials.add(new SecretCredential(id, secret));
+    public JenkinsCredentials credentials() {
+      return credentials;
+    }
+
+    public MasterConfigurationBuilder credentials(JenkinsCredentials credentials) {
+      this.credentials.merge(credentials);
       return this;
     }
 
-    public MasterConfigurationBuilder gitHubCredential(String id, String username, String oauthToken, String gitHubApiUrl) {
-      gitHubCredentials.add(new GitHubCredential(id, username, oauthToken, gitHubApiUrl));
+    public MasterConfigurationBuilder templates(TemplateList templateList) {
+      templates.add(templateList);
+      return this;
+    }
+
+    public MasterConfigurationBuilder config(ConfigurationMixin mixin) throws IOException {
+      mixin.configure(this);
+      mixins.add(mixin);
       return this;
     }
     
-    public MasterConfigurationBuilder usernamePasswordCredentials(Collection<UsernamePassword> credentials) {
-      usernamePasswordCredentials.addAll(credentials);
+    /**
+     * If not called manually, mixins defined in 'config.mixins' property will be initialized during {@linkplain #build()}.
+     * If some configuration (like template overrides) needs to be added after such mixins are initialized, one can force it this method.
+     */
+    public MasterConfigurationBuilder forceServiceConfig() throws IOException {
+      if (!servicesLoaded) {
+        servicesLoaded = true;
+        if (configuration != null) {
+          String confMixins = configuration.get("config.mixins");
+          if (confMixins != null) {
+            addMixinsFromServices(confMixins);
+          }
+        }
+      }
       return this;
     }
 
-    public MasterConfigurationBuilder secretCredentials(Collection<SecretCredential> credentials) {
-      secretCredentials.addAll(credentials);
-      return this;
-    }
-
-    public MasterConfigurationBuilder gitHubCredentials(Collection<GitHubCredential> credentials) {
-      gitHubCredentials.addAll(credentials);
-      return this;
-    }
-
-    public MasterConfiguration build(JenkinsRuntime runtime) throws IOException {
-      return new MasterConfiguration(runtime,
-          templateDirectory,
-          templates,
-          outputDirectory,
-          properties,
-          usernamePasswordCredentials,
-          secretCredentials,
-          gitHubCredentials);
-    }
-    
     public MasterConfiguration build() throws IOException {
-      
-      byte[] key;
-      if(secretKey == null) {
-        key = new byte[32];
-        SecureRandom sr = new SecureRandom();
-        sr.nextBytes(key);
-      } else {
-        key = secretKey;
+      forceServiceConfig();
+      return new MasterConfiguration(
+        url,
+        port,
+        configuration,
+        masterKey,
+        credentials,
+        templates,
+        mixins);
+    }
+
+    private void addMixinsFromServices(String confMixins) throws IOException {
+
+      Map<String, ConfigurationMixin> map = new HashMap<>();
+      for (ConfigurationMixin m : ServiceLoader.load(ConfigurationMixin.class)) {
+        map.put(m.getId(), m);
       }
-      
-      JenkinsConfigRuntimeProvisioner p = provisioner;
-      if(p == null) {
-        p = new JenkinsConfigRuntimeProvisioner();
+      for (String id : confMixins.split(",")) {
+        id = id.trim();
+        ConfigurationMixin m = map.get(id);
+        if (m == null) {
+          throw new IllegalArgumentException("Mixin " + id + " does not exist, existing: " + map.keySet());
+        }
+
+        config(m.init(configuration.subset(m.getId())));
       }
-      
-      return build(p.provision(outputDirectory, key));
-      
     }
   }
 }

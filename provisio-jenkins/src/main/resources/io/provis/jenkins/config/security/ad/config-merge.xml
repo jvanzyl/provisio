@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson>
+  {{#security.ad}}
+  <useSecurity merge="replace">true</useSecurity>
+  <securityRealm class="hudson.plugins.active_directory.ActiveDirectorySecurityRealm" merge="replace">
+    {{#custom}}
+    <domain>{{domainName}}</domain>
+    <site>{{site}}</site>
+    <bindName>{{bindDN}}</bindName>
+    <bindPassword>{{#encryptSecret}}{{bindPassword}}{{/encryptSecret}}</bindPassword>
+    <server>{{server}}</server>
+    <groupLookupStrategy>{{groupLookupStrategy}}</groupLookupStrategy>
+    <removeIrrelevantGroups>true</removeIrrelevantGroups>
+    {{#cache}}
+    <cache>
+      <size>{{size}}</size>
+      <ttl>{{ttl}}</ttl>
+      <userCache class="com.google.common.cache.LocalCache$LocalManualCache" resolves-to="com.google.common.cache.LocalCache$ManualSerializationProxy">
+        <keyStrength>STRONG</keyStrength>
+        <valueStrength>STRONG</valueStrength>
+        <keyEquivalence class="com.google.common.base.Equivalences$Equals"/>
+        <valueEquivalence class="com.google.common.base.Equivalences$Equals" reference="../keyEquivalence"/>
+        <expireAfterWriteNanos>{{ttl}}000000000</expireAfterWriteNanos>
+        <expireAfterAccessNanos>0</expireAfterAccessNanos>
+        <maxWeight>{{size}}</maxWeight>
+        <weigher class="com.google.common.cache.CacheBuilder$OneWeigher">INSTANCE</weigher>
+        <concurrencyLevel>4</concurrencyLevel>
+        <removalListener class="com.google.common.cache.CacheBuilder$NullListener">INSTANCE</removalListener>
+      </userCache>
+      <groupCache class="com.google.common.cache.LocalCache$LocalManualCache" resolves-to="com.google.common.cache.LocalCache$ManualSerializationProxy">
+        <keyStrength>STRONG</keyStrength>
+        <valueStrength>STRONG</valueStrength>
+        <keyEquivalence class="com.google.common.base.Equivalences$Equals" reference="../../userCache/keyEquivalence"/>
+        <valueEquivalence class="com.google.common.base.Equivalences$Equals" reference="../../userCache/keyEquivalence"/>
+        <expireAfterWriteNanos>{{ttl}}000000000</expireAfterWriteNanos>
+        <expireAfterAccessNanos>0</expireAfterAccessNanos>
+        <maxWeight>{{size}}</maxWeight>
+        <weigher class="com.google.common.cache.CacheBuilder$OneWeigher">INSTANCE</weigher>
+        <concurrencyLevel>4</concurrencyLevel>
+        <removalListener class="com.google.common.cache.CacheBuilder$NullListener">INSTANCE</removalListener>
+      </groupCache>
+    </cache>
+    {{/cache}}
+    {{/custom}}
+  </securityRealm>
+  {{/security.ad}}
+
+</hudson>

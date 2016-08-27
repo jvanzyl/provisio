@@ -1,0 +1,5 @@
+io.provis.jenkins.config.git.GithubPluginConfig
+io.provis.jenkins.config.jgit.JGitToolConfig
+io.provis.jenkins.config.security.ad.ActiveDirectoryConfig
+io.provis.jenkins.config.security.gh.GithubAuthConfig
+io.provis.jenkins.config.security.users.UserConfig

@@ -23,8 +23,6 @@
     <module>provisio-ant</module>
     <module>provisio-command</module>
     <module>provisio-core</module>
-    <module>provisio-jenkins-spi</module>
-    <module>provisio-jenkins-runtime</module>
     <module>provisio-jenkins</module>
     <module>provisio-maven</module>
     <module>provisio-maven-plugin</module>
@@ -100,16 +98,6 @@
       <dependency>
         <groupId>io.provis</groupId>
         <artifactId>provisio-jenkins</artifactId>
-        <version>0.1.41-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>io.provis</groupId>
-        <artifactId>provisio-jenkins-spi</artifactId>
-        <version>0.1.41-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>io.provis</groupId>
-        <artifactId>provisio-jenkins-runtime</artifactId>
         <version>0.1.41-SNAPSHOT</version>
       </dependency>
       <dependency>

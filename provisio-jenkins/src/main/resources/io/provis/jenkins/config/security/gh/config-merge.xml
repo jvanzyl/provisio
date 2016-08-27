@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson>
+  {{#security.gh}}
+  <useSecurity merge="replace">true</useSecurity>
+  <securityRealm class="org.jenkinsci.plugins.GithubSecurityRealm" merge="replace">
+    <githubWebUri>{{webUrl}}</githubWebUri>
+    <githubApiUri>{{apiUrl}}</githubApiUri>
+    <clientID>{{clientId}}</clientID>
+    <clientSecret>{{#encryptSecret}}{{clientSecret}}{{/encryptSecret}}</clientSecret>
+    <oauthScopes>{{oauthScopes}}</oauthScopes>
+  </securityRealm>
+  {{/security.gh}
+</hudson>
