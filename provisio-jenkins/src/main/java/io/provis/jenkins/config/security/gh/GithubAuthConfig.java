@@ -1,7 +1,5 @@
 package io.provis.jenkins.config.security.gh;
 
-import java.io.IOException;
-
 import io.provis.jenkins.config.Configuration;
 import io.provis.jenkins.config.ConfigurationMixin;
 import io.provis.jenkins.config.MasterConfiguration.MasterConfigurationBuilder;
@@ -80,7 +78,7 @@ public class GithubAuthConfig implements ConfigurationMixin {
   }
 
   @Override
-  public void configure(MasterConfigurationBuilder builder) throws IOException {
+  public void configure(MasterConfigurationBuilder builder) {
     builder.templates(TemplateList.list(GithubAuthConfig.class));
   }
 

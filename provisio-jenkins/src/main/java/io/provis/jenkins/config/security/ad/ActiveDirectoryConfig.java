@@ -1,7 +1,5 @@
 package io.provis.jenkins.config.security.ad;
 
-import java.io.IOException;
-
 import io.provis.jenkins.config.Configuration;
 import io.provis.jenkins.config.ConfigurationMixin;
 import io.provis.jenkins.config.MasterConfiguration.MasterConfigurationBuilder;
@@ -115,7 +113,7 @@ public class ActiveDirectoryConfig implements ConfigurationMixin {
   }
 
   @Override
-  public void configure(MasterConfigurationBuilder builder) throws IOException {
+  public void configure(MasterConfigurationBuilder builder) {
     builder.templates(TemplateList.list(ActiveDirectoryConfig.class));
   }
 

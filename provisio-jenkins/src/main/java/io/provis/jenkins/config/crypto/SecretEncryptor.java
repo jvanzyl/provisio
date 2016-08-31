@@ -15,31 +15,33 @@ import com.google.common.base.Throwables;
 public class SecretEncryptor {
 
   private SecretKey key;
-  private byte[] trailer;
 
-  public SecretEncryptor(SecretKey key, byte[] trailer) {
+  public SecretEncryptor(SecretKey key) {
     this.key = key;
-    this.trailer = trailer;
   }
 
   public String encrypt(String value) {
+    return encrypt(value, true);
+  }
+  
+  public String encrypt(String value, boolean magic) {
     try {
-      byte[] enc = encrypt(value.getBytes("UTF-8"));
+      byte[] enc = encrypt(value.getBytes("UTF-8"), magic);
       return Base64.getEncoder().encodeToString(enc);
     } catch (UnsupportedEncodingException e) {
       throw new AssertionError(e);
     }
   }
 
-  private byte[] encrypt(byte[] value) {
+  private byte[] encrypt(byte[] value, boolean magic) {
     try {
       Cipher cipher = Cipher.getInstance(key.getAlgorithm());
       cipher.init(Cipher.ENCRYPT_MODE, key);
       ByteArrayOutputStream bout = new ByteArrayOutputStream();
       try(CipherOutputStream cos = new CipherOutputStream(bout, cipher)) {
         cos.write(value);
-        if (trailer != null) {
-          cos.write(trailer);
+        if (magic) {
+          cos.write(SecretEncryptorFactory.MAGIC);
         }
       } catch(IOException e) {
         throw Throwables.propagate(e);

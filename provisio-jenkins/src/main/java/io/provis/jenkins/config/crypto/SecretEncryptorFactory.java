@@ -8,6 +8,8 @@ import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
@@ -22,53 +24,41 @@ public class SecretEncryptorFactory {
 
   private static final String ALGORITHM = "AES";
   private static final int DEFAULT_KEY_SIZE = 128; // default jdk export policy limitation which jenkins adheres to
+  private static final Charset UTF8 = Charset.forName("UTF-8");
   private static final SecureRandom sr = new SecureRandom();
 
-  private static final byte[] MAGIC = "::::MAGIC::::".getBytes();
+  static final byte[] MAGIC = "::::MAGIC::::".getBytes();
 
-  private SecretKey masterKey;
-  private File rootDir;
+  private byte[] masterKey;
   private int keyBytes;
+  
+  private Map<String, Encryptor> encryptors = new HashMap<>();
 
-  public SecretEncryptorFactory(File rootDir) throws IOException {
-    this(rootDir, null);
+  public SecretEncryptorFactory() {
+    this( null);
   }
 
-  public SecretEncryptorFactory(File rootDir, String masterKey) throws IOException {
-    this(rootDir, masterKey, DEFAULT_KEY_SIZE);
+  public SecretEncryptorFactory(String masterKey) {
+    this(masterKey, DEFAULT_KEY_SIZE);
   }
 
-  public SecretEncryptorFactory(File rootDir, String masterKey, int keySize) throws IOException {
-    this.rootDir = rootDir;
+  public SecretEncryptorFactory(String masterKey, int keySize) {
     this.keyBytes = keySize / 8;
-
-    rootDir.mkdirs();
-
     if (masterKey == null) {
       masterKey = Hex.encodeHexString(randomBytes(256));
     }
-    
-    Files.write(masterKey, new File(rootDir, "master.key"), Charset.forName("UTF-8"));
-    this.masterKey = createHashedKey(masterKey.getBytes("UTF-8"));
+    this.masterKey = masterKey.getBytes(UTF8);
   }
 
-  public SecretEncryptor newEncryptor(String keyId, boolean magic) throws IOException {
-    byte[] key = randomBytes(256);
-    try {
-      Cipher cipher = Cipher.getInstance(ALGORITHM);
-      cipher.init(Cipher.ENCRYPT_MODE, masterKey);
-
-      try (
-        FileOutputStream fos = new FileOutputStream(new File(rootDir, keyId));
-        CipherOutputStream cos = new CipherOutputStream(fos, cipher)) {
-        cos.write(key);
-        cos.write(MAGIC);
-      }
-
-    } catch (GeneralSecurityException e) {
-      throw new IOException("Failed to persist the key: " + keyId, e);
+  public SecretEncryptor encryptor(String keyId) {
+    
+    Encryptor encryptor = encryptors.get(keyId);
+    if(encryptor == null) {
+      byte[] key = randomBytes(256);
+      encryptor = new Encryptor(keyId, key, new SecretEncryptor(createKey(key)));
+      encryptors.put(keyId, encryptor);
     }
-    return new SecretEncryptor(createKey(key), magic ? MAGIC : null);
+    return encryptor.encryptor;
   }
 
   private SecretKey createKey(byte[] key) {
@@ -90,5 +80,39 @@ public class SecretEncryptorFactory {
     byte[] random = new byte[size];
     sr.nextBytes(random);
     return random;
+  }
+  
+  public void write(File rootDir) throws IOException {
+    Files.write(masterKey, new File(rootDir, "master.key"));
+    
+    SecretKey master = createHashedKey(masterKey);
+    
+    for(Encryptor enc: encryptors.values()) {
+      try {
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
+        cipher.init(Cipher.ENCRYPT_MODE, master);
+        try (
+          FileOutputStream fos = new FileOutputStream(new File(rootDir, enc.keyId));
+          CipherOutputStream cos = new CipherOutputStream(fos, cipher)) {
+          cos.write(enc.keyBytes);
+          cos.write(MAGIC);
+        }
+      } catch (GeneralSecurityException e) {
+        throw new IOException("Failed to persist the key: " + enc.keyId, e);
+      }
+    }
+    
+  }
+  
+  private static class Encryptor {
+    final String keyId;
+    final byte[] keyBytes;
+    final SecretEncryptor encryptor;
+    
+    public Encryptor(String keyId, byte[] keyBytes, SecretEncryptor encryptor) {
+      this.keyId = keyId;
+      this.keyBytes = keyBytes;
+      this.encryptor = encryptor;
+    }
   }
 }

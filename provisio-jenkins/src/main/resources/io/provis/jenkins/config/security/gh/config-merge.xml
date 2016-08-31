@@ -9,5 +9,5 @@
     <clientSecret>{{#encryptSecret}}{{clientSecret}}{{/encryptSecret}}</clientSecret>
     <oauthScopes>{{oauthScopes}}</oauthScopes>
   </securityRealm>
-  {{/security.gh}
+  {{/security.gh}}
 </hudson>

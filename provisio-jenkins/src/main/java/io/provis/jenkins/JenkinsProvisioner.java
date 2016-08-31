@@ -49,9 +49,7 @@ public class JenkinsProvisioner extends SimpleProvisioner {
       repositoryUrl = JENKINS_CENTRAL;
     }
     // http://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/1.644/jenkins-war-1.644.war
-    File jenkinsWar = resolveFromServer(
-      String.format("%s/org/jenkins-ci/main/jenkins-war/%s/jenkins-war-%s.war", repositoryUrl, version, version),
-      "org.jenkins-ci.main:jenkins-war:war:" + context.getVersion());
+    File jenkinsWar = resolveFromRepository(repositoryUrl, "org.jenkins-ci.main:jenkins-war:war:" + context.getVersion());
 
     // Create the installation and work directories
     FileUtils.mkdir(installationDirectory.getAbsolutePath());

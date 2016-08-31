@@ -1,6 +1,5 @@
 package io.provis.jenkins.config.security.users;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +40,7 @@ public class UserConfig implements ConfigurationMixin {
   }
 
   @Override
-  public void configure(MasterConfigurationBuilder builder) throws IOException {
+  public void configure(MasterConfigurationBuilder builder) {
     builder.templates(TemplateList.of(UserConfig.class)
       .multiply(users, "user", (n, u) -> "users/" + u.getName() + "/" + n));
   }

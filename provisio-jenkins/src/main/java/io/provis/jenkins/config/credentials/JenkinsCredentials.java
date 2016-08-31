@@ -7,7 +7,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class JenkinsCredentials {
+import io.provis.jenkins.config.Configuration;
+import io.provis.jenkins.config.ConfigurationMixin;
+import io.provis.jenkins.config.MasterConfiguration.MasterConfigurationBuilder;
+import io.provis.jenkins.config.templates.TemplateList;
+
+public class JenkinsCredentials implements ConfigurationMixin {
 
   private Map<String, Domain> domains = new HashMap<>();
 
@@ -50,12 +55,12 @@ public class JenkinsCredentials {
   }
 
   public void merge(JenkinsCredentials creds) {
-    if(creds != null && creds.domains != null) {
+    if (creds != null && creds.domains != null) {
       Set<String> keys = new HashSet<>(creds.domains.keySet());
-      for(String key: keys) {
+      for (String key : keys) {
         Domain thatDomain = creds.domains.get(key);
         Domain thisDomain = domains.get(key);
-        if(thisDomain == null) {
+        if (thisDomain == null) {
           domains.put(key, thatDomain);
         } else {
           merge(thatDomain, thisDomain);
@@ -81,6 +86,45 @@ public class JenkinsCredentials {
       domains.put(url, domain);
     }
     return domain;
+  }
+
+  @Override
+  public String getId() {
+    return "credentials";
+  }
+
+  @Override
+  public void configure(MasterConfigurationBuilder builder) {
+    builder.templates(TemplateList.list(JenkinsCredentials.class));
+  }
+
+  @Override
+  public JenkinsCredentials init(Configuration config) {
+    config.partition().forEach(this::initCred);
+    return this;
+  }
+
+  private void initCred(String id, Configuration c) {
+    if (c.has("secret")) {
+
+      secretCredential(
+        id,
+        c.get("description"),
+        c.get("secret"),
+        c.get("domain"),
+        c.get("domainDescription"));
+
+    } else if (c.has("password")) {
+
+      userCredential(
+        id,
+        c.get("description"),
+        c.get("username"),
+        c.get("password"),
+        c.get("domain"),
+        c.get("domainDescription"));
+
+    }
   }
 
 }

@@ -9,6 +9,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -31,23 +32,31 @@ public class TemplateList {
   public List<TemplateSource> getTemplates() {
     return templates;
   }
-  
+
   public <T> TemplateList multiply(Collection<T> values, String varName, BiFunction<String, T, String> nameConverter) {
     List<TemplateSource> newTemplates = new ArrayList<>();
-    for (T obj: values) {
-      for(TemplateSource s: templates) {
+    for (T obj : values) {
+      for (TemplateSource s : templates) {
         newTemplates.add(s.forName(nameConverter.apply(s.getName(), obj)).withContext(varName, obj));
       }
     }
     return new TemplateList(newTemplates);
   }
 
-  public static TemplateList list(File dir) throws IOException {
+  public static TemplateList list(File dir) {
+    if (dir == null) {
+      return null;
+    }
     List<TemplateSource> templates = new ArrayList<>();
 
     listFileTemplates(dir, templates);
 
     return new TemplateList(templates);
+  }
+
+  public static TemplateList as(Class<?> clazz, String name, String as) {
+    TemplateList tl = of(clazz, name);
+    return new TemplateList(Collections.singletonList(tl.getTemplates().get(0).forName(as)));
   }
 
   public static TemplateList of(Class<?> clazz, String... names) {
@@ -70,11 +79,11 @@ public class TemplateList {
     return new TemplateList(templates);
   }
 
-  public static TemplateList list(Class<?> clazz) throws IOException {
+  public static TemplateList list(Class<?> clazz) {
     return list(clazz, "");
   }
 
-  public static TemplateList list(Class<?> clazz, String root) throws IOException {
+  public static TemplateList list(Class<?> clazz, String root) {
     List<TemplateSource> templates = new ArrayList<>();
 
     String pack = "";
@@ -126,22 +135,26 @@ public class TemplateList {
     return new TemplateList(templates);
   }
 
-  private static void listFileTemplates(File dir, List<TemplateSource> templates) throws IOException {
+  private static void listFileTemplates(File dir, List<TemplateSource> templates) {
     Path root = dir.getAbsoluteFile().toPath();
-    Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
-      @Override
-      public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        String path = root.relativize(file).toString();
-        if (!path.endsWith(".class")) {
-          path = path.replace('\\', '/'); // convert to unix-style
-          templates.add(new FileTemplateSource(dir, path));
+    try {
+      Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+          String path = root.relativize(file).toString();
+          if (!path.endsWith(".class")) {
+            path = path.replace('\\', '/'); // convert to unix-style
+            templates.add(new FileTemplateSource(dir, path));
+          }
+          return FileVisitResult.CONTINUE;
         }
-        return FileVisitResult.CONTINUE;
-      }
-    });
+      });
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
-  private static void listJarTemplates(ClassLoader loader, File file, String root, List<TemplateSource> templates) throws IOException {
+  private static void listJarTemplates(ClassLoader loader, File file, String root, List<TemplateSource> templates) {
 
     try (JarFile jar = new JarFile(file)) {
       Enumeration<JarEntry> en = jar.entries();
@@ -155,30 +168,32 @@ public class TemplateList {
           }
         }
       }
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
     }
   }
 
   private static final String MERGEXML_SUFFIX = "-merge.xml";
-  
+
   public static TemplateList combined(List<TemplateList> lists) {
     Map<String, TemplateSource> map = new LinkedHashMap<>();
 
     for (TemplateList l : lists) {
       for (TemplateSource s : l.getTemplates()) {
         String key = s.getName();
-        
+
         // merge xml files
-        if(key.endsWith(MERGEXML_SUFFIX)) {
+        if (key.endsWith(MERGEXML_SUFFIX)) {
           key = key.substring(0, key.length() - MERGEXML_SUFFIX.length()) + ".xml";
           TemplateSource base = map.get(key);
           s = XmlMergeTemplateSource.merge(key, base, s);
         }
-        
+
         map.put(key, s);
       }
     }
 
     return new TemplateList(new ArrayList<>(map.values()));
   }
-  
+
 }

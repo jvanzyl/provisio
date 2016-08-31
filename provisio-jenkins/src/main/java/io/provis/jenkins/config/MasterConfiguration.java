@@ -11,22 +11,17 @@ import java.util.ServiceLoader;
 import java.util.function.Function;
 
 import io.provis.jenkins.config.credentials.JenkinsCredentials;
-import io.provis.jenkins.config.crypto.SecretEncryptor;
 import io.provis.jenkins.config.crypto.SecretEncryptorFactory;
 import io.provis.jenkins.config.templates.TemplateList;
 import io.provis.jenkins.config.templates.TemplateSource;
 
-// Credentials
-// Users
-// Security
 public class MasterConfiguration {
 
   private String url;
   private int port;
 
   private final Configuration configuration;
-  private final String masterKey;
-  private final JenkinsCredentials credentials;
+  private final SecretEncryptorFactory encFactory;
   private final List<TemplateList> templates;
   private final List<ConfigurationMixin> mixins;
 
@@ -34,16 +29,14 @@ public class MasterConfiguration {
     String url,
     int port,
     Configuration configuration,
-    String masterKey,
-    JenkinsCredentials credentials,
+    SecretEncryptorFactory encFactory,
     List<TemplateList> templates,
     List<ConfigurationMixin> mixins) {
 
     this.url = url;
     this.port = port;
     this.configuration = configuration;
-    this.masterKey = masterKey;
-    this.credentials = credentials;
+    this.encFactory = encFactory;
     this.templates = templates;
     this.mixins = mixins;
   }
@@ -56,76 +49,88 @@ public class MasterConfiguration {
     return port;
   }
 
-  public JenkinsCredentials getCredentials() {
-    return credentials;
-  }
-  
   public <T extends ConfigurationMixin> T getConfig(Class<T> cl) {
-    for(ConfigurationMixin c: mixins) {
-      if(cl.isInstance(c)) {
-        return cl.cast(c);
-      }
-    }
-    return null;
+    return getConfig(mixins, cl);
   }
 
   public void write(File outputDirectory) throws IOException {
     outputDirectory.mkdirs();
 
-    SecretEncryptorFactory sef = new SecretEncryptorFactory(new File(outputDirectory, "secrets"), masterKey);
-    SecretEncryptor secret = sef.newEncryptor("hudson.util.Secret", true);
+    // create template context
     Map<String, Object> context = new HashMap<>();
     if (configuration != null) {
       for (Map.Entry<String, String> e : configuration.entrySet()) {
         context.put(e.getKey(), e.getValue());
       }
     }
-    context.put("encryptSecret", (Function<String, String>) t -> secret.encrypt(t));
-
     for (ConfigurationMixin mixin : mixins) {
       context.put(mixin.getId(), mixin);
     }
 
+    // add secret encryption
+    context.put("encryptSecret", (Function<String, String>) t -> encFactory.encryptor("hudson.util.Secret").encrypt(t));
+
     Object[] contexts = new Object[] {this, context};
 
-    // combine templates
+    // process templates
     TemplateProcessor processor = new TemplateProcessor();
-    List<TemplateList> templates = new ArrayList<>();
-    templates.add(TemplateList.list(MasterConfiguration.class, "base"));
-    templates.addAll(this.templates);
-
     for (TemplateSource ts : TemplateList.combined(templates).getTemplates()) {
       processor.fromTemplate(ts, contexts, outputDirectory);
     }
+
+    // write encryption keys
+    File secrets = new File(outputDirectory, "secrets");
+    secrets.mkdirs();
+    encFactory.write(secrets);
+  }
+
+  public static MasterConfiguration fromConfig(Properties props) throws IOException {
+    return builder().properties(props).build();
   }
 
   public static MasterConfigurationBuilder builder() {
     return new MasterConfigurationBuilder();
   }
-  
-  public static MasterConfigurationBuilder builder(Properties props) {
-    return builder().properties(props);
+
+  public static MasterConfigurationBuilder builder(ClassLoader loader) {
+    return new MasterConfigurationBuilder(loader);
   }
 
   public static class MasterConfigurationBuilder {
 
-    String url;
-    int port = -1;
-    Configuration configuration;
-    String masterKey;
-    JenkinsCredentials credentials = new JenkinsCredentials();
-    List<TemplateList> templates = new ArrayList<>();
-    List<ConfigurationMixin> mixins = new ArrayList<>();
+    private final ClassLoader classLoader;
 
-    boolean servicesLoaded = false;
-    
+    private String url;
+    private int port = -1;
+    private Configuration configuration;
+    private SecretEncryptorFactory encFactory = new SecretEncryptorFactory();
+
+    private List<TemplateList> templates = new ArrayList<>();
+    private List<ConfigurationMixin> mixins = new ArrayList<>();
+
+    public MasterConfigurationBuilder() {
+      this(null);
+    }
+
+    public MasterConfigurationBuilder(ClassLoader loader) {
+      if (loader == null) {
+        loader = Thread.currentThread().getContextClassLoader();
+      }
+      this.classLoader = loader;
+      templates(TemplateList.list(MasterConfiguration.class, "base"));
+    }
+
+    public ClassLoader getClassLoader() {
+      return classLoader;
+    }
+
     public MasterConfigurationBuilder jenkins(String url, int port) {
       this.url = url;
       this.port = port;
       return this;
     }
 
-    public MasterConfigurationBuilder configuration(File propertiesFile) throws IOException {
+    public MasterConfigurationBuilder configuration(File propertiesFile) {
       return configuration(new Configuration(propertiesFile));
     }
 
@@ -134,76 +139,73 @@ public class MasterConfiguration {
       props.putAll(properties);
       return configuration(new Configuration(props));
     }
-    
+
     public MasterConfigurationBuilder configuration(Configuration configuration) {
-      this.configuration = configuration;
-      if(url == null) {
-        url = configuration.get("jenkins.url");
+      if (this.configuration != null) {
+        throw new IllegalStateException("This builder is already configured");
       }
-      if(port == -1) {
-        port = configuration.getInt("jenkins.port");
+
+      this.configuration = configuration;
+      if (url == null && port == -1) {
+        jenkins(configuration.get("jenkins.url"), configuration.getInt("jenkins.port"));
+      }
+
+      String confMixins = configuration.get("config.mixins");
+      if (confMixins != null) {
+        addMixinsFromServices(confMixins);
       }
       return this;
     }
 
     public MasterConfigurationBuilder masterKey(String masterKey) {
-      this.masterKey = masterKey;
+      this.encFactory = new SecretEncryptorFactory(masterKey);
       return this;
     }
 
     public JenkinsCredentials credentials() {
+      JenkinsCredentials credentials = getConfig(mixins, JenkinsCredentials.class);
+      if (credentials == null) {
+        credentials = new JenkinsCredentials();
+        config(credentials);
+      }
       return credentials;
     }
 
+    public SecretEncryptorFactory encryption() {
+      return encFactory;
+    }
+
     public MasterConfigurationBuilder credentials(JenkinsCredentials credentials) {
-      this.credentials.merge(credentials);
+      credentials().merge(credentials);
       return this;
     }
 
     public MasterConfigurationBuilder templates(TemplateList templateList) {
-      templates.add(templateList);
-      return this;
-    }
-
-    public MasterConfigurationBuilder config(ConfigurationMixin mixin) throws IOException {
-      mixin.configure(this);
-      mixins.add(mixin);
-      return this;
-    }
-    
-    /**
-     * If not called manually, mixins defined in 'config.mixins' property will be initialized during {@linkplain #build()}.
-     * If some configuration (like template overrides) needs to be added after such mixins are initialized, one can force it this method.
-     */
-    public MasterConfigurationBuilder forceServiceConfig() throws IOException {
-      if (!servicesLoaded) {
-        servicesLoaded = true;
-        if (configuration != null) {
-          String confMixins = configuration.get("config.mixins");
-          if (confMixins != null) {
-            addMixinsFromServices(confMixins);
-          }
-        }
+      if (templateList != null) {
+        templates.add(templateList);
       }
       return this;
     }
 
-    public MasterConfiguration build() throws IOException {
-      forceServiceConfig();
+    public MasterConfigurationBuilder config(ConfigurationMixin mixin) {
+      mixin.configure(this);
+      mixins.add(mixin);
+      return this;
+    }
+
+    public MasterConfiguration build() {
       return new MasterConfiguration(
         url,
         port,
         configuration,
-        masterKey,
-        credentials,
+        encFactory,
         templates,
         mixins);
     }
 
-    private void addMixinsFromServices(String confMixins) throws IOException {
-
+    private void addMixinsFromServices(String confMixins) {
       Map<String, ConfigurationMixin> map = new HashMap<>();
-      for (ConfigurationMixin m : ServiceLoader.load(ConfigurationMixin.class)) {
+      for (ConfigurationMixin m : ServiceLoader.load(ConfigurationMixin.class, getClassLoader())) {
         map.put(m.getId(), m);
       }
       for (String id : confMixins.split(",")) {
@@ -216,5 +218,14 @@ public class MasterConfiguration {
         config(m.init(configuration.subset(m.getId())));
       }
     }
+  }
+
+  private static <T extends ConfigurationMixin> T getConfig(List<ConfigurationMixin> configs, Class<T> cl) {
+    for (ConfigurationMixin c : configs) {
+      if (cl.isInstance(c)) {
+        return cl.cast(c);
+      }
+    }
+    return null;
   }
 }
