@@ -277,7 +277,7 @@ public class MavenProvisioner {
       //
       // TODO: Inside Maven this is not null but it should be ??? There is nothing in the type registry for it.
       //
-      if (getArtifactType(artifact.getExtension()) == null) {
+      else if (getArtifactType(artifact.getExtension()) == null) {
         //
         // We are dealing with artifacts that have no entry in the default artifact type registry. These are typically
         // archive types and we only want to retrieve the artifact itself so we set the artifact type accordingly.

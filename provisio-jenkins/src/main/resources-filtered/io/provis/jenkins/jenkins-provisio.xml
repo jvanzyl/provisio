@@ -1,0 +1,35 @@
+<runtime>
+  <!-- Launcher -->
+  <artifactSet to="/bin">
+    <artifact id="io.airlift:launcher:tar.gz:bin:${airlift.launcherVersion}">
+      <unpack />
+    </artifact>
+    <artifact id="io.airlift:launcher:tar.gz:properties:${airlift.launcherVersion}">
+      <unpack filter="true"/>
+    </artifact>
+  </artifactSet>
+
+  <artifactSet to="/">
+    <artifact id="${project.groupId}:provisio-jenkins-launcher:tar.gz:${project.version}">
+      <unpack useRoot="false"/>
+    </artifact>
+  </artifactSet>
+  
+  <artifactSet to="/jenkins">
+    <artifact id="org.jenkins-ci.main:jenkins-war:war:${propStart}jenkins.version}">
+      <unpack useRoot="true" excludes="winstone.jar,WEB-INF/lib/guice*.jar,WEB-INF/lib/guava*.jar,WEB-INF/lib/slf4j-*.jar,*.class,WEB-INF/plugins/*"/>
+    </artifact>
+  </artifactSet>
+
+  <artifactSet to="/jenkins/WEB-INF/lib">
+    <!-- replace bundled guice 4.0-beta with a proper one that supports java8 -->
+    <artifact id="com.google.inject:guice:4.0">
+      <exclusion id="*:*"/>
+    </artifact>
+    <artifact id="com.google.guava:guava:18.0">
+      <exclusion id="*:*"/>
+    </artifact>
+    <artifact id="${project.groupId}:provisio-jenkins-extensions:${project.version}"/>
+  </artifactSet>  
+
+</runtime>

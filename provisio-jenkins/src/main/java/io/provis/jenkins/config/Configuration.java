@@ -11,7 +11,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class Configuration {
+public class Configuration implements Map<String, String> {
 
   private final Properties props;
 
@@ -39,8 +39,9 @@ public class Configuration {
     this.props = props;
   }
 
+  @Override
   public boolean isEmpty() {
-    return props.size() == 0;
+    return size() == 0;
   }
 
   public void ifNotEmpty(Consumer<Configuration> c) {
@@ -50,15 +51,16 @@ public class Configuration {
   }
 
   public boolean has(String key) {
-    return props.containsKey(key);
+    return containsKey(key);
   }
 
-  public String get(String key) {
-    return props.getProperty(key);
+  @Override
+  public String get(Object key) {
+    return props.getProperty(key.toString());
   }
 
-  public String get(String key, String defValue) {
-    return props.getProperty(key, defValue);
+  public String get(Object key, String defValue) {
+    return props.getProperty(key.toString(), defValue);
   }
 
   public int getInt(String key) {
@@ -174,6 +176,41 @@ public class Configuration {
   @SuppressWarnings({"unchecked", "rawtypes"})
   public Set<Map.Entry<String, String>> entrySet() {
     return (Set) props.entrySet();
+  }
+
+  @Override
+  public int size() {
+    return props.size();
+  }
+
+  @Override
+  public boolean containsKey(Object key) {
+    return props.containsKey(key);
+  }
+
+  @Override
+  public boolean containsValue(Object value) {
+    return props.containsValue(value);
+  }
+
+  @Override
+  public String put(String key, String value) {
+    return (String) props.put(key, value);
+  }
+
+  @Override
+  public String remove(Object key) {
+    return (String) props.remove(key);
+  }
+
+  @Override
+  public void putAll(Map<? extends String, ? extends String> m) {
+    props.putAll(m);
+  }
+
+  @Override
+  public void clear() {
+    props.clear();
   }
 
 }

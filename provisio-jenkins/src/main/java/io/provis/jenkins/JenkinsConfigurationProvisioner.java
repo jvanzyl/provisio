@@ -34,7 +34,7 @@ public class JenkinsConfigurationProvisioner extends SimpleProvisioner {
     super(localRepository, remoteRepository);
   }
 
-  public void provision(Configuration configuration, File templateDir, File outputDir) throws IOException {
+  public MasterConfiguration provision(Configuration configuration, File templateDir, File outputDir) throws IOException {
 
     Configuration deps = configuration.subset("config.dependencies");
     if (!deps.isEmpty()) {
@@ -48,16 +48,12 @@ public class JenkinsConfigurationProvisioner extends SimpleProvisioner {
           }
         }
       }
-      provisionInClassRealm(jars, configuration, templateDir, outputDir);
-
-    } else {
-
-      doProvision(configuration, templateDir, outputDir, null);
-
+      return provisionInClassRealm(jars, configuration, templateDir, outputDir);
     }
+    return doProvision(configuration, templateDir, outputDir, null);
   }
 
-  private void provisionInClassRealm(List<File> jars, Configuration configuration, File templateDir, File outputDir) throws IOException {
+  private MasterConfiguration provisionInClassRealm(List<File> jars, Configuration configuration, File templateDir, File outputDir) throws IOException {
 
     ClassWorld cw = new ClassWorld();
     ClassRealm cr;
@@ -72,7 +68,7 @@ public class JenkinsConfigurationProvisioner extends SimpleProvisioner {
       for (File jar : jars) {
         cr.addURL(jar.toURI().toURL());
       }
-      doProvision(configuration, templateDir, outputDir, cr);
+      return doProvision(configuration, templateDir, outputDir, cr);
 
     } finally {
       try {
@@ -83,12 +79,13 @@ public class JenkinsConfigurationProvisioner extends SimpleProvisioner {
     }
   }
 
-  protected void doProvision(Configuration configuration, File templateDir, File outputDir, ClassLoader classLoader) throws IOException {
-    MasterConfiguration.builder(classLoader)
+  protected MasterConfiguration doProvision(Configuration configuration, File templateDir, File outputDir, ClassLoader classLoader) throws IOException {
+    MasterConfiguration mc = MasterConfiguration.builder(classLoader)
       .templates(TemplateList.list(templateDir))
       .configuration(configuration)
-      .build()
-      .write(outputDir);
+      .build();
+    mc.write(outputDir);
+    return mc;
   }
 
 }
