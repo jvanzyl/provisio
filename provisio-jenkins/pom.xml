@@ -214,6 +214,10 @@
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ComponentsXmlResourceTransformer"/>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                  <resource>logback.xml</resource>
+                  <file>src/main/shaded/logback.xml</file>
+                </transformer>
               </transformers>
             </configuration>
           </execution>

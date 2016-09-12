@@ -60,7 +60,7 @@ public class JenkinsPluginsProvisioner {
   }
 
   public void provision(JenkinsPluginsRequest req) throws Exception {
-    PluginContext ctx = new PluginContext();
+    PluginContext ctx = new PluginContext(req.getJenkinsVersion());
     for (JenkinsPlugin p : req.getPlugins()) {
       PluginDesc desc = ctx.describe(new DefaultArtifact(p.getGroupId(), p.getArtifactId(), null, p.getVersion()));
       if (desc == null) {
@@ -81,14 +81,15 @@ public class JenkinsPluginsProvisioner {
     List<PluginDesc> included = new ArrayList<>();
     Set<String> mem = new HashSet<>();
     for (PluginHolder h : topLevel) {
-      collect(ctx, h.plugin.key, h.pinned.isIncludeOptional(), included, mem);
+      log.info(" * {}:{}", h.plugin.key, h.plugin.art.getVersion());
+      collect(ctx, h, h.pinned.isIncludeOptional(), included, mem, "   ->");
     }
 
     // collect included plugins
     req.getTargetDir().mkdirs();
     ArtifactSet arts = new ArtifactSet();
     for (PluginDesc p : included) {
-      
+
       // error out if some plugin requires version of jenkins higher than provided
       if (compareVersions(p.jenkinsVersion, req.getJenkinsVersion()) > 0) {
         ctx.error("Plugin %s:%s requires jenkins version %s, which is less than the provisioned %s",
@@ -125,13 +126,10 @@ public class JenkinsPluginsProvisioner {
     provisioner.provision(preq);
   }
 
-  private void collect(PluginContext ctx, String key, boolean optional, List<PluginDesc> result, Set<String> mem) {
-    if (mem.contains(key)) {
+  private void collect(PluginContext ctx, PluginHolder h, boolean optional, List<PluginDesc> result, Set<String> mem, String indent) {
+    if (!mem.add(h.plugin.key)) {
       return;
     }
-    mem.add(key);
-
-    PluginHolder h = ctx.getPlugin(key);
     result.add(h.plugin);
     if (h.redundant) {
       log.warn("Redundant pinned plugin {}:{}", h.getArtifactId(), h.getVersion());
@@ -139,7 +137,16 @@ public class JenkinsPluginsProvisioner {
     if (h.dependencies != null) {
       for (DepHolder dep : h.dependencies) {
         if (!dep.optional || optional) {
-          collect(ctx, dep.key, optional, result, mem);
+          PluginHolder deph = ctx.getPlugin(dep.key);
+          String depVersion = dep.version;
+          String actualVersion = deph.plugin.art.getVersion();
+
+          if (depVersion.equals(actualVersion)) {
+            log.info("{} {}:{}", indent, dep.key, depVersion);
+          } else {
+            log.info("{} {}:{} ({})", indent, dep.key, depVersion, actualVersion);
+          }
+          collect(ctx, deph, optional, result, mem, "   " + indent);
         }
       }
     }
@@ -172,7 +179,7 @@ public class JenkinsPluginsProvisioner {
     for (PluginDepDesc dep : getDependencies(ctx, holder.plugin)) {
       PluginDesc depPlugin = dep.plugin;
 
-      holder.dependencies.add(new DepHolder(depPlugin.key, dep.optional));
+      holder.dependencies.add(new DepHolder(depPlugin.key, depPlugin.art.getVersion(), dep.optional));
       processPlugin(ctx, holder, depPlugin);
     }
   }
@@ -289,19 +296,24 @@ public class JenkinsPluginsProvisioner {
     // add detached plugins
     for (Map.Entry<String, DetachedPlugin> e : DETACHED.entrySet()) {
       String key = e.getKey(); // key == artifactId == shortName
-      DetachedPlugin det = e.getValue();
-      if (!added.contains(key) && compareVersions(plugin.jenkinsVersion, det.splitWhen) >= 0) {
-        added.add(key);
 
+      DetachedPlugin det = e.getValue();
+      if (!key.equals(plugin.key) && !added.contains(key) && needsDetachedPlugin(plugin.jenkinsVersion, ctx.getJenkinsVersion(), det.splitWhen)) {
+        added.add(key);
         PluginDesc depPlugin = ctx.describe(new DefaultArtifact(det.groupId, key, null, det.requireVersion));
         if (depPlugin == null) {
           throw new ProvisioningException("Cannot fetch detached plugin " + key + ":" + det.requireVersion);
         }
-        deps.add(new PluginDepDesc(depPlugin, true));
+        deps.add(new PluginDepDesc(depPlugin, false));
       }
     }
 
     return deps;
+  }
+
+  private boolean needsDetachedPlugin(String requiredJenkinsVersion, String provisionedJenkinsVersion, String splitWhen) throws RepositoryException {
+    return compareVersions(provisionedJenkinsVersion, splitWhen) >= 0 // provisioned jenkins no longer contains the detached plugin
+      && compareVersions(requiredJenkinsVersion, splitWhen) < 0; // plugin requires pre-split version of jenkins
   }
 
   private boolean breakCycle(PluginDesc plugin, PluginDesc depPlugin) {
@@ -359,9 +371,18 @@ public class JenkinsPluginsProvisioner {
     .build();
 
   private class PluginContext {
+    private String jenkinsVersion;
     private Map<String, PluginHolder> plugins = new HashMap<>();
     private List<String> errors = new ArrayList<>();
     private Map<String, PluginDesc> pluginCache = new HashMap<>();
+
+    public PluginContext(String jenkinsVersion) {
+      this.jenkinsVersion = jenkinsVersion;
+    }
+
+    public String getJenkinsVersion() {
+      return jenkinsVersion;
+    }
 
     void setPlugin(String key, PluginHolder plugin) {
       plugins.put(key, plugin);
@@ -424,10 +445,12 @@ public class JenkinsPluginsProvisioner {
 
   private static class DepHolder {
     final String key;
+    final String version;
     final boolean optional;
 
-    DepHolder(String key, boolean optional) {
+    DepHolder(String key, String version, boolean optional) {
       this.key = key;
+      this.version = version;
       this.optional = optional;
     }
   }
