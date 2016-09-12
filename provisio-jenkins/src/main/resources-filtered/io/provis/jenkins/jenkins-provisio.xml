@@ -17,7 +17,8 @@
   
   <artifactSet to="/jenkins">
     <artifact id="org.jenkins-ci.main:jenkins-war:war:${propStart}jenkins.version}">
-      <unpack useRoot="true" excludes="winstone.jar,WEB-INF/lib/guice*.jar,WEB-INF/lib/slf4j-*.jar,*.class"/>
+      <!-- put back bundled plugins when PluginManager is fixed to handle plugin installation in provisio scenario -->
+      <unpack useRoot="true" excludes="winstone.jar,WEB-INF/lib/guice*.jar,WEB-INF/lib/slf4j-*.jar,*.class,WEB-INF/plugins/*,WEB-INF/detached-plugins/*"/>
     </artifact>
   </artifactSet>
 

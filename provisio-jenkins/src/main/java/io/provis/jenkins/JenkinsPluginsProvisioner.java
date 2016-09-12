@@ -110,6 +110,11 @@ public class JenkinsPluginsProvisioner {
       ProvisioArtifact pa = new ProvisioArtifact(new DefaultArtifact(p.art.getGroupId(), p.art.getArtifactId(), "hpi", p.art.getVersion()));
       pa.setName(p.key + ".jpi");
       arts.addArtifact(pa);
+
+      // pin if top-level
+      if (h.pinned != null) {
+        new File(req.getTargetDir(), h.plugin.key + ".jpi.pinned").createNewFile();
+      }
     }
 
     if (!ctx.errors.isEmpty()) {
@@ -129,14 +134,6 @@ public class JenkinsPluginsProvisioner {
     preq.setRuntimeDescriptor(runtime);
     preq.setOutputDirectory(req.getTargetDir());
     provisioner.provision(preq);
-
-    // pin top-level plugins
-    for (PluginHolder h : included) {
-      if (h.pinned != null) {
-        new File(req.getTargetDir(), h.plugin.key + ".jpi.pinned").createNewFile();
-      }
-    }
-
   }
 
   private void collect(PluginContext ctx, PluginHolder h, boolean optional, List<PluginHolder> result, Set<String> mem, String indent) {

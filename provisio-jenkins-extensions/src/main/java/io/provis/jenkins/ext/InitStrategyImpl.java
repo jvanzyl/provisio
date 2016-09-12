@@ -43,8 +43,8 @@ public class InitStrategyImpl extends InitStrategy {
    *      and when that happens, Jenkins will ignore all but the first one in the list.
    */
   public List<File> listPluginArchives(PluginManager pm) throws IOException {
-    String looperHome = System.getProperty("JENKINS_ROOT");
-    File pluginsDirectory = new File(looperHome, "plugins");
+    String jenkinsRoot = System.getProperty("JENKINS_ROOT");
+    File pluginsDirectory = new File(jenkinsRoot, "plugins");
     List<File> r = new ArrayList<File>();
 
     // the ordering makes sure that during the debugging we get proper precedence among duplicates.
