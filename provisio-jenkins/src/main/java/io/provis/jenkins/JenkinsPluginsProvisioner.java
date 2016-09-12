@@ -90,13 +90,13 @@ public class JenkinsPluginsProvisioner {
     ArtifactSet arts = new ArtifactSet();
     for (PluginHolder h : included) {
       PluginDesc p = h.plugin;
-      
+
       String bundled = ctx.getBundledVersion(p.key);
       if (bundled != null && compareVersions(p.art.getVersion(), bundled) <= 0) { // bundled version is same or higher than required
         log.info("Skipping {}:{} since version {} is bundled with jenkins", p.key, p.art.getVersion(), bundled);
         continue;
       }
-      
+
       if (h.redundant) {
         log.info("Possibly redundant pinned plugin {}:{}", h.getArtifactId(), h.getVersion());
       }

@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,7 +13,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
-import java.util.stream.Collectors;
 
 import org.codehaus.plexus.util.FileUtils;
 import org.eclipse.aether.RepositoryException;
@@ -37,7 +34,7 @@ import io.provis.model.ProvisioningRequest;
 import io.provis.model.Runtime;
 import io.provis.model.io.RuntimeReader;
 
-public class JenkinsInstallationProvisioner extends SimpleProvisioner {
+public class JenkinsInstallationProvisioner {
 
   private static final Logger log = LoggerFactory.getLogger(JenkinsInstallationProvisioner.class);
 
@@ -52,48 +49,57 @@ public class JenkinsInstallationProvisioner extends SimpleProvisioner {
   private RepositorySystemSession session;
   private MavenProvisioner provisioner;
 
+  private File localRepository;
+  private String remoteRepository;
+
   public JenkinsInstallationProvisioner() {
-    this(DEFAULT_LOCAL_REPO, DEFAULT_REMOTE_REPO);
+    this(SimpleProvisioner.DEFAULT_LOCAL_REPO);
   }
 
   public JenkinsInstallationProvisioner(File localRepository) {
-    this(localRepository, DEFAULT_REMOTE_REPO);
+    this(localRepository, null);
   }
 
   public JenkinsInstallationProvisioner(File localRepository, String remoteRepository) {
-    super(localRepository, DEFAULT_REMOTE_REPO);
+    this.localRepository = localRepository;
+    this.remoteRepository = remoteRepository;
+
     reader = new RuntimeReader(Actions.defaultActionDescriptors());
 
     resolution = new ResolutionSystem(localRepository);
-    resolution.remoteRepository(remoteRepositoryUrl);
-    if (!remoteRepositoryUrl.equals(JENKINS_REPO)) {
+    if (remoteRepository != null) {
+      resolution.remoteRepository(remoteRepository);
+    }
+    if (remoteRepository != null && !remoteRepository.equals(JENKINS_REPO)) {
       resolution.remoteRepository(new Repository("jenkins", JENKINS_REPO));
     }
     session = resolution.repositorySystemSession();
     provisioner = new MavenProvisioner(resolution.repositorySystem(), session, resolution.remoteRepositories());
   }
 
-  public void provision(JenkinsInstallationContext ctx) throws Exception {
-    Configuration conf = ctx.getConfiguration();
+  public JenkinsInstallationResponse provision(JenkinsInstallationRequest req) throws Exception {
+    Configuration conf = req.getConfiguration();
     Runtime runtime;
     try (InputStream in = getClass().getResourceAsStream("jenkins-provisio.xml")) {
       runtime = reader.read(in, conf);
     }
-    File installDir = new File(ctx.getTargetDir(), "jenkins-installation");
-    File configDir = new File(ctx.getTargetDir(), "jenkins-work");
+    File installDir = new File(req.getTargetDir(), "jenkins-installation");
+    File workDir = new File(req.getTargetDir(), "jenkins-work");
 
-    provisionRuntime(ctx, runtime, installDir);
-    provisionMasterConfiguration(ctx, configDir);
-    updateEtc(ctx, ctx.getMasterConfiguration(), installDir);
+    provisionRuntime(req, runtime, installDir);
+    MasterConfiguration mc = provisionMasterConfiguration(req, workDir);
+    updateEtc(req, mc, installDir);
+
+    return new JenkinsInstallationResponse(installDir, workDir, mc);
   }
 
-  private void provisionRuntime(JenkinsInstallationContext ctx, Runtime runtime, File dir) throws Exception {
+  private void provisionRuntime(JenkinsInstallationRequest req, Runtime runtime, File dir) throws Exception {
 
-    log.info("Provisioning jenkins runtime v" + ctx.getJenkinsVersion());
+    log.info("Provisioning jenkins runtime v" + req.getJenkinsVersion());
     ProvisioningRequest request = new ProvisioningRequest();
     request.setOutputDirectory(dir);
     request.setRuntimeDescriptor(runtime);
-    Map<String, String> vars = new HashMap<>(ctx.getConfiguration());
+    Map<String, String> vars = new HashMap<>(req.getConfiguration());
     if (!vars.containsKey("main-class")) {
       vars.put("main-class", DEFAULT_MAIN_CLASS);
     }
@@ -104,12 +110,12 @@ public class JenkinsInstallationProvisioner extends SimpleProvisioner {
     provisioner.provision(request);
 
     log.info("Provisioning plugins");
-    provisionPlugins(ctx, dir);
+    provisionPlugins(req, dir);
   }
 
-  private void provisionPlugins(JenkinsInstallationContext ctx, File installDir) throws Exception {
+  private void provisionPlugins(JenkinsInstallationRequest req, File installDir) throws Exception {
 
-    Configuration pluginsConf = ctx.getConfiguration().subset("jenkins.plugins");
+    Configuration pluginsConf = req.getConfiguration().subset("jenkins.plugins");
 
     List<JenkinsPlugin> plugins = new ArrayList<>();
 
@@ -147,7 +153,7 @@ public class JenkinsInstallationProvisioner extends SimpleProvisioner {
       File output = new File(installDir, "plugins");
       JenkinsPluginsProvisioner pp = new JenkinsPluginsProvisioner(resolution, session);
       try {
-        pp.provision(new JenkinsPluginsRequest(ctx.getJenkinsVersion(), output, plugins, bundledPlugins));
+        pp.provision(new JenkinsPluginsRequest(req.getJenkinsVersion(), output, plugins, bundledPlugins));
       } catch (RepositoryException e) {
         throw new ProvisioningException("Unable to provision jenkins plugins", e);
       }
@@ -182,14 +188,19 @@ public class JenkinsInstallationProvisioner extends SimpleProvisioner {
     return result;
   }
 
-  private void provisionMasterConfiguration(JenkinsInstallationContext ctx, File dir) throws IOException {
+  private MasterConfiguration provisionMasterConfiguration(JenkinsInstallationRequest req, File dir) throws IOException {
     log.info("Provisioning configuration");
-    JenkinsConfigurationProvisioner cp = new JenkinsConfigurationProvisioner(localRepository, remoteRepositoryUrl);
-    MasterConfiguration mc = cp.provision(ctx.getConfiguration(), ctx.getConfigOverrides(), dir);
-    ctx.setMasterConfiguration(mc);
+
+    String remoteRepo = remoteRepository;
+    if (remoteRepo == null) {
+      remoteRepo = JenkinsConfigurationProvisioner.DEFAULT_REMOTE_REPO;
+    }
+
+    JenkinsConfigurationProvisioner cp = new JenkinsConfigurationProvisioner(localRepository, remoteRepo);
+    return cp.provision(req.getConfiguration(), req.getConfigOverrides(), dir);
   }
 
-  private void updateEtc(JenkinsInstallationContext ctx, MasterConfiguration configuration, File dir) throws IOException {
+  private void updateEtc(JenkinsInstallationRequest req, MasterConfiguration configuration, File dir) throws IOException {
     File etcDir = new File(dir, "etc");
     File config = new File(etcDir, "config.properties");
     File jvmConfig = new File(etcDir, "jvm.config");
@@ -206,7 +217,7 @@ public class JenkinsInstallationProvisioner extends SimpleProvisioner {
     }
 
     {
-      Configuration system = ctx.getConfiguration().subset("system");
+      Configuration system = req.getConfiguration().subset("system");
       if (!system.isEmpty()) {
         StringBuilder sb = new StringBuilder();
         sb.append(FileUtils.fileRead(jvmConfig));
