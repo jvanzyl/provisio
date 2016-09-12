@@ -17,7 +17,7 @@
   
   <artifactSet to="/jenkins">
     <artifact id="org.jenkins-ci.main:jenkins-war:war:${propStart}jenkins.version}">
-      <unpack useRoot="true" excludes="winstone.jar,WEB-INF/lib/guice*.jar,WEB-INF/lib/slf4j-*.jar,*.class,WEB-INF/plugins/*"/>
+      <unpack useRoot="true" excludes="winstone.jar,WEB-INF/lib/guice*.jar,WEB-INF/lib/slf4j-*.jar,*.class"/>
     </artifact>
   </artifactSet>
 

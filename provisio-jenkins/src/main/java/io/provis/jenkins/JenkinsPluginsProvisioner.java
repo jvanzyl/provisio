@@ -60,7 +60,7 @@ public class JenkinsPluginsProvisioner {
   }
 
   public void provision(JenkinsPluginsRequest req) throws Exception {
-    PluginContext ctx = new PluginContext(req.getJenkinsVersion());
+    PluginContext ctx = new PluginContext(req.getJenkinsVersion(), req.getBundledPlugins());
     for (JenkinsPlugin p : req.getPlugins()) {
       PluginDesc desc = ctx.describe(new DefaultArtifact(p.getGroupId(), p.getArtifactId(), null, p.getVersion()));
       if (desc == null) {
@@ -78,7 +78,7 @@ public class JenkinsPluginsProvisioner {
     }
 
     // second, decide which to include based on optionality and also check for redundant dependencies
-    List<PluginDesc> included = new ArrayList<>();
+    List<PluginHolder> included = new ArrayList<>();
     Set<String> mem = new HashSet<>();
     for (PluginHolder h : topLevel) {
       log.info(" * {}:{}", h.plugin.key, h.plugin.art.getVersion());
@@ -88,7 +88,18 @@ public class JenkinsPluginsProvisioner {
     // collect included plugins
     req.getTargetDir().mkdirs();
     ArtifactSet arts = new ArtifactSet();
-    for (PluginDesc p : included) {
+    for (PluginHolder h : included) {
+      PluginDesc p = h.plugin;
+      
+      String bundled = ctx.getBundledVersion(p.key);
+      if (bundled != null && compareVersions(p.art.getVersion(), bundled) <= 0) { // bundled version is same or higher than required
+        log.info("Skipping {}:{} since version {} is bundled with jenkins", p.key, p.art.getVersion(), bundled);
+        continue;
+      }
+      
+      if (h.redundant) {
+        log.info("Possibly redundant pinned plugin {}:{}", h.getArtifactId(), h.getVersion());
+      }
 
       // error out if some plugin requires version of jenkins higher than provided
       if (compareVersions(p.jenkinsVersion, req.getJenkinsVersion()) > 0) {
@@ -99,12 +110,6 @@ public class JenkinsPluginsProvisioner {
       ProvisioArtifact pa = new ProvisioArtifact(new DefaultArtifact(p.art.getGroupId(), p.art.getArtifactId(), "hpi", p.art.getVersion()));
       pa.setName(p.key + ".jpi");
       arts.addArtifact(pa);
-
-      // pin it, if needed
-      PluginHolder h = ctx.getPlugin(p.key);
-      if (h.pinned != null) {
-        new File(req.getTargetDir(), p.key + ".jpi.pinned").createNewFile();
-      }
     }
 
     if (!ctx.errors.isEmpty()) {
@@ -124,16 +129,21 @@ public class JenkinsPluginsProvisioner {
     preq.setRuntimeDescriptor(runtime);
     preq.setOutputDirectory(req.getTargetDir());
     provisioner.provision(preq);
+
+    // pin top-level plugins
+    for (PluginHolder h : included) {
+      if (h.pinned != null) {
+        new File(req.getTargetDir(), h.plugin.key + ".jpi.pinned").createNewFile();
+      }
+    }
+
   }
 
-  private void collect(PluginContext ctx, PluginHolder h, boolean optional, List<PluginDesc> result, Set<String> mem, String indent) {
+  private void collect(PluginContext ctx, PluginHolder h, boolean optional, List<PluginHolder> result, Set<String> mem, String indent) {
     if (!mem.add(h.plugin.key)) {
       return;
     }
-    result.add(h.plugin);
-    if (h.redundant) {
-      log.warn("Redundant pinned plugin {}:{}", h.getArtifactId(), h.getVersion());
-    }
+    result.add(h);
     if (h.dependencies != null) {
       for (DepHolder dep : h.dependencies) {
         if (!dep.optional || optional) {
@@ -298,7 +308,7 @@ public class JenkinsPluginsProvisioner {
       String key = e.getKey(); // key == artifactId == shortName
 
       DetachedPlugin det = e.getValue();
-      if (!key.equals(plugin.key) && !added.contains(key) && needsDetachedPlugin(plugin.jenkinsVersion, ctx.getJenkinsVersion(), det.splitWhen)) {
+      if (!key.equals(plugin.key) && !added.contains(key) && needsDetachedPlugin(ctx, plugin, det.splitWhen)) {
         added.add(key);
         PluginDesc depPlugin = ctx.describe(new DefaultArtifact(det.groupId, key, null, det.requireVersion));
         if (depPlugin == null) {
@@ -311,9 +321,9 @@ public class JenkinsPluginsProvisioner {
     return deps;
   }
 
-  private boolean needsDetachedPlugin(String requiredJenkinsVersion, String provisionedJenkinsVersion, String splitWhen) throws RepositoryException {
-    return compareVersions(provisionedJenkinsVersion, splitWhen) >= 0 // provisioned jenkins no longer contains the detached plugin
-      && compareVersions(requiredJenkinsVersion, splitWhen) < 0; // plugin requires pre-split version of jenkins
+  private boolean needsDetachedPlugin(PluginContext ctx, PluginDesc plugin, String splitWhen) throws RepositoryException {
+    return compareVersions(ctx.getJenkinsVersion(), splitWhen) >= 0 // provisioned jenkins no longer contains the detached plugin
+      && compareVersions(plugin.jenkinsVersion, splitWhen) < 0; // plugin requires pre-split version of jenkins
   }
 
   private boolean breakCycle(PluginDesc plugin, PluginDesc depPlugin) {
@@ -372,12 +382,14 @@ public class JenkinsPluginsProvisioner {
 
   private class PluginContext {
     private String jenkinsVersion;
+    private Map<String, String> bundledPlugins;
     private Map<String, PluginHolder> plugins = new HashMap<>();
-    private List<String> errors = new ArrayList<>();
     private Map<String, PluginDesc> pluginCache = new HashMap<>();
+    private List<String> errors = new ArrayList<>();
 
-    public PluginContext(String jenkinsVersion) {
+    public PluginContext(String jenkinsVersion, Map<String, String> bundledPlugins) {
       this.jenkinsVersion = jenkinsVersion;
+      this.bundledPlugins = bundledPlugins;
     }
 
     public String getJenkinsVersion() {
@@ -390,6 +402,10 @@ public class JenkinsPluginsProvisioner {
 
     PluginHolder getPlugin(String key) {
       return plugins.get(key);
+    }
+
+    String getBundledVersion(String key) {
+      return bundledPlugins.get(key);
     }
 
     void error(String error, Object... args) {
@@ -496,14 +512,16 @@ public class JenkinsPluginsProvisioner {
   }
 
   public static class JenkinsPluginsRequest {
+    private String jenkinsVersion;
     private File targetDir;
     private List<JenkinsPlugin> plugins;
-    private String jenkinsVersion;
+    private Map<String, String> bundledPlugins;
 
-    public JenkinsPluginsRequest(String jenkinsVersion, File targetDir, List<JenkinsPlugin> plugins) {
+    public JenkinsPluginsRequest(String jenkinsVersion, File targetDir, List<JenkinsPlugin> plugins, Map<String, String> bundledPlugins) {
       this.jenkinsVersion = jenkinsVersion;
       this.targetDir = targetDir;
       this.plugins = plugins;
+      this.bundledPlugins = bundledPlugins;
     }
 
     public String getJenkinsVersion() {
@@ -516,6 +534,10 @@ public class JenkinsPluginsProvisioner {
 
     public List<JenkinsPlugin> getPlugins() {
       return plugins;
+    }
+
+    public Map<String, String> getBundledPlugins() {
+      return bundledPlugins;
     }
   }
 

@@ -5,11 +5,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.stream.Collectors;
 
 import org.codehaus.plexus.util.FileUtils;
 import org.eclipse.aether.RepositoryException;
@@ -135,16 +141,45 @@ public class JenkinsInstallationProvisioner extends SimpleProvisioner {
       }
     }
 
+    Map<String, String> bundledPlugins = collectBundledPlugins(new File(installDir, "jenkins/WEB-INF"));
+
     if (!plugins.isEmpty()) {
       File output = new File(installDir, "plugins");
       JenkinsPluginsProvisioner pp = new JenkinsPluginsProvisioner(resolution, session);
       try {
-        pp.provision(new JenkinsPluginsRequest(ctx.getJenkinsVersion(), output, plugins));
+        pp.provision(new JenkinsPluginsRequest(ctx.getJenkinsVersion(), output, plugins, bundledPlugins));
       } catch (RepositoryException e) {
         throw new ProvisioningException("Unable to provision jenkins plugins", e);
       }
     }
 
+  }
+
+  private Map<String, String> collectBundledPlugins(File webinf) throws IOException {
+
+    File pluginsDir = new File(webinf, "detached-plugins");
+    if (!pluginsDir.isDirectory()) {
+      pluginsDir = new File(webinf, "plugins");
+    }
+
+    if (!pluginsDir.isDirectory()) {
+      return Collections.emptyMap();
+    }
+
+    Map<String, String> result = new HashMap<>();
+    for (File f : pluginsDir.listFiles()) {
+      if (f.isFile() && (f.getName().endsWith(".hpi") || f.getName().endsWith(".jpi"))) {
+        Attributes attrs;
+        try (JarFile jf = new JarFile(f)) {
+          attrs = jf.getManifest().getMainAttributes();
+        }
+
+        String key = attrs.getValue("Short-Name");
+        String value = attrs.getValue("Plugin-Version");
+        result.put(key, value);
+      }
+    }
+    return result;
   }
 
   private void provisionMasterConfiguration(JenkinsInstallationContext ctx, File dir) throws IOException {
