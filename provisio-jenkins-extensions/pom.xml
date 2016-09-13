@@ -96,6 +96,7 @@
       <plugin>
         <groupId>io.takari.jenkins</groupId>
         <artifactId>jenkins-lifecycle-plugin</artifactId>
+        <version>0.0.1</version>
         <executions>
           <execution>
             <phase>compile</phase>
