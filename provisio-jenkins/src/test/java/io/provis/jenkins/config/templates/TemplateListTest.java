@@ -126,6 +126,9 @@ public class TemplateListTest {
     for(TemplateSource s: actual.getTemplates()) {
       actualNames.add(s.toString());
     }
+    Collections.sort(expectedNames);
+    Collections.sort(actualNames);
+    
     assertEquals(expectedNames, actualNames);
     
     if(exist) {
