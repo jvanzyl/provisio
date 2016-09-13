@@ -1,0 +1,5 @@
+<test>
+  {{#test}}
+  <foo>{{foo}}</foo>
+  {{/test}}
+</test>

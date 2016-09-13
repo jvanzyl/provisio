@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<github-plugin-configuration>
+  {{#github}}
+  <configs>
+    <github-server-config>
+      <apiUrl>{{apiUrl}}</apiUrl>
+      <manageHooks>{{manageHooks}}</manageHooks>
+      <credentialsId>{{oauthTokenId}}</credentialsId>
+      <clientCacheSize>20</clientCacheSize>
+    </github-server-config>
+  </configs>
+  {{/github}}
+</github-plugin-configuration>

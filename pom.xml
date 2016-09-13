@@ -10,7 +10,7 @@
   <parent>
     <groupId>io.takari</groupId>
     <artifactId>takari</artifactId>
-    <version>19</version>
+    <version>23</version>
   </parent>
 
   <groupId>io.provis</groupId>
@@ -23,32 +23,30 @@
     <module>provisio-ant</module>
     <module>provisio-command</module>
     <module>provisio-core</module>
-    <module>provisio-jenkins-spi</module>
-    <module>provisio-jenkins-runtime</module>
     <module>provisio-jenkins</module>
+    <module>provisio-jenkins-launcher</module>
+    <module>provisio-jenkins-extensions</module>
     <module>provisio-maven</module>
     <module>provisio-maven-plugin</module>
     <module>provisio-model</module>
     <module>provisio-nexus</module>
     <module>provisio-testing</module>
     <module>provisio-jsw</module>
-    <module>provisio-its</module>    
-    <module>provisio-airlift</module>    
-    <module>provisio-airlift-testserver</module>    
+    <module>provisio-its</module>
+    <module>provisio-airlift</module>
+    <module>provisio-airlift-testserver</module>
   </modules>
 
   <properties>
     <lifecycle>takari-jar</lifecycle>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <surefire.redirectTestOutputToFile>true</surefire.redirectTestOutputToFile>
     <surefire.runOrder>alphabetical</surefire.runOrder>
     <surefire.mem>-Xmx256m</surefire.mem>
     <mavenVersion>3.3.3</mavenVersion>
     <takariArchiverVersion>0.1.17</takariArchiverVersion>
     <aetherVersion>1.0.2.v20150114</aetherVersion>
-    <javaSourceVersion>1.8</javaSourceVersion>
-    <takariLifecycleVersion>1.11.12</takariLifecycleVersion>    
+    <takari.javaSourceVersion>1.8</takari.javaSourceVersion>
+    <takari.lifecycleVersion>1.11.12</takari.lifecycleVersion>
   </properties>
 
   <scm>
@@ -104,12 +102,12 @@
       </dependency>
       <dependency>
         <groupId>io.provis</groupId>
-        <artifactId>provisio-jenkins-spi</artifactId>
+        <artifactId>provisio-jenkins-launcher</artifactId>
         <version>0.1.41-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>io.provis</groupId>
-        <artifactId>provisio-jenkins-runtime</artifactId>
+        <artifactId>provisio-jenkins-extensions</artifactId>
         <version>0.1.41-SNAPSHOT</version>
       </dependency>
       <dependency>

@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<user>
+  {{#user}}
+  <fullName merge="replace">{{name}}</fullName>
+  <properties merge="true">
+    {{#apiToken}}
+    <jenkins.security.ApiTokenProperty>
+      <apiToken>{{#encryptSecret}}{{apiToken}}{{/encryptSecret}}</apiToken>
+    </jenkins.security.ApiTokenProperty>
+    {{/apiToken}}
+    {{#email}}
+    <hudson.tasks.Mailer_-UserProperty>
+      <emailAddress>{{email}}</emailAddress>
+    </hudson.tasks.Mailer_-UserProperty>
+    {{/email}}
+  </properties>
+  {{/user}}
+</user>

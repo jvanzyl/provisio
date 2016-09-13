@@ -27,7 +27,7 @@ public class ArtifactSet {
   private List<Resource> resources = Lists.newArrayList();
   // children
   private List<ArtifactSet> artifactSets = Lists.newArrayList();
-  private List<Exclusion> exclusions; 
+  private List<Exclusion> exclusions;
 
   // runtime
   private ArtifactSet parent;
@@ -39,14 +39,26 @@ public class ArtifactSet {
     return directory;
   }
 
+  public void setDirectory(String directory) {
+    this.directory = directory;
+  }
+
   public String getReference() {
     return reference;
+  }
+
+  public void setReference(String reference) {
+    this.reference = reference;
   }
 
   public String getFrom() {
     return from;
   }
-  
+
+  public void setFrom(String from) {
+    this.from = from;
+  }
+
   public void addArtifact(ProvisioArtifact artifact) {
     artifacts.add(artifact);
   }
@@ -55,8 +67,16 @@ public class ArtifactSet {
     return artifacts;
   }
 
+  public void addResource(Resource resource) {
+    resources.add(resource);
+  }
+
   public List<Resource> getResources() {
     return resources;
+  }
+
+  public void addArtifactSet(ArtifactSet artifactSet) {
+    artifactSets.add(artifactSet);
   }
 
   public List<ArtifactSet> getArtifactSets() {
@@ -64,8 +84,7 @@ public class ArtifactSet {
   }
 
   // runtime
-  
-  
+
   public List<Exclusion> getExcludes() {
     return exclusions;
   }

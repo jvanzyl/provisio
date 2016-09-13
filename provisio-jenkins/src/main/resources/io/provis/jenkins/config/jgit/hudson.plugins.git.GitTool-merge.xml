@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson.plugins.git.GitTool_-DescriptorImpl>
+  <installations class="hudson.plugins.git.GitTool-array" merge="true">
+    {{#jgit}}
+    <org.jenkinsci.plugins.gitclient.JGitTool>
+      <name>jgit</name>
+      <home>jgit</home>
+      <properties/>
+    </org.jenkinsci.plugins.gitclient.JGitTool>
+    {{/jgit}}
+  </installations>
+</hudson.plugins.git.GitTool_-DescriptorImpl>
