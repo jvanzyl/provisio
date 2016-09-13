@@ -150,10 +150,7 @@ public class MasterConfiguration {
         jenkins(configuration.get("jenkins.url"), configuration.getInt("jenkins.port"));
       }
 
-      String confMixins = configuration.get("config.mixins");
-      if (confMixins != null) {
-        addMixinsFromServices(confMixins);
-      }
+      addMixinsFromServices();
       return this;
     }
 
@@ -203,19 +200,12 @@ public class MasterConfiguration {
         mixins);
     }
 
-    private void addMixinsFromServices(String confMixins) {
-      Map<String, ConfigurationMixin> map = new HashMap<>();
+    private void addMixinsFromServices() {
       for (ConfigurationMixin m : ServiceLoader.load(ConfigurationMixin.class, getClassLoader())) {
-        map.put(m.getId(), m);
-      }
-      for (String id : confMixins.split(",")) {
-        id = id.trim();
-        ConfigurationMixin m = map.get(id);
-        if (m == null) {
-          throw new IllegalArgumentException("Mixin " + id + " does not exist, existing: " + map.keySet());
+        Configuration c = configuration.subset(m.getId());
+        if(!c.isEmpty()) {
+          config(m.init(c));
         }
-
-        config(m.init(configuration.subset(m.getId())));
       }
     }
   }

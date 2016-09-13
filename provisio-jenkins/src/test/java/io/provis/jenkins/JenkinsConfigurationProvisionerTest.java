@@ -30,7 +30,6 @@ public class JenkinsConfigurationProvisionerTest extends InjectedTest {
     
     Configuration c = new Configuration()
       .set("config.dependencies", "io.provis.jenkins.test:customconfig:1.0")
-      .set("config.mixins", "test")
       .set("test.foo", "bar");
     
     File dir = new File(baseDirectory, "externalDeps");
