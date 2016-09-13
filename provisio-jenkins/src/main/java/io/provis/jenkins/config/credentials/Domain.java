@@ -10,6 +10,7 @@ public class Domain {
   private String host;
   private List<SecretCredential> secretCredentials = new ArrayList<>();
   private List<UsernamePassword> usernamePasswordCredentials = new ArrayList<>();
+  private List<KeyCredential> keyCredentials = new ArrayList<>();
 
   public Domain(String name, String description, String scheme, String host) {
     this.name = name;
@@ -44,5 +45,9 @@ public class Domain {
 
   public List<UsernamePassword> getUsernamePasswordCredentials() {
     return usernamePasswordCredentials;
+  }
+  
+  public List<KeyCredential> getKeyCredentials() {
+    return keyCredentials;
   }
 }

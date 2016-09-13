@@ -20,6 +20,11 @@ public class MasterConfigurationTest extends AbstractConfigTest {
 
   private static final String CRED_STRING = "org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl";
   private static final String CRED_UPWD = "com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl";
+  private static final String CRED_KEY = "com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey";
+  
+  private static final String CRED_KEY_SOURCE_DIRECT = CRED_KEY + "$DirectEntryPrivateKeySource";
+  private static final String CRED_KEY_SOURCE_KEYFILE = CRED_KEY + "$FileOnMasterPrivateKeySource";
+  private static final String CRED_KEY_SOURCE_USERSDIR = CRED_KEY + "$UsersPrivateKeySource";
 
   @Test
   public void testFull() throws Exception {
@@ -46,7 +51,7 @@ public class MasterConfigurationTest extends AbstractConfigTest {
     // credentials.xml
     Document creds = h.asXml("credentials.xml");
     
-    Element cred;
+    Element cred, keySource;
     
     cred = h.assertXmlElement(creds, credPath(0, CRED_UPWD, 0));
     h.assertXmlText("cred1", cred, "id");
@@ -75,6 +80,29 @@ public class MasterConfigurationTest extends AbstractConfigTest {
     cred = h.assertXmlElement(creds, credPath(2, CRED_STRING, 0));
     h.assertXmlText("apiTokenId", cred, "id");
     h.assertXmlSecret("oauthToken", cred, "secret");
+    
+    cred = h.assertXmlElement(creds, credPath(0, CRED_KEY, 0));
+    h.assertXmlText("cred4", cred, "id");
+    h.assertXmlText("keyuser1", cred, "username");
+    h.assertXmlText("keypass1", cred, "passphrase");
+    keySource = h.assertXmlElement(cred, "privateKeySource");
+    h.assertXmlAttribute(CRED_KEY_SOURCE_DIRECT, keySource, "class");
+    h.assertXmlSecret("abc", keySource, "privateKey");
+
+    cred = h.assertXmlElement(creds, credPath(0, CRED_KEY, 1));
+    h.assertXmlText("cred5", cred, "id");
+    h.assertXmlText("keyuser2", cred, "username");
+    h.assertXmlText("keypass2", cred, "passphrase");
+    keySource = h.assertXmlElement(cred, "privateKeySource");
+    h.assertXmlAttribute(CRED_KEY_SOURCE_KEYFILE, keySource, "class");
+    h.assertXmlText("~/.ssh/id_rsa", keySource, "privateKeyFile");
+
+    cred = h.assertXmlElement(creds, credPath(0, CRED_KEY, 2));
+    h.assertXmlText("cred6", cred, "id");
+    h.assertXmlText("keyuser3", cred, "username");
+    h.assertXmlText("keypass3", cred, "passphrase");
+    keySource = h.assertXmlElement(cred, "privateKeySource");
+    h.assertXmlAttribute(CRED_KEY_SOURCE_USERSDIR, keySource, "class");
 
     // config.xml
     Document config = h.asXml("config.xml");

@@ -9,34 +9,45 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.Consumer;
 
 public class Configuration implements Map<String, String> {
 
-  private final Properties props;
+  private final Map<String, String> store;
 
   public Configuration(InputStream in) throws IOException {
     this();
+    Properties props = new Properties();
     props.load(in);
+    setData(props);
   }
 
   public Configuration(File file) {
     this();
     if (file != null && file.exists()) {
+      Properties props = new Properties();
       try (InputStream in = new FileInputStream(file)) {
         props.load(in);
       } catch (IOException e) {
         throw new IllegalStateException("Cannot load properties from " + file);
       }
+      setData(props);
     }
   }
 
   public Configuration() {
-    this.props = new Properties();
+    this.store = new TreeMap<>();
   }
 
   public Configuration(Properties props) {
-    this.props = props;
+    this();
+    setData(props);
+  }
+
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private void setData(Properties props) {
+    store.putAll((Map) props);
   }
 
   @Override
@@ -56,11 +67,12 @@ public class Configuration implements Map<String, String> {
 
   @Override
   public String get(Object key) {
-    return props.getProperty(key.toString());
+    return store.get(key.toString());
   }
 
   public String get(Object key, String defValue) {
-    return props.getProperty(key.toString(), defValue);
+    String value = get(key);
+    return value == null ? defValue : value;
   }
 
   public int getInt(String key) {
@@ -113,9 +125,9 @@ public class Configuration implements Map<String, String> {
 
   public Configuration set(String key, Object value) {
     if (value == null) {
-      props.remove(key);
+      store.remove(key);
     } else {
-      props.setProperty(key, value.toString());
+      store.put(key, value.toString());
     }
     return this;
   }
@@ -131,10 +143,10 @@ public class Configuration implements Map<String, String> {
       sub.set("", v);
     }
     
-    for (Object k : props.keySet()) {
+    for (Object k : store.keySet()) {
       String key = k.toString();
       if (key.startsWith(prefix)) {
-        sub.set(key.substring(prefix.length()), props.getProperty(key));
+        sub.set(key.substring(prefix.length()), store.get(key));
       }
     }
     return sub;
@@ -142,7 +154,7 @@ public class Configuration implements Map<String, String> {
 
   public Map<String, Configuration> partition() {
     Map<String, Configuration> partitions = new LinkedHashMap<>();
-    for (Object k : props.keySet()) {
+    for (Object k : store.keySet()) {
       String key = k.toString();
       int dot = key.indexOf('.');
       String id;
@@ -158,59 +170,59 @@ public class Configuration implements Map<String, String> {
       if (partition == null) {
         partitions.put(id, partition = new Configuration());
       }
-      partition.set(subKey, props.getProperty(key));
+      partition.set(subKey, store.get(key));
     }
     return partitions;
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   public Set<String> keySet() {
-    return (Set) props.keySet();
+    return (Set) store.keySet();
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   public Collection<String> values() {
-    return (Collection) props.values();
+    return (Collection) store.values();
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   public Set<Map.Entry<String, String>> entrySet() {
-    return (Set) props.entrySet();
+    return (Set) store.entrySet();
   }
 
   @Override
   public int size() {
-    return props.size();
+    return store.size();
   }
 
   @Override
   public boolean containsKey(Object key) {
-    return props.containsKey(key);
+    return store.containsKey(key);
   }
 
   @Override
   public boolean containsValue(Object value) {
-    return props.containsValue(value);
+    return store.containsValue(value);
   }
 
   @Override
   public String put(String key, String value) {
-    return (String) props.put(key, value);
+    return (String) store.put(key, value);
   }
 
   @Override
   public String remove(Object key) {
-    return (String) props.remove(key);
+    return (String) store.remove(key);
   }
 
   @Override
   public void putAll(Map<? extends String, ? extends String> m) {
-    props.putAll(m);
+    store.putAll(m);
   }
 
   @Override
   public void clear() {
-    props.clear();
+    store.clear();
   }
 
 }
