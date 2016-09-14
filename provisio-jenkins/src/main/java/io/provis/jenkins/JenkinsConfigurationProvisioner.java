@@ -58,13 +58,12 @@ public class JenkinsConfigurationProvisioner extends SimpleProvisioner {
     ClassWorld cw = new ClassWorld();
     ClassRealm cr;
     try {
-      cr = cw.newRealm("configuration");
+      cr = cw.newRealm("configuration", getClass().getClassLoader());
     } catch (DuplicateRealmException e) {
       throw Throwables.propagate(e);
     }
 
     try {
-
       for (File jar : jars) {
         cr.addURL(jar.toURI().toURL());
       }

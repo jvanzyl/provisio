@@ -2,12 +2,14 @@
 <github-plugin-configuration>
   {{#github}}
   <configs>
+    {{#servers}}
     <github-server-config>
       <apiUrl>{{apiUrl}}</apiUrl>
       <manageHooks>{{manageHooks}}</manageHooks>
       <credentialsId>{{oauthTokenId}}</credentialsId>
       <clientCacheSize>20</clientCacheSize>
     </github-server-config>
+    {{/servers}}
   </configs>
   {{/github}}
 </github-plugin-configuration>

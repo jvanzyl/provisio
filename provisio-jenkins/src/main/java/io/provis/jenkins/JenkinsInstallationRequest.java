@@ -6,13 +6,13 @@ import io.provis.jenkins.config.Configuration;
 
 public class JenkinsInstallationRequest {
 
-  private final File targetDir;
+  private final File target;
   private Configuration configuration;
   private File webappOverrides;
   private File configOverrides;
 
-  public JenkinsInstallationRequest(File targetDir, Configuration configuration) {
-    this.targetDir = targetDir;
+  public JenkinsInstallationRequest(File target, Configuration configuration) {
+    this.target = target;
     this.configuration = configuration;
   }
 
@@ -20,8 +20,8 @@ public class JenkinsInstallationRequest {
     return configuration.get("jenkins.version");
   }
 
-  public File getTargetDir() {
-    return targetDir;
+  public File getTarget() {
+    return target;
   }
 
   public File getWebappOverrides() {

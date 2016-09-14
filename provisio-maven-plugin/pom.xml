@@ -34,6 +34,14 @@
       <artifactId>provisio-core</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.provis</groupId>
+      <artifactId>provisio-jenkins</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.takari</groupId>
+      <artifactId>takari-archiver</artifactId>
+    </dependency>
+    <dependency>
       <groupId>io.takari</groupId>
       <artifactId>incrementalbuild</artifactId>
       <version>${incrementalbuild.version}</version>
@@ -95,6 +103,11 @@
     <dependency>
       <groupId>org.eclipse.aether</groupId>
       <artifactId>aether-spi</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-impl</artifactId>
       <scope>provided</scope>
     </dependency>
     <!-- Test -->

@@ -13,7 +13,7 @@ import com.google.common.io.Files;
 import de.pdark.decentxml.Document;
 import de.pdark.decentxml.Element;
 import io.provis.jenkins.config.credentials.JenkinsCredentials;
-import io.provis.jenkins.config.git.GithubPluginConfig;
+import io.provis.jenkins.config.github.GithubPluginConfig;
 import io.provis.jenkins.config.templates.TemplateList;
 
 public class MasterConfigurationTest extends AbstractConfigTest {
@@ -35,11 +35,7 @@ public class MasterConfigurationTest extends AbstractConfigTest {
           .secretCredential("testCredential", "testSecret")
           .userCredential("usernamepassword", "username", "password"))
         .config(new GithubPluginConfig()
-          .webUrl("http://github.com")
-          .apiUrl("https://api.github.com")
-          .username("username")
-          .oauthTokenId("apiTokenId")
-          .oauthToken("oauthToken"))
+          .server("default", "http://github.com", "https://api.github.com", "username", "apiTokenId", "oauthToken", false))
         .templates(TemplateList.of(MasterConfigurationTest.class, "testConfig.txt")));
     
     File textConfig = h.assertExists("testConfig.txt");

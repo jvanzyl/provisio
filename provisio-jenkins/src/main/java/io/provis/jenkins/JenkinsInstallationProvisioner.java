@@ -14,16 +14,28 @@ import java.util.Properties;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 
+import org.apache.maven.model.Model;
+import org.apache.maven.repository.internal.ArtifactDescriptorReaderDelegate;
+import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.codehaus.plexus.util.FileUtils;
+import org.eclipse.aether.AbstractRepositoryListener;
+import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositoryException;
+import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.impl.ArtifactDescriptorReader;
+import org.eclipse.aether.internal.impl.SimpleLocalRepositoryManagerFactory;
+import org.eclipse.aether.repository.LocalRepository;
+import org.eclipse.aether.repository.NoLocalRepositoryManagerException;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.ArtifactDescriptorResult;
+import org.eclipse.aether.transfer.AbstractTransferListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.provis.Actions;
 import io.provis.MavenProvisioner;
 import io.provis.ProvisioningException;
-import io.provis.SimpleProvisioner;
 import io.provis.jenkins.JenkinsPluginsProvisioner.JenkinsPlugin;
 import io.provis.jenkins.JenkinsPluginsProvisioner.JenkinsPluginsRequest;
 import io.provis.jenkins.aether.Repository;
@@ -43,57 +55,73 @@ public class JenkinsInstallationProvisioner {
   private static final String DEFAULT_MAIN_CLASS = "io.provis.jenkins.launch.Jenkins";
   private static final String DEFAULT_PROCESS_NAME = "jenkins";
 
+  private ArtifactDescriptorReader descriptorReader;
   private RuntimeReader reader;
 
-  private ResolutionSystem resolution;
+  private RepositorySystem repositorySystem;
   private RepositorySystemSession session;
-  private MavenProvisioner provisioner;
+  private List<RemoteRepository> remoteRepos;
 
-  private File localRepository;
-  private String remoteRepository;
-
-  public JenkinsInstallationProvisioner() {
-    this(SimpleProvisioner.DEFAULT_LOCAL_REPO);
-  }
-
-  public JenkinsInstallationProvisioner(File localRepository) {
-    this(localRepository, null);
-  }
-
-  public JenkinsInstallationProvisioner(File localRepository, String remoteRepository) {
-    this.localRepository = localRepository;
-    this.remoteRepository = remoteRepository;
-
-    reader = new RuntimeReader(Actions.defaultActionDescriptors());
-
-    resolution = new ResolutionSystem(localRepository);
-    if (remoteRepository != null) {
+  public static JenkinsInstallationProvisioner create(File localRepository, String... remoteRepositories) {
+    ResolutionSystem resolution = new ResolutionSystem(localRepository);
+    for (String remoteRepository : remoteRepositories) {
       resolution.remoteRepository(remoteRepository);
     }
-    if (remoteRepository != null && !remoteRepository.equals(JENKINS_REPO)) {
-      resolution.remoteRepository(new Repository("jenkins", JENKINS_REPO));
-    }
-    session = resolution.repositorySystemSession();
-    provisioner = new MavenProvisioner(resolution.repositorySystem(), session, resolution.remoteRepositories());
+    resolution.remoteRepository(new Repository("jenkins-ci.org", JENKINS_REPO));
+    RepositorySystemSession session = newRepositorySystemSession(localRepository);
+    return new JenkinsInstallationProvisioner(resolution.repositorySystem(), session, resolution.remoteRepositories(), resolution.getDescriptorReader());
+  }
+
+  public static JenkinsInstallationProvisioner create(RepositorySystem repositorySystem, RepositorySystemSession existingSession, List<RemoteRepository> remoteRepos,
+    ArtifactDescriptorReader descriptorReader) {
+    RepositorySystemSession session = newRepositorySystemSession(existingSession.getLocalRepository().getBasedir());
+    return new JenkinsInstallationProvisioner(repositorySystem, session, remoteRepos, descriptorReader);
+  }
+
+  public JenkinsInstallationProvisioner(RepositorySystem repositorySystem, RepositorySystemSession session, List<RemoteRepository> remoteRepos, ArtifactDescriptorReader descriptorReader) {
+    this.repositorySystem = repositorySystem;
+    this.session = session;
+    this.remoteRepos = remoteRepos;
+    this.descriptorReader = descriptorReader;
+    reader = new RuntimeReader(Actions.defaultActionDescriptors());
   }
 
   public JenkinsInstallationResponse provision(JenkinsInstallationRequest req) throws Exception {
     Configuration conf = req.getConfiguration();
+
+    MavenProvisioner provisioner = createProvisioner(conf);
+
     Runtime runtime;
     try (InputStream in = getClass().getResourceAsStream("jenkins-provisio.xml")) {
       runtime = reader.read(in, conf);
     }
-    File installDir = new File(req.getTargetDir(), "jenkins-installation");
-    File workDir = new File(req.getTargetDir(), "jenkins-work");
+    File installDir = new File(req.getTarget(), "jenkins-installation");
+    File workDir = new File(req.getTarget(), "jenkins-work");
 
-    provisionRuntime(req, runtime, installDir);
-    MasterConfiguration mc = provisionMasterConfiguration(req, workDir);
+    provisionRuntime(provisioner, req, runtime, installDir);
+    MasterConfiguration mc = provisionMasterConfiguration(provisioner, req, workDir);
     updateEtc(req, mc, installDir);
 
     return new JenkinsInstallationResponse(installDir, workDir, mc);
   }
 
-  private void provisionRuntime(JenkinsInstallationRequest req, Runtime runtime, File dir) throws Exception {
+  private MavenProvisioner createProvisioner(Configuration conf) {
+    List<RemoteRepository> repos;
+    Configuration reposConf = conf.subset("remoteRepository");
+    if (reposConf.isEmpty()) {
+      repos = remoteRepos;
+    } else {
+      repos = new ArrayList<>();
+      for (Map.Entry<String, String> e : reposConf.entrySet()) {
+        repos.add(ResolutionSystem.createRepository(new Repository(e.getKey(), e.getValue())));
+      }
+      repos.addAll(remoteRepos);
+    }
+
+    return new MavenProvisioner(repositorySystem, session, repos);
+  }
+
+  private void provisionRuntime(MavenProvisioner provisioner, JenkinsInstallationRequest req, Runtime runtime, File dir) throws Exception {
 
     log.info("Provisioning jenkins runtime v" + req.getJenkinsVersion());
     ProvisioningRequest request = new ProvisioningRequest();
@@ -110,10 +138,10 @@ public class JenkinsInstallationProvisioner {
     provisioner.provision(request);
 
     log.info("Provisioning plugins");
-    provisionPlugins(req, dir);
+    provisionPlugins(provisioner, req, dir);
   }
 
-  private void provisionPlugins(JenkinsInstallationRequest req, File installDir) throws Exception {
+  private void provisionPlugins(MavenProvisioner provisioner, JenkinsInstallationRequest req, File installDir) throws Exception {
 
     Configuration pluginsConf = req.getConfiguration().subset("jenkins.plugins");
 
@@ -151,7 +179,7 @@ public class JenkinsInstallationProvisioner {
 
     if (!plugins.isEmpty()) {
       File output = new File(installDir, "plugins");
-      JenkinsPluginsProvisioner pp = new JenkinsPluginsProvisioner(resolution, session);
+      JenkinsPluginsProvisioner pp = new JenkinsPluginsProvisioner(provisioner, descriptorReader);
       try {
         pp.provision(new JenkinsPluginsRequest(req.getJenkinsVersion(), output, plugins, bundledPlugins));
       } catch (RepositoryException e) {
@@ -188,15 +216,19 @@ public class JenkinsInstallationProvisioner {
     return result;
   }
 
-  private MasterConfiguration provisionMasterConfiguration(JenkinsInstallationRequest req, File dir) throws IOException {
+  private MasterConfiguration provisionMasterConfiguration(MavenProvisioner provisioner, JenkinsInstallationRequest req, File dir) throws IOException {
     log.info("Provisioning configuration");
 
-    String remoteRepo = remoteRepository;
-    if (remoteRepo == null) {
-      remoteRepo = JenkinsConfigurationProvisioner.DEFAULT_REMOTE_REPO;
+    File localRepo = provisioner.getRepositorySystemSession().getLocalRepository().getBasedir();
+    String remoteRepoUrl;
+    if (provisioner.getRemoteRepositories().isEmpty()) {
+      remoteRepoUrl = JenkinsConfigurationProvisioner.DEFAULT_REMOTE_REPO;
+    } else {
+      RemoteRepository remoteRepo = provisioner.getRemoteRepositories().get(0);
+      remoteRepoUrl = remoteRepo.getUrl();
     }
 
-    JenkinsConfigurationProvisioner cp = new JenkinsConfigurationProvisioner(localRepository, remoteRepo);
+    JenkinsConfigurationProvisioner cp = new JenkinsConfigurationProvisioner(localRepo, remoteRepoUrl);
     return cp.provision(req.getConfiguration(), req.getConfigOverrides(), dir);
   }
 
@@ -228,6 +260,38 @@ public class JenkinsInstallationProvisioner {
         FileUtils.fileWrite(jvmConfig, sb.toString());
       }
     }
+  }
+
+  private static RepositorySystemSession newRepositorySystemSession(File localRepo) {
+    DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
+    // We are not concerned with checking the _remote.repositories files
+    try {
+      session.setLocalRepositoryManager(new SimpleLocalRepositoryManagerFactory().newInstance(session, new LocalRepository(localRepo)));
+    } catch (NoLocalRepositoryManagerException e) {
+      // This should never happen
+      throw new IllegalStateException(e);
+    }
+    // Don't follow remote repositories in POMs
+    session.setIgnoreArtifactDescriptorRepositories(true);
+    session.setTransferListener(new QuietTransferListener());
+    session.setRepositoryListener(new QuietRepositoryListener());
+    // resolve pom packaging
+    session.setConfigProperty(ArtifactDescriptorReaderDelegate.class.getName(), new ArtifactDescriptorReaderDelegate() {
+      @Override
+      public void populateResult(RepositorySystemSession session, ArtifactDescriptorResult result, Model model) {
+        super.populateResult(session, result, model);
+        result.getProperties().put("packaging", model.getPackaging());
+      }
+    });
+    return session;
+  }
+
+  // We're no looking to watch any output here but if we do, in fact, need to watch anything
+  // we can make simple changes to these no-op implementations
+  private static class QuietRepositoryListener extends AbstractRepositoryListener {
+  }
+
+  private static class QuietTransferListener extends AbstractTransferListener {
   }
 
 }

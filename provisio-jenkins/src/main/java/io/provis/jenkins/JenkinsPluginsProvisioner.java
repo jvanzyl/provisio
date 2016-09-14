@@ -17,6 +17,7 @@ import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.impl.ArtifactDescriptorReader;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
 import org.eclipse.aether.resolution.ArtifactDescriptorResult;
@@ -31,7 +32,6 @@ import com.google.common.collect.ImmutableSet;
 
 import io.provis.MavenProvisioner;
 import io.provis.ProvisioningException;
-import io.provis.jenkins.aether.ResolutionSystem;
 import io.provis.model.ArtifactSet;
 import io.provis.model.ProvisioArtifact;
 import io.provis.model.ProvisioningContext;
@@ -47,15 +47,13 @@ public class JenkinsPluginsProvisioner {
   private static final String OLD_GROUP_PREFIX = "org.jvnet.hudson.";
   public static final String DEFAULT_GROUP_ID = GROUP_PREFIX + "plugins";
 
-  private ResolutionSystem resolution;
-  private RepositorySystemSession session;
   private MavenProvisioner provisioner;
+  private ArtifactDescriptorReader descriptorReader;
   private VersionScheme versions;
 
-  public JenkinsPluginsProvisioner(ResolutionSystem resolution, RepositorySystemSession session) {
-    this.resolution = resolution;
-    this.session = session;
-    this.provisioner = new MavenProvisioner(resolution.repositorySystem(), session, resolution.remoteRepositories());;
+  public JenkinsPluginsProvisioner(MavenProvisioner provisioner, ArtifactDescriptorReader descriptorReader) {
+    this.provisioner = provisioner;
+    this.descriptorReader = descriptorReader;
     this.versions = new GenericVersionScheme();
   }
 
@@ -149,9 +147,9 @@ public class JenkinsPluginsProvisioner {
           String actualVersion = deph.plugin.art.getVersion();
 
           if (depVersion.equals(actualVersion)) {
-            log.info("{} {}:{}", indent, dep.key, depVersion);
+            log.debug("{} {}:{}", indent, dep.key, depVersion);
           } else {
-            log.info("{} {}:{} ({})", indent, dep.key, depVersion, actualVersion);
+            log.debug("{} {}:{} ({})", indent, dep.key, depVersion, actualVersion);
           }
           collect(ctx, deph, optional, result, mem, "   " + indent);
         }
@@ -229,12 +227,14 @@ public class JenkinsPluginsProvisioner {
     }
 
     boolean defaultGroup = art.getGroupId().startsWith(GROUP_PREFIX);
+    
+    RepositorySystemSession session = provisioner.getRepositorySystemSession();
 
-    ArtifactDescriptorRequest req = new ArtifactDescriptorRequest(art, resolution.remoteRepositories(), "provision");
+    ArtifactDescriptorRequest req = new ArtifactDescriptorRequest(art, provisioner.getRemoteRepositories(), "provision");
     ArtifactDescriptorException origEx = null;
     ArtifactDescriptorResult res = null;
     try {
-      res = resolution.getDescriptorReader().readArtifactDescriptor(session, req);
+      res = descriptorReader.readArtifactDescriptor(session, req);
     } catch (ArtifactDescriptorException e) {
       origEx = e;
     }
@@ -245,7 +245,7 @@ public class JenkinsPluginsProvisioner {
       Artifact oldArt = new DefaultArtifact(oldGroupId, art.getArtifactId(), art.getExtension(), art.getVersion());
       req.setArtifact(oldArt);
       try {
-        res = resolution.getDescriptorReader().readArtifactDescriptor(session, req);
+        res = descriptorReader.readArtifactDescriptor(session, req);
       } catch (ArtifactDescriptorException e2) {
         throw origEx;
       }

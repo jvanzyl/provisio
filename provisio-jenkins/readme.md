@@ -116,16 +116,32 @@ credentials.cred3.usersKey=true
 
 ### Github
 Configures [github plugin](https://wiki.jenkins-ci.org/display/JENKINS/GitHub+Plugin)
+
+Just enable default anonymous github.com api:
 ```
-github.webUrl=...
-github.apiUrl=...
+github = true
+```
+
+Configure oauth token based github server
+```
+github.default.apiUrl=https://api.github.com
 
 # these three will be used to add a github credential to credentials plugin
-github.oauthTokenId=<credentialId>
-github.oauthToken=<token>
-github.username=<user>
+github.default.oauthTokenId=<credentialId>
+github.default.oauthToken=<token>
+github.default.username=<user>
 
-github.manageHooks=true|false (default)
+github.default.manageHooks=true|false (default)
+```
+
+Configure multiple github servers
+```
+github.default.apiUrl=https://api.github.com
+github.default...
+...
+github.enterprise.apiUrl=https://foobar
+github.enterprise....
+...
 ```
 
 ### Github authentication
