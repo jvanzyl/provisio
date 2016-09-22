@@ -255,9 +255,12 @@ public class Configuration implements Map<String, String> {
 
       String prop = value.substring(idx + 2, endIdx);
       if (!visited.add(prop)) {
-        throw new IllegalStateException("Cyclic reference in `" + value + "`, chain: " + visited);
+        throw new IllegalStateException("Cyclic reference to `" + prop + "` in `" + value + "`, chain: " + visited);
       }
       sb.append(value, start, idx);
+      if(!map.containsKey(prop)) {
+        throw new IllegalStateException("Missing property `" + prop + "` in `" + value + "`");
+      }
       String propValue = map.get(prop);
       interpolate(map, sb, propValue, visited);
       visited.remove(prop);

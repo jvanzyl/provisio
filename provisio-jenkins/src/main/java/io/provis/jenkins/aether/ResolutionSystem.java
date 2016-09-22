@@ -37,6 +37,12 @@ public class ResolutionSystem {
   }
 
   public void remoteRepository(String remoteRepository) {
+    if (remoteRepository == null) {
+      return;
+    }
+    if (!remoteRepository.contains("//")) {
+      throw new IllegalStateException("Bad repository url: " + remoteRepository);
+    }
     remoteRepository(new Repository(remoteRepository.substring(0, remoteRepository.indexOf("//")), remoteRepository));
   }
 
