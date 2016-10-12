@@ -67,7 +67,10 @@ public class JenkinsInstallationProvisioner {
     for (String remoteRepository : remoteRepositories) {
       resolution.remoteRepository(remoteRepository);
     }
-    resolution.remoteRepository(new Repository("jenkins-ci.org", JENKINS_REPO));
+    // If no repositories are specified then add the jenkins repository by default
+    if (remoteRepositories.length == 0) {
+      resolution.remoteRepository(new Repository("jenkins-ci.org", JENKINS_REPO));
+    }
     RepositorySystemSession session = newRepositorySystemSession(localRepository);
     return new JenkinsInstallationProvisioner(resolution.repositorySystem(), session, resolution.remoteRepositories(), resolution.getDescriptorReader());
   }
