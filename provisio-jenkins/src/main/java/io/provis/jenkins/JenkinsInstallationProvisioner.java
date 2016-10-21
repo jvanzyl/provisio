@@ -99,11 +99,12 @@ public class JenkinsInstallationProvisioner {
       runtime = reader.read(in, conf);
     }
     File installDir = new File(req.getTarget(), "jenkins-installation");
-    File workDir = new File(req.getTarget(), "jenkins-work");
+    String jenkinsWorkDir = conf.get("jenkinsWorkDir");
+    File workDir = (null != jenkinsWorkDir ? new File(jenkinsWorkDir) : new File(req.getTarget(), "jenkins-work"));
 
     provisionRuntime(provisioner, req, runtime, installDir);
     MasterConfiguration mc = provisionMasterConfiguration(provisioner, req, workDir);
-    updateEtc(req, mc, installDir);
+    updateEtc(req, mc, installDir, workDir);
 
     return new JenkinsInstallationResponse(installDir, workDir, mc);
   }
@@ -235,7 +236,7 @@ public class JenkinsInstallationProvisioner {
     return cp.provision(req.getConfiguration(), req.getConfigOverrides(), dir);
   }
 
-  private void updateEtc(JenkinsInstallationRequest req, MasterConfiguration configuration, File dir) throws IOException {
+  private void updateEtc(JenkinsInstallationRequest req, MasterConfiguration configuration, File dir, File workDir) throws IOException {
     File etcDir = new File(dir, "etc");
     File config = new File(etcDir, "config.properties");
     File jvmConfig = new File(etcDir, "jvm.config");
@@ -250,21 +251,51 @@ public class JenkinsInstallationProvisioner {
       props.store(sw, null);
       FileUtils.fileWrite(config, sw.toString());
     }
-
+    
     {
+      StringBuilder sb = getJvmConfigWithWorkDir(jvmConfig, workDir);
       Configuration system = req.getConfiguration().subset("system");
       if (!system.isEmpty()) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(FileUtils.fileRead(jvmConfig));
-
         for (String v : system.values()) {
           sb.append(v).append("\n");
         }
-        FileUtils.fileWrite(jvmConfig, sb.toString());
       }
+      FileUtils.fileWrite(jvmConfig, sb.toString());
     }
   }
 
+  private StringBuilder getJvmConfigWithWorkDir(File jvmConfig, File workDir) throws IOException {
+    StringBuilder sb = new StringBuilder();
+    String[] jvmConfigValues = FileUtils.fileRead(jvmConfig).split("\n");
+
+    boolean addedJenkinsHome = false, addedJenkinsPlugin = false;
+
+    final String jenkinsHomeKey = "-DJENKINS_HOME=", jenkinsPluginKey = "-Dhudson.PluginManager.workDir=",
+      jenkinsHome = jenkinsHomeKey + workDir.getAbsolutePath(),
+      jenkinsPlugin = jenkinsPluginKey + (new File(workDir, "plugins")).getAbsolutePath();
+
+    for (String jvmConfigValue : jvmConfigValues) {
+      log.info("jvmConfigValue: " + jvmConfigValue);
+      if (!addedJenkinsHome && jvmConfigValue.startsWith(jenkinsHomeKey)) {
+        jvmConfigValue = jenkinsHome;
+        addedJenkinsHome = true;
+      } else if (!addedJenkinsPlugin && jvmConfigValue.startsWith(jenkinsPluginKey)) {
+        jvmConfigValue = jenkinsPlugin;
+        addedJenkinsPlugin = true;
+      }
+      sb.append(jvmConfigValue).append("\n");
+    }
+
+    if (!addedJenkinsHome) {
+      sb.append(jenkinsHome).append("\n");
+    }
+
+    if (!addedJenkinsPlugin) {
+      sb.append(jenkinsPlugin).append("\n");
+    }
+    return sb;
+  }
+  
   private static RepositorySystemSession newRepositorySystemSession(File localRepo) {
     DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
     // We are not concerned with checking the _remote.repositories files
