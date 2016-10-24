@@ -99,9 +99,19 @@ public class JenkinsInstallationProvisioner {
       runtime = reader.read(in, conf);
     }
     File installDir = new File(req.getTarget(), "jenkins-installation");
+    
     String jenkinsWorkDir = conf.get("jenkinsWorkDir");
-    File workDir = (null != jenkinsWorkDir ? new File(jenkinsWorkDir) : new File(req.getTarget(), "jenkins-work"));
-
+    File workDir;
+    if(null != jenkinsWorkDir){
+      workDir = new File(jenkinsWorkDir);
+      //Check if work directory path is relative
+      if(!workDir.isAbsolute()){
+        workDir = new File(req.getTarget(), jenkinsWorkDir);
+      }
+    }else{
+      workDir = new File(req.getTarget(), "jenkins-work");
+    }
+    
     provisionRuntime(provisioner, req, runtime, installDir);
     MasterConfiguration mc = provisionMasterConfiguration(provisioner, req, workDir);
     updateEtc(req, mc, installDir, workDir);
@@ -265,34 +275,14 @@ public class JenkinsInstallationProvisioner {
   }
 
   private StringBuilder getJvmConfigWithWorkDir(File jvmConfig, File workDir) throws IOException {
-    StringBuilder sb = new StringBuilder();
-    String[] jvmConfigValues = FileUtils.fileRead(jvmConfig).split("\n");
+    StringBuilder sb = new StringBuilder(FileUtils.fileRead(jvmConfig));
 
-    boolean addedJenkinsHome = false, addedJenkinsPlugin = false;
+    final String jenkinsHomeDir = "-DJENKINS_HOME=" + workDir.getAbsolutePath(),
+      jenkinsPluginDir = "-Dhudson.PluginManager.workDir=" + (new File(workDir, "plugins")).getAbsolutePath();
 
-    final String jenkinsHomeKey = "-DJENKINS_HOME=", jenkinsPluginKey = "-Dhudson.PluginManager.workDir=",
-      jenkinsHome = jenkinsHomeKey + workDir.getAbsolutePath(),
-      jenkinsPlugin = jenkinsPluginKey + (new File(workDir, "plugins")).getAbsolutePath();
+    sb.append(jenkinsHomeDir).append("\n");
+    sb.append(jenkinsPluginDir).append("\n");
 
-    for (String jvmConfigValue : jvmConfigValues) {
-      log.info("jvmConfigValue: " + jvmConfigValue);
-      if (!addedJenkinsHome && jvmConfigValue.startsWith(jenkinsHomeKey)) {
-        jvmConfigValue = jenkinsHome;
-        addedJenkinsHome = true;
-      } else if (!addedJenkinsPlugin && jvmConfigValue.startsWith(jenkinsPluginKey)) {
-        jvmConfigValue = jenkinsPlugin;
-        addedJenkinsPlugin = true;
-      }
-      sb.append(jvmConfigValue).append("\n");
-    }
-
-    if (!addedJenkinsHome) {
-      sb.append(jenkinsHome).append("\n");
-    }
-
-    if (!addedJenkinsPlugin) {
-      sb.append(jenkinsPlugin).append("\n");
-    }
     return sb;
   }
   
