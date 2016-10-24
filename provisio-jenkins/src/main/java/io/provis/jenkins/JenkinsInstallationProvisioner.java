@@ -102,13 +102,13 @@ public class JenkinsInstallationProvisioner {
     
     String jenkinsWorkDir = conf.get("jenkinsWorkDir");
     File workDir;
-    if(null != jenkinsWorkDir){
+    if (null != jenkinsWorkDir) {
       workDir = new File(jenkinsWorkDir);
       //Check if work directory path is relative
-      if(!workDir.isAbsolute()){
+      if (!workDir.isAbsolute()) {
         workDir = new File(req.getTarget(), jenkinsWorkDir);
       }
-    }else{
+    } else {
       workDir = new File(req.getTarget(), "jenkins-work");
     }
     
