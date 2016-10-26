@@ -101,20 +101,22 @@ public class JenkinsInstallationProvisioner {
     File installDir = new File(req.getTarget(), "jenkins-installation");
     
     String jenkinsWorkDir = conf.get("jenkinsWorkDir");
-    File workDir;
-    if (null != jenkinsWorkDir) {
-      workDir = new File(jenkinsWorkDir);
-      //Check if work directory path is relative
-      if (!workDir.isAbsolute()) {
-        workDir = new File(req.getTarget(), jenkinsWorkDir);
-      }
-    } else {
-      workDir = new File(req.getTarget(), "jenkins-work");
+    if (null == jenkinsWorkDir) {
+      //Default work directory
+      jenkinsWorkDir = "jenkins-work";
+    }
+
+    String workDirPathForJvmConfig = jenkinsWorkDir;
+    File workDir = new File(jenkinsWorkDir);
+    //Check if work directory path is relative
+    if (!workDir.isAbsolute()) {
+      workDir = new File(req.getTarget(), jenkinsWorkDir);
+      workDirPathForJvmConfig = "../" + jenkinsWorkDir;
     }
     
     provisionRuntime(provisioner, req, runtime, installDir);
     MasterConfiguration mc = provisionMasterConfiguration(provisioner, req, workDir);
-    updateEtc(req, mc, installDir, workDir);
+    updateEtc(req, mc, installDir, workDirPathForJvmConfig);
 
     return new JenkinsInstallationResponse(installDir, workDir, mc);
   }
@@ -246,7 +248,7 @@ public class JenkinsInstallationProvisioner {
     return cp.provision(req.getConfiguration(), req.getConfigOverrides(), dir);
   }
 
-  private void updateEtc(JenkinsInstallationRequest req, MasterConfiguration configuration, File dir, File workDir) throws IOException {
+  private void updateEtc(JenkinsInstallationRequest req, MasterConfiguration configuration, File dir, String workDirPathForJvmConfig) throws IOException {
     File etcDir = new File(dir, "etc");
     File config = new File(etcDir, "config.properties");
     File jvmConfig = new File(etcDir, "jvm.config");
@@ -263,7 +265,7 @@ public class JenkinsInstallationProvisioner {
     }
     
     {
-      StringBuilder sb = getJvmConfigWithWorkDir(jvmConfig, workDir);
+      StringBuilder sb = getJvmConfigWithWorkDir(jvmConfig, workDirPathForJvmConfig);
       Configuration system = req.getConfiguration().subset("system");
       if (!system.isEmpty()) {
         for (String v : system.values()) {
@@ -274,11 +276,11 @@ public class JenkinsInstallationProvisioner {
     }
   }
 
-  private StringBuilder getJvmConfigWithWorkDir(File jvmConfig, File workDir) throws IOException {
+  private StringBuilder getJvmConfigWithWorkDir(File jvmConfig, String workDirPathForJvmConfig) throws IOException {
     StringBuilder sb = new StringBuilder(FileUtils.fileRead(jvmConfig));
 
-    final String jenkinsHomeDir = "-DJENKINS_HOME=" + workDir.getAbsolutePath(),
-      jenkinsPluginDir = "-Dhudson.PluginManager.workDir=" + (new File(workDir, "plugins")).getAbsolutePath();
+    final String jenkinsHomeDir = "-DJENKINS_HOME=" + workDirPathForJvmConfig,
+      jenkinsPluginDir = "-Dhudson.PluginManager.workDir=" + workDirPathForJvmConfig + "/" + "plugins";
 
     sb.append(jenkinsHomeDir).append("\n");
     sb.append(jenkinsPluginDir).append("\n");
