@@ -24,22 +24,12 @@ public class Configuration implements Map<String, String> {
 
   public Configuration(InputStream in) throws IOException {
     this();
-    Properties props = new Properties();
-    props.load(in);
-    setData(props);
+    load(in);
   }
 
   public Configuration(File file) {
     this();
-    if (file != null && file.exists()) {
-      Properties props = new Properties();
-      try (InputStream in = new FileInputStream(file)) {
-        props.load(in);
-      } catch (IOException e) {
-        throw new IllegalStateException("Cannot load properties from " + file);
-      }
-      setData(props);
-    }
+    load(file);
   }
 
   public Configuration(Properties props) {
@@ -58,6 +48,31 @@ public class Configuration implements Map<String, String> {
   @SuppressWarnings({"unchecked", "rawtypes"})
   private void setData(Properties props) {
     putAll((Map) props);
+  }
+
+  public void loadSystem() {
+    for (Map.Entry<String, String> e : System.getenv().entrySet()) {
+      set("env." + e.getKey(), e.getValue());
+    }
+    setData(System.getProperties());
+  }
+
+  public void load(InputStream in) throws IOException {
+    Properties props = new Properties();
+    props.load(in);
+    setData(props);
+  }
+
+  public void load(File file) {
+    if (file != null && file.exists()) {
+      Properties props = new Properties();
+      try (InputStream in = new FileInputStream(file)) {
+        props.load(in);
+      } catch (IOException e) {
+        throw new IllegalStateException("Cannot load properties from " + file);
+      }
+      setData(props);
+    }
   }
 
   @Override
@@ -258,7 +273,7 @@ public class Configuration implements Map<String, String> {
         throw new IllegalStateException("Cyclic reference to `" + prop + "` in `" + value + "`, chain: " + visited);
       }
       sb.append(value, start, idx);
-      if(!map.containsKey(prop)) {
+      if (!map.containsKey(prop)) {
         throw new IllegalStateException("Missing property `" + prop + "` in `" + value + "`");
       }
       String propValue = map.get(prop);

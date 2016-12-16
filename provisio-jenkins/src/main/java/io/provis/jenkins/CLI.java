@@ -15,16 +15,16 @@ import io.provis.jenkins.config.Configuration;
 public class CLI {
 
   private static final Logger log = LoggerFactory.getLogger(CLI.class);
-  
+
   @Option(name = "-l", metaVar = "localRepo", usage = "local repository")
   private File localRepo;
-  
+
   @Option(name = "-r", metaVar = "remoteRepo", usage = "remote repository")
   private String remoteRepo;
 
   @Option(name = "-t", metaVar = "templateDir", usage = "additional config templates")
   private File templates;
-  
+
   @Argument(index = 0, required = true, metaVar = "configFile", usage = "configuration properties file")
   private File configuration;
 
@@ -62,9 +62,13 @@ public class CLI {
     }
 
     log.info("Creating jenkins instance in " + outputDir.getAbsolutePath());
-    
+
+    Configuration conf = new Configuration();
+    conf.loadSystem();
+    conf.load(configuration);
+
     JenkinsInstallationProvisioner p = JenkinsInstallationProvisioner.create(localRepo, remoteRepo);
-    JenkinsInstallationRequest ctx = new JenkinsInstallationRequest(outputDir, new Configuration(configuration))
+    JenkinsInstallationRequest ctx = new JenkinsInstallationRequest(outputDir, conf)
       .configOverrides(templates);
     p.provision(ctx);
   }

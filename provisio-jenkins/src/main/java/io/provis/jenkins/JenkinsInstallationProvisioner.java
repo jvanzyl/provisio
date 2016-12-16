@@ -128,8 +128,14 @@ public class JenkinsInstallationProvisioner {
       repos = remoteRepos;
     } else {
       repos = new ArrayList<>();
-      for (Map.Entry<String, String> e : reposConf.entrySet()) {
-        repos.add(ResolutionSystem.createRepository(new Repository(e.getKey(), e.getValue())));
+      for (Map.Entry<String, Configuration> e : reposConf.partition().entrySet()) {
+        String id = e.getKey();
+        Configuration repoConf = e.getValue();
+        String url = repoConf.get("");
+        Repository repo = new Repository(id, url);
+        repo.setUsername(repoConf.get("username"));
+        repo.setPassword(repoConf.get("password"));
+        repos.add(ResolutionSystem.createRepository(repo));
       }
       repos.addAll(remoteRepos);
     }
