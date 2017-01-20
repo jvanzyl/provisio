@@ -1,6 +1,7 @@
 package io.provis.jenkins;
 
 import java.io.File;
+import java.util.Map;
 
 import io.provis.jenkins.config.Configuration;
 
@@ -10,6 +11,7 @@ public class JenkinsInstallationRequest {
   private Configuration configuration;
   private File webappOverrides;
   private File configOverrides;
+  private Map<String, String> managedVersions;
 
   public JenkinsInstallationRequest(File target, Configuration configuration) {
     this.target = target;
@@ -36,6 +38,10 @@ public class JenkinsInstallationRequest {
     return configuration;
   }
 
+  public Map<String, String> getManagedVersions() {
+    return managedVersions;
+  }
+
   public JenkinsInstallationRequest webappOverrides(File webappOverrides) {
     this.webappOverrides = webappOverrides;
     return this;
@@ -43,6 +49,11 @@ public class JenkinsInstallationRequest {
 
   public JenkinsInstallationRequest configOverrides(File configOverrides) {
     this.configOverrides = configOverrides;
+    return this;
+  }
+
+  public JenkinsInstallationRequest managedVersions(Map<String, String> managedVersions) {
+    this.managedVersions = managedVersions;
     return this;
   }
 

@@ -9,10 +9,13 @@ package io.tesla.maven.plugins.provisio;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -77,7 +80,7 @@ public class JenkinsProvisioningMojo extends AbstractMojo {
     for (File desc : descriptors) {
       String classifier;
       String name = project.getArtifactId() + "-" + project.getVersion();
-      if(descriptors.size() == 1) {
+      if (descriptors.size() == 1) {
         classifier = null;
       } else {
         classifier = desc.getName().substring(0, desc.getName().lastIndexOf('.'));
@@ -92,8 +95,17 @@ public class JenkinsProvisioningMojo extends AbstractMojo {
       conf.set("project.artifactId", project.getArtifactId());
       conf.set("project.version", project.getVersion());
 
+      // collect managed dependencies
+      Map<String, String> managedVersions = new HashMap<>();
+      if (project.getManagedVersionMap() != null) {
+        for (Artifact managed : project.getManagedVersionMap().values()) {
+          managedVersions.put(managed.getGroupId() + ":" + managed.getArtifactId(), managed.getVersion());
+        }
+      }
+
       JenkinsInstallationRequest req = new JenkinsInstallationRequest(output, conf)
-        .configOverrides(templateDirectory);
+        .configOverrides(templateDirectory)
+        .managedVersions(managedVersions);
       Archiver archiver = builder.posixLongFileMode(true).build();
 
       getLog().info("Bulding jenkins distro " + name);
@@ -104,13 +116,13 @@ public class JenkinsProvisioningMojo extends AbstractMojo {
       } catch (Exception e) {
         throw new MojoExecutionException("Cannot provision jenkins distro " + name, e);
       }
-      
-      if(classifier == null) {
+
+      if (classifier == null) {
         projectHelper.attachArtifact(project, "tar.gz", tgz);
       } else {
         projectHelper.attachArtifact(project, "tar.gz", classifier, tgz);
       }
-      
+
     }
   }
 

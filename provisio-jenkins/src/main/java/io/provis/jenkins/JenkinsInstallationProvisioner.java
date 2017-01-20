@@ -203,7 +203,7 @@ public class JenkinsInstallationProvisioner {
       File output = new File(installDir, "plugins");
       JenkinsPluginsProvisioner pp = new JenkinsPluginsProvisioner(provisioner, descriptorReader);
       try {
-        pp.provision(new JenkinsPluginsRequest(req.getJenkinsVersion(), output, plugins, bundledPlugins));
+        pp.provision(new JenkinsPluginsRequest(req.getJenkinsVersion(), output, plugins, bundledPlugins, req.getManagedVersions()));
       } catch (RepositoryException e) {
         throw new ProvisioningException("Unable to provision jenkins plugins", e);
       }

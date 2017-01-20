@@ -277,7 +277,11 @@ public class Configuration implements Map<String, String> {
         throw new IllegalStateException("Missing property `" + prop + "` in `" + value + "`");
       }
       String propValue = map.get(prop);
-      interpolate(map, sb, propValue, visited);
+      if (propValue == null) {
+        sb.append(value, idx, endIdx + 1);
+      } else {
+        interpolate(map, sb, propValue, visited);
+      }
       visited.remove(prop);
       start = endIdx + 1;
     }

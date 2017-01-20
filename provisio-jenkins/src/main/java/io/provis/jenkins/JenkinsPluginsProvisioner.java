@@ -64,7 +64,6 @@ public class JenkinsPluginsProvisioner {
       if (desc == null) {
         throw new ProvisioningException("Cannot find plugin " + p.getGroupId() + ":" + p.getArtifactId() + ":" + p.getVersion());
       }
-
       ctx.setPlugin(desc.key, new PluginHolder(desc, p));
     }
 
@@ -82,7 +81,7 @@ public class JenkinsPluginsProvisioner {
       log.info(" * {}:{}", h.plugin.key, h.plugin.art.getVersion());
       collect(ctx, h, h.pinned.isIncludeOptional(), included, mem, "   ->");
     }
-
+    
     // collect included plugins
     req.getTargetDir().mkdirs();
     ArtifactSet arts = new ArtifactSet();
@@ -103,6 +102,14 @@ public class JenkinsPluginsProvisioner {
       if (compareVersions(p.jenkinsVersion, req.getJenkinsVersion()) > 0) {
         ctx.error("Plugin %s:%s requires jenkins version %s, which is less than the provisioned %s",
           p.art.getArtifactId(), p.art.getVersion(), p.jenkinsVersion, req.getJenkinsVersion());
+      }
+      
+      // check that plugin versions are not less than managed
+      if(req.getManagedVersions() != null) {
+        String managed = req.getManagedVersions().get(p.art.getGroupId() + ":" + p.art.getArtifactId());
+        if(managed != null && compareVersions(managed, p.art.getVersion()) > 0) {
+          ctx.error("Plugin %s:%s:%s version is less than managed %s", p.art.getGroupId(), p.art.getArtifactId(), p.art.getVersion(), managed);
+        }
       }
 
       ProvisioArtifact pa = new ProvisioArtifact(new DefaultArtifact(p.art.getGroupId(), p.art.getArtifactId(), "hpi", p.art.getVersion()));
@@ -227,7 +234,7 @@ public class JenkinsPluginsProvisioner {
     }
 
     boolean defaultGroup = art.getGroupId().startsWith(GROUP_PREFIX);
-    
+
     RepositorySystemSession session = provisioner.getRepositorySystemSession();
 
     ArtifactDescriptorRequest req = new ArtifactDescriptorRequest(art, provisioner.getRemoteRepositories(), "provision");
@@ -378,19 +385,24 @@ public class JenkinsPluginsProvisioner {
     .build();
 
   private class PluginContext {
-    private String jenkinsVersion;
-    private Map<String, String> bundledPlugins;
+    private final String jenkinsVersion;
+    private final Map<String, String> bundledPlugins;
+
     private Map<String, PluginHolder> plugins = new HashMap<>();
     private Map<String, PluginDesc> pluginCache = new HashMap<>();
     private List<String> errors = new ArrayList<>();
 
-    public PluginContext(String jenkinsVersion, Map<String, String> bundledPlugins) {
+    PluginContext(String jenkinsVersion, Map<String, String> bundledPlugins) {
       this.jenkinsVersion = jenkinsVersion;
       this.bundledPlugins = bundledPlugins;
     }
 
-    public String getJenkinsVersion() {
+    String getJenkinsVersion() {
       return jenkinsVersion;
+    }
+
+    String getBundledVersion(String key) {
+      return bundledPlugins.get(key);
     }
 
     void setPlugin(String key, PluginHolder plugin) {
@@ -399,10 +411,6 @@ public class JenkinsPluginsProvisioner {
 
     PluginHolder getPlugin(String key) {
       return plugins.get(key);
-    }
-
-    String getBundledVersion(String key) {
-      return bundledPlugins.get(key);
     }
 
     void error(String error, Object... args) {
@@ -513,12 +521,14 @@ public class JenkinsPluginsProvisioner {
     private File targetDir;
     private List<JenkinsPlugin> plugins;
     private Map<String, String> bundledPlugins;
+    private Map<String, String> managedVersions;
 
-    public JenkinsPluginsRequest(String jenkinsVersion, File targetDir, List<JenkinsPlugin> plugins, Map<String, String> bundledPlugins) {
+    public JenkinsPluginsRequest(String jenkinsVersion, File targetDir, List<JenkinsPlugin> plugins, Map<String, String> bundledPlugins, Map<String, String> managedVersions) {
       this.jenkinsVersion = jenkinsVersion;
       this.targetDir = targetDir;
       this.plugins = plugins;
       this.bundledPlugins = bundledPlugins;
+      this.managedVersions = managedVersions;
     }
 
     public String getJenkinsVersion() {
@@ -535,6 +545,10 @@ public class JenkinsPluginsProvisioner {
 
     public Map<String, String> getBundledPlugins() {
       return bundledPlugins;
+    }
+
+    public Map<String, String> getManagedVersions() {
+      return managedVersions;
     }
   }
 
