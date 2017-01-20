@@ -23,6 +23,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 
 import de.pdark.decentxml.XMLUtils;
+import io.provis.jenkins.config.templates.NoProcessTemplateSource;
 import io.provis.jenkins.config.templates.TemplateSource;
 
 public class TemplateProcessor {
@@ -68,9 +69,14 @@ public class TemplateProcessor {
       // otherwise we'll use the templateName as the outputName
       target = new File(outputDirectory, source.getName());
     }
+    target.getParentFile().mkdirs();
 
     try (OutputStream out = new FileOutputStream(target)) {
-      source.process((i, o) -> process(source, contexts, i, o), out);
+      if(source instanceof NoProcessTemplateSource) {
+        source.process(out);
+      } else {
+        source.process((i, o) -> process(source, contexts, i, o), out);
+      }
     }
   }
 

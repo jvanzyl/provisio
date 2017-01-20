@@ -33,6 +33,11 @@ public interface TemplateSource {
   default TemplateSource forName(String name) {
     return new RenamedTemplateSource(this, name);
   }
+  
+  default TemplateSource noProcess(String name) {
+    return new NoProcessTemplateSource(this, name);
+  }
+
 
   default TemplateSource withContext(Object[] ctx) {
     if (ctx == null || ctx.length == 0) {

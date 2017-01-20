@@ -174,6 +174,7 @@ public class TemplateList {
   }
 
   private static final String MERGEXML_SUFFIX = "-merge.xml";
+  private static final String NOPROCESS_SUFFIX = ".noprocess";
 
   public static TemplateList combined(List<TemplateList> lists) {
     Map<String, TemplateSource> map = new LinkedHashMap<>();
@@ -187,6 +188,11 @@ public class TemplateList {
           key = key.substring(0, key.length() - MERGEXML_SUFFIX.length()) + ".xml";
           TemplateSource base = map.get(key);
           s = XmlMergeTemplateSource.merge(key, base, s);
+        }
+        
+        if (key.endsWith(NOPROCESS_SUFFIX)) {
+          key = key.substring(0, key.length() - NOPROCESS_SUFFIX.length());
+          s = s.noProcess(key);
         }
 
         map.put(key, s);
