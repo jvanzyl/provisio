@@ -24,18 +24,22 @@ public class MavenInvokerTest extends InjectedTest {
   @Named("${basedir}/target/maven")
   private File mavenHome;
 
+  @Inject
+  @Named("${basedir}")
+  private File basedir;
+
   @Test
   public void testMavenExecution() throws Exception {
-
     FileUtils.deleteDirectory(mavenHome.getAbsolutePath());
-
+    File sourceProject = new File(basedir, "src/test/projects/maven");
+    File targetProject = new File(basedir, "target/projects/maven");
+    FileUtils.deleteDirectory(targetProject);
+    FileUtils.copyDirectoryStructure(sourceProject, targetProject);
     provisioner.provision("3.0.3", mavenHome);
-
     MavenRequest request = new MavenRequest()
       .setMavenHome(mavenHome)
-      .addGoals("validate")
-      .setWorkDir(System.getProperty("user.dir"));
-
+      .addGoals("clean", "install")
+      .setWorkDir(targetProject);
     MavenResult result = maven.invoke(request);
     assertFalse(result.hasErrors());
   }
