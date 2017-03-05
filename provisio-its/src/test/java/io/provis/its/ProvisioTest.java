@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
+import java.util.Properties;
 
 import org.codehaus.plexus.util.FileUtils;
 import org.junit.Before;
@@ -46,7 +48,7 @@ public class ProvisioTest {
     resolutionSystem = new ResolutionSystem(localRepository);
     if (remoteRepositories.length > 0) {
       for (String remoteRepository : remoteRepositories) {
-        resolutionSystem.remoteRepository(remoteRepository);        
+        resolutionSystem.remoteRepository(remoteRepository);
       }
     } else {
       resolutionSystem.remoteRepository("https://repo1.maven.org/maven2");
@@ -106,6 +108,18 @@ public class ProvisioTest {
     assertFileDoesntExists(result, "lib/plexus-utils-3.0.13.jar");
   }
 
+  @Test
+  public void validateUnpackWithStandardFiltering() throws Exception {
+    // Filtering resources with ${variable} embedded
+    String name = "it-0008";
+    deleteOutputDirectory(name);
+    ProvisioningResult result = provision(name);
+    assertFileExists(result, "bin/launcher.properties");
+    Properties properties = properties(result, "bin/launcher.properties");
+    assertEquals("com.facebook.presto.server.PrestoServer", properties.get("main-class"));
+    assertEquals("presto-server", properties.get("process-name"));
+  }
+
   protected ProvisioningRequest provisioningRequest(String name) throws Exception {
     File projectBasedir = runtimeProject(name);
     File descriptor = new File(projectBasedir, "provisio.xml");
@@ -113,7 +127,18 @@ public class ProvisioTest {
     ProvisioningRequest request = new ProvisioningRequest();
     request.setOutputDirectory(outputDirectory);
     request.setRuntimeDescriptor(parseDescriptor(descriptor));
-    request.setVariables(ImmutableMap.of("basedir", basedir.getAbsolutePath()));
+    // If there is a provisio.properties file for inserting values use it
+    File propertiesFile = new File(projectBasedir, "provisio.properties");
+    Map<String, String> provisioProperties = Maps.newHashMap();
+    if (propertiesFile.exists()) {
+      Properties properties = new Properties();
+      try (InputStream is = new FileInputStream(propertiesFile)) {
+        properties.load(is);
+        provisioProperties.putAll(Maps.fromProperties(properties));
+      }
+    }
+    provisioProperties.put("basedir", basedir.getAbsolutePath());
+    request.setVariables(provisioProperties);
     return request;
   }
 
@@ -178,6 +203,15 @@ public class ProvisioTest {
   //
   // Helper methods for tests
   //
+  protected Properties properties(ProvisioningResult result, String name) throws IOException {
+    File propertiesFile = new File(result.getOutputDirectory(), name);
+    Properties properties = new Properties();
+    try (InputStream is = new FileInputStream(propertiesFile)) {
+      properties.load(is);
+    }
+    return properties;
+  }
+
   protected final File getBasedir() {
     return basedir;
   }
@@ -229,11 +263,5 @@ public class ProvisioTest {
 
   protected final File runtimeProject(String name) {
     return new File(getBasedir(), String.format("src/test/runtimes/%s", name));
-  }
-
-  protected void XassertFileMode(File outputDirectory, String string, String expectedUnix) {
-    File f = new File(outputDirectory, string);
-    String unix = FileMode.toUnix(FileMode.getFileMode(f));
-    assertEquals(expectedUnix, unix);
   }
 }
