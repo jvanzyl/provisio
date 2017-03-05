@@ -3,7 +3,8 @@
   the accompanying materials are made available under the terms of the Eclipse 
   Public License v1.0 which accompanies this distribution, and is available 
   at http://www.eclipse.org/legal/epl-v10.html -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
 
@@ -43,7 +44,7 @@
     <surefire.runOrder>alphabetical</surefire.runOrder>
     <surefire.mem>-Xmx256m</surefire.mem>
     <mavenVersion>3.3.3</mavenVersion>
-    <takariArchiverVersion>0.1.17</takariArchiverVersion>
+    <takariArchiverVersion>0.1.18-SNAPSHOT</takariArchiverVersion>
     <aetherVersion>1.0.2.v20150114</aetherVersion>
     <takari.javaSourceVersion>1.8</takari.javaSourceVersion>
     <takari.lifecycleVersion>1.11.12</takari.lifecycleVersion>
@@ -83,6 +84,11 @@
       <dependency>
         <groupId>io.provis</groupId>
         <artifactId>provisio-model</artifactId>
+        <version>0.1.47-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>io.provis</groupId>
+        <artifactId>provisio-maven</artifactId>
         <version>0.1.47-SNAPSHOT</version>
       </dependency>
       <dependency>
@@ -136,6 +142,13 @@
         <artifactId>org.eclipse.sisu.inject</artifactId>
         <version>0.3.1</version>
       </dependency>
+      <!-- Mustache -->
+      <dependency>
+        <groupId>com.github.spullara.mustache.java</groupId>
+        <artifactId>compiler</artifactId>
+        <version>0.9.2</version>
+      </dependency>
+      <!-- Testing -->
       <dependency>
         <groupId>org.eclipse.sisu</groupId>
         <artifactId>org.eclipse.sisu.inject.tests</artifactId>

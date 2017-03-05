@@ -1,0 +1,8 @@
+<runtime>
+  <!-- Launcher -->
+  <artifactSet to="/">
+    <artifact id="io.takari.provisio.its:it-0020:0.0.1-SNAPSHOT">
+      <unpack useRoot="true" mustache="true" />
+    </artifact>
+  </artifactSet>
+</runtime>

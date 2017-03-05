@@ -40,7 +40,7 @@ public class Actions {
       @Override
       public String[] attributes() {
         return new String[] {
-            "filter", "includes", "excludes", "flatten", "useRoot"
+            "filter", "mustache", "includes", "excludes", "flatten", "useRoot"
         };
       }
     });

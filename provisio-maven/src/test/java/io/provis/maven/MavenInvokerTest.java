@@ -1,13 +1,15 @@
 package io.provis.maven;
 
-import java.io.File;
-
-import javax.inject.Inject;
-import javax.inject.Named;
+import static org.junit.Assert.assertFalse;
 
 import org.codehaus.plexus.util.FileUtils;
 import org.eclipse.sisu.launch.InjectedTest;
 import org.junit.Test;
+
+import java.io.File;
+
+import javax.inject.Inject;
+import javax.inject.Named;
 
 public class MavenInvokerTest extends InjectedTest {
 
@@ -16,7 +18,7 @@ public class MavenInvokerTest extends InjectedTest {
   private MavenInvoker maven;
 
   @Inject
-  private MavenProvisioner provisioner;
+  private MavenInstallationProvisioner provisioner;
 
   @Inject
   @Named("${basedir}/target/maven")
@@ -35,5 +37,6 @@ public class MavenInvokerTest extends InjectedTest {
       .setWorkDir(System.getProperty("user.dir"));
 
     MavenResult result = maven.invoke(request);
+    assertFalse(result.hasErrors());
   }
 }

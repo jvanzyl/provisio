@@ -7,27 +7,19 @@
  */
 package io.provis.action.artifact;
 
+import org.codehaus.plexus.util.StringUtils;
+
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.List;
-import java.util.Map;
 
 import javax.inject.Named;
 
-import org.codehaus.plexus.util.StringUtils;
-
-import com.google.common.base.Splitter;
-import com.google.common.io.ByteStreams;
-
+import io.provis.action.artifact.filter.MustacheFilteringProcessor;
+import io.provis.action.artifact.filter.StandardFilteringProcessor;
 import io.provis.model.ProvisioArtifact;
 import io.provis.model.ProvisioningAction;
 import io.provis.model.ProvisioningContext;
-import io.provis.model.io.InterpolatingInputStream;
-import io.tesla.proviso.archive.Selector;
 import io.tesla.proviso.archive.UnArchiver;
-import io.tesla.proviso.archive.UnarchivingEntryProcessor;
 
 /**
  * The unpack is an operation that results in any number of artifacts and resources being contributed to the runtime. The archive to be unpacked can
@@ -43,11 +35,9 @@ public class UnpackAction implements ProvisioningAction {
   private boolean useRoot;
   private boolean flatten;
   private boolean filter;
-  private String filterIncludes;
+  private boolean mustache;
   private ProvisioArtifact artifact;
   private File outputDirectory;
-
-  private static final Splitter splitter = Splitter.on(',').trimResults().omitEmptyStrings();
 
   @Override
   public void execute(ProvisioningContext context) {
@@ -58,17 +48,15 @@ public class UnpackAction implements ProvisioningAction {
     try {
       UnArchiver unarchiver = UnArchiver.builder()
         .includes(split(includes))
-        .excludes(split(excludes)) 
+        .excludes(split(excludes))
         .useRoot(useRoot)
-        .flatten(flatten)        
+        .flatten(flatten)
         .build();
 
       if (filter) {
-        if (filterIncludes != null) {
-          unarchiver.unarchive(archive, outputDirectory, new SelectiveFilteringProcessor(splitter.splitToList(includes), null, context.getVariables()));
-        } else {
-          unarchiver.unarchive(archive, outputDirectory, new FilteringProcessor(context.getVariables()));
-        }
+        unarchiver.unarchive(archive, outputDirectory, new StandardFilteringProcessor(context.getVariables()));
+      } else if (mustache) {
+        unarchiver.unarchive(archive, outputDirectory, new MustacheFilteringProcessor(context.getVariables()));
       } else {
         unarchiver.unarchive(archive, outputDirectory);
       }
@@ -140,48 +128,11 @@ public class UnpackAction implements ProvisioningAction {
     this.filter = filter;
   }
 
-  class SelectiveFilteringProcessor implements UnarchivingEntryProcessor {
-
-    Selector selector;
-    Map<String, String> variables;
-
-    SelectiveFilteringProcessor(List<String> includes, List<String> excludes, Map<String, String> variables) {
-      this.variables = variables;
-      this.selector = new Selector(includes, excludes);
-    }
-
-    @Override
-    public String processName(String name) {
-      return name;
-    }
-
-    @Override
-    public void processStream(String entryName, InputStream inputStream, OutputStream outputStream) throws IOException {
-      if (selector.include(entryName)) {
-        ByteStreams.copy(new InterpolatingInputStream(inputStream, variables), outputStream);
-      } else {
-        ByteStreams.copy(inputStream, outputStream);
-      }
-    }
+  public boolean isMustache() {
+    return mustache;
   }
 
-  class FilteringProcessor implements UnarchivingEntryProcessor {
-
-    Selector selector;
-    Map<String, String> variables;
-
-    FilteringProcessor(Map<String, String> variables) {
-      this.variables = variables;
-    }
-
-    @Override
-    public String processName(String name) {
-      return name;
-    }
-
-    @Override
-    public void processStream(String entryName, InputStream inputStream, OutputStream outputStream) throws IOException {
-      ByteStreams.copy(new InterpolatingInputStream(inputStream, variables), outputStream);
-    }
+  public void setMustache(boolean mustache) {
+    this.mustache = mustache;
   }
 }

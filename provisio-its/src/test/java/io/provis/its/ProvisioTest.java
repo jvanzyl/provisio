@@ -4,6 +4,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+
+import org.codehaus.plexus.util.FileUtils;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -11,32 +18,31 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Properties;
 
-import org.codehaus.plexus.util.FileUtils;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-
 import io.provis.Actions;
 import io.provis.MavenProvisioner;
+import io.provis.maven.ForkedMavenInvoker;
+import io.provis.maven.MavenInstallationProvisioner;
+import io.provis.maven.MavenInvoker;
+import io.provis.maven.MavenRequest;
+import io.provis.maven.MavenResult;
 import io.provis.model.ProvisioningRequest;
 import io.provis.model.ProvisioningResult;
 import io.provis.model.Runtime;
 import io.provis.model.io.RuntimeReader;
 import io.tesla.proviso.archive.ArchiveValidator;
 import io.tesla.proviso.archive.ZipArchiveValidator;
-import io.tesla.proviso.archive.perms.FileMode;
 
 public class ProvisioTest {
 
   protected File basedir;
   protected MavenProvisioner provisioner;
   protected ResolutionSystem resolutionSystem;
-
+  protected File localRepository;
+  
   @Before
   public void prepare() {
     basedir = new File(new File("").getAbsolutePath());
+    localRepository = new File(basedir, "target/localRepository");
   }
 
   private ProvisioningResult provision(String name) throws Exception {
@@ -44,7 +50,8 @@ public class ProvisioTest {
   }
 
   private ProvisioningResult provision(String name, String... remoteRepositories) throws Exception {
-    File localRepository = new File(basedir, "target/localRepository");
+    //File localRepository = new File(basedir, "target/localRepository");
+    File localRepository = new File("/Users/jvanzyl/.m2/repository");
     resolutionSystem = new ResolutionSystem(localRepository);
     if (remoteRepositories.length > 0) {
       for (String remoteRepository : remoteRepositories) {
@@ -120,8 +127,23 @@ public class ProvisioTest {
     assertEquals("presto-server", properties.get("process-name"));
   }
 
+  @Test
+  public void validateUnpackWithMustacheFiltering() throws Exception {
+    // Filtering resources with {{variable}} embedded
+    String name = "it-0020";
+    deleteOutputDirectory(name);
+    ProvisioningResult result = provision(name);
+    assertFileExists(result, "bin/launcher.properties");
+    Properties properties = properties(result, "bin/launcher.properties");
+    assertEquals("com.facebook.presto.server.PrestoServer", properties.get("main-class"));
+    assertEquals("presto-server", properties.get("process-name"));
+  }
+  
+  
   protected ProvisioningRequest provisioningRequest(String name) throws Exception {
     File projectBasedir = runtimeProject(name);
+    // Check for prereq projects to run   
+    runMavenPrereqs(name);
     File descriptor = new File(projectBasedir, "provisio.xml");
     File outputDirectory = outputDirectory(name);
     ProvisioningRequest request = new ProvisioningRequest();
@@ -142,6 +164,26 @@ public class ProvisioTest {
     return request;
   }
 
+  protected void runMavenPrereqs(String name) throws Exception {    
+    File prereqSource = new File(basedir, "src/test/runtimes/" + name + "/prereq");
+    if(!prereqSource.exists()) {
+      return;
+    }
+    File prereqTarget = new File(basedir, "target/runtimes/" + name + "-prereq");
+    FileUtils.copyDirectoryStructure(prereqSource, prereqTarget);
+    File mavenHome = new File(basedir, "target/maven");
+    MavenInstallationProvisioner provisioner = new MavenInstallationProvisioner();
+    provisioner.provision("3.3.9", mavenHome);
+    MavenRequest request = new MavenRequest()
+      .setMavenHome(mavenHome)
+      .addGoals("clean", "install")
+      .setLocalRepo(localRepository)
+      .setWorkDir(prereqTarget);
+    MavenInvoker maven = new ForkedMavenInvoker();
+    MavenResult result = maven.invoke(request);
+    assertFalse(result.hasErrors());
+  }
+  
   public static Runtime parseDescriptor(File descriptor) throws Exception {
     RuntimeReader parser = new RuntimeReader(Actions.defaultActionDescriptors(), Maps.<String, String>newHashMap());
     try (InputStream is = new FileInputStream(descriptor)) {
