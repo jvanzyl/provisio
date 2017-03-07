@@ -21,6 +21,10 @@ public class FileSet {
     return to;
   }
 
+  public void setDirectory(String to) {
+    this.to = to;
+  }
+
   public List<File> getFiles() {
     if (files == null) {
       files = Lists.newArrayList();

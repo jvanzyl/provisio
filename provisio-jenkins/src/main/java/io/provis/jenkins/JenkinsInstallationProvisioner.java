@@ -42,6 +42,8 @@ import io.provis.jenkins.aether.Repository;
 import io.provis.jenkins.aether.ResolutionSystem;
 import io.provis.jenkins.config.Configuration;
 import io.provis.jenkins.config.MasterConfiguration;
+import io.provis.model.Directory;
+import io.provis.model.FileSet;
 import io.provis.model.ProvisioningRequest;
 import io.provis.model.Runtime;
 import io.provis.model.io.RuntimeReader;
@@ -98,8 +100,17 @@ public class JenkinsInstallationProvisioner {
     try (InputStream in = getClass().getResourceAsStream("jenkins-provisio.xml")) {
       runtime = reader.read(in, conf);
     }
+    if (req.getWebappOverrides() != null) {
+      Directory dir = new Directory();
+      dir.setPath(req.getWebappOverrides().getAbsolutePath());
+      FileSet fs = new FileSet();
+      fs.setDirectory("/jenkins");
+      fs.getDirectories().add(dir);
+      runtime.addFileSet(fs);
+    }
+
     File installDir = new File(req.getTarget(), "jenkins-installation");
-    
+
     String jenkinsWorkDir = conf.get("jenkinsWorkDir");
     if (null == jenkinsWorkDir) {
       //Default work directory
@@ -113,7 +124,7 @@ public class JenkinsInstallationProvisioner {
       workDir = new File(req.getTarget(), jenkinsWorkDir);
       workDirPathForJvmConfig = "../" + jenkinsWorkDir;
     }
-    
+
     provisionRuntime(provisioner, req, runtime, installDir);
     MasterConfiguration mc = provisionMasterConfiguration(provisioner, req, workDir);
     updateEtc(req, mc, installDir, workDirPathForJvmConfig);
@@ -269,7 +280,7 @@ public class JenkinsInstallationProvisioner {
       props.store(sw, null);
       FileUtils.fileWrite(config, sw.toString());
     }
-    
+
     {
       StringBuilder sb = getJvmConfigWithWorkDir(jvmConfig, workDirPathForJvmConfig);
       Configuration system = req.getConfiguration().subset("system");
@@ -293,7 +304,7 @@ public class JenkinsInstallationProvisioner {
 
     return sb;
   }
-  
+
   private static RepositorySystemSession newRepositorySystemSession(File localRepo) {
     DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
     // We are not concerned with checking the _remote.repositories files

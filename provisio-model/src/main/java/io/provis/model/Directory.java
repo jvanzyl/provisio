@@ -21,6 +21,10 @@ public class Directory {
     return path;
   }
 
+  public void setPath(String path) {
+    this.path = path;
+  }
+
   public List<String> getIncludes() {
     if (includes == null) {
       includes = Lists.newArrayList();

@@ -11,13 +11,21 @@ public class File {
 
   private String path;
   private String touch;
-  
+
   public String getPath() {
     return path;
   }
 
+  public void setPath(String path) {
+    this.path = path;
+  }
+
   public String getTouch() {
     return touch;
+  }
+
+  public void setTouch(String touch) {
+    this.touch = touch;
   }
 
   @Override

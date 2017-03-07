@@ -68,6 +68,9 @@ public class JenkinsProvisioningMojo extends AbstractMojo {
   @Parameter(required = false)
   private File templateDirectory;
 
+  @Parameter(required = false)
+  private File webappOverrides;
+
   @Parameter(defaultValue = "${session}")
   private MavenSession session;
 
@@ -105,6 +108,7 @@ public class JenkinsProvisioningMojo extends AbstractMojo {
 
       JenkinsInstallationRequest req = new JenkinsInstallationRequest(output, conf)
         .configOverrides(templateDirectory)
+        .webappOverrides(webappOverrides)
         .managedVersions(managedVersions);
       Archiver archiver = builder.posixLongFileMode(true).build();
 
