@@ -37,4 +37,9 @@ public class RenamedTemplateSource implements TemplateSource {
     return delegate.toString() + " -> " + name;
   }
 
+  @Override
+  public Object[] getContexts() {
+    return delegate.getContexts();
+  }
+
 }
