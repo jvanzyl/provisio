@@ -5,9 +5,8 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package io.tesla.maven.plugins.provisio;
+package io.tesla.maven.plugins.provisio.jenkins;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -19,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import io.provis.jenkins.crypto.ConfigCrypto;
 
 @Mojo(name = "gen-encryption-key", requiresProject = false, requiresDependencyCollection = ResolutionScope.NONE)
-public class GenerateEncryptionKeyMojo extends AbstractMojo {
+public class GenerateEncryptionKeyMojo extends AbstractJenkinsProvisioningMojo {
 
   protected final Logger logger = LoggerFactory.getLogger(getClass());
 

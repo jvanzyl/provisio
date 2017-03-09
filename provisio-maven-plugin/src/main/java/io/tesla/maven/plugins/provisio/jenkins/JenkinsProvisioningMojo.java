@@ -5,10 +5,9 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package io.tesla.maven.plugins.provisio;
+package io.tesla.maven.plugins.provisio.jenkins;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,31 +16,24 @@ import javax.inject.Inject;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.impl.ArtifactDescriptorReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.provis.jenkins.JenkinsInstallationProvisioner;
 import io.provis.jenkins.JenkinsInstallationRequest;
 import io.provis.jenkins.config.Configuration;
-import io.takari.incrementalbuild.Incremental;
 import io.tesla.proviso.archive.Archiver;
 import io.tesla.proviso.archive.Archiver.ArchiverBuilder;
 
 @Mojo(name = "provision-jenkins", defaultPhase = LifecyclePhase.PACKAGE)
-public class JenkinsProvisioningMojo extends AbstractMojo {
-
-  protected final Logger logger = LoggerFactory.getLogger(getClass());
+public class JenkinsProvisioningMojo extends AbstractJenkinsProvisioningMojo {
 
   @Inject
   private RepositorySystem repositorySystem;
@@ -52,24 +44,14 @@ public class JenkinsProvisioningMojo extends AbstractMojo {
   @Inject
   private ArtifactDescriptorReader descriptorReader;
 
-  @Parameter(defaultValue = "${project}")
-  @Incremental(configuration = Incremental.Configuration.ignore)
-  protected MavenProject project;
-
   @Parameter(defaultValue = "${repositorySystemSession}")
   private RepositorySystemSession repositorySystemSession;
 
   @Parameter(required = false, defaultValue = "true", property = "writeMasterKey")
   private boolean writeMasterKey;
 
-  @Parameter(required = false, property = "encryptionKey")
-  private String encryptionKey;
-
   @Parameter(defaultValue = "${project.build.directory}")
   private File target;
-
-  @Parameter(required = true, defaultValue = "${basedir}/src/main/provisio")
-  private File descriptorDirectory;
 
   @Parameter(required = false)
   private File templateDirectory;
@@ -98,13 +80,7 @@ public class JenkinsProvisioningMojo extends AbstractMojo {
       File output = new File(target, name);
       File tgz = new File(target, name + ".tar.gz");
 
-      Configuration conf = new Configuration(desc);
-      conf.putAll(project.getProperties());
-      conf.set("project.groupId", project.getGroupId());
-      conf.set("project.artifactId", project.getArtifactId());
-      conf.set("project.version", project.getVersion());
-
-      conf.decryptValues(encryptionKey);
+      Configuration conf = getConfig(desc);
 
       // collect managed dependencies
       Map<String, String> managedVersions = new HashMap<>();
@@ -137,16 +113,6 @@ public class JenkinsProvisioningMojo extends AbstractMojo {
       }
 
     }
-  }
-
-  private List<File> descriptors() {
-    List<File> descriptors = new ArrayList<>();
-    for (File f : descriptorDirectory.listFiles()) {
-      if (f.isFile() && f.getName().endsWith(".properties")) {
-        descriptors.add(f);
-      }
-    }
-    return descriptors;
   }
 
 }

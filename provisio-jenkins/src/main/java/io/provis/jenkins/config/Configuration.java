@@ -9,13 +9,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.function.Consumer;
 
 import io.provis.jenkins.crypto.ConfigCrypto;
@@ -60,20 +59,24 @@ public class Configuration implements Map<String, String> {
   }
 
   public void load(InputStream in) throws IOException {
-    Properties props = new Properties();
+    Properties props = new Properties() {
+      private static final long serialVersionUID = 1L;
+
+      @Override
+      public synchronized Object put(Object key, Object value) {
+        return Configuration.this.put(key.toString(), value.toString());
+      }
+    };
     props.load(in);
-    setData(props);
   }
 
   public void load(File file) {
     if (file != null && file.exists()) {
-      Properties props = new Properties();
       try (InputStream in = new FileInputStream(file)) {
-        props.load(in);
+        load(in);
       } catch (IOException e) {
         throw new IllegalStateException("Cannot load properties from " + file);
       }
-      setData(props);
     }
   }
 
@@ -236,7 +239,7 @@ public class Configuration implements Map<String, String> {
   }
 
   public Map<String, Configuration> partition() {
-    Map<String, Configuration> subs = new TreeMap<>();
+    Map<String, Configuration> subs = new LinkedHashMap<>();
     for (String key : keySet()) {
       int dot = key.indexOf('.');
       String id;
@@ -333,7 +336,7 @@ public class Configuration implements Map<String, String> {
     MapStore map();
   }
 
-  private static class MapStore extends TreeMap<String, String> implements Store {
+  private static class MapStore extends LinkedHashMap<String, String> implements Store {
     private static final long serialVersionUID = 1L;
 
     @Override
@@ -397,7 +400,7 @@ public class Configuration implements Map<String, String> {
 
     @Override
     public Set<String> keySet() {
-      Set<String> keys = new TreeSet<>();
+      Set<String> keys = new LinkedHashSet<>();
       if (map.containsKey(prefix)) {
         keys.add("");
       }
