@@ -13,6 +13,8 @@ import java.util.Base64;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.commons.codec.binary.Hex;
+
 import com.google.common.io.Files;
 
 import de.pdark.decentxml.Document;
@@ -37,10 +39,10 @@ public class ConfigTestHelper {
 
   private byte[] getSecretKey() throws Exception {
     if (secretKey == null) {
-      if(masterKey == null) {
+      if (masterKey == null) {
         throw new IllegalStateException("No master key provided");
       }
-      
+
       byte[] masterHash = hash(masterKey.getBytes("UTF-8"));
       File secretKeyFile = assertExists("secrets/hudson.util.Secret");
       byte[] secretKeyEnc = Files.toByteArray(secretKeyFile);
@@ -58,12 +60,23 @@ public class ConfigTestHelper {
     return secretKey;
   }
 
+  public String getSecretKeyHex() throws Exception {
+    byte[] secretKey = getSecretKey();
+    byte[] actualKey = new byte[secretKey.length - 13];
+    System.arraycopy(secretKey, 0, actualKey, 0, actualKey.length);
+    return Hex.encodeHexString(actualKey);
+  }
+
+  public String getMasterKeyHex() {
+    return masterKey;
+  }
+
   public File assertExists(String file) {
     File f = new File(baseDirectory, file);
     assertTrue(file + " doesn't exist", f.isFile());
     return f;
   }
-  
+
   public Document asXml(String file) throws IOException {
     return XMLParser.parse(assertExists(file));
   }
@@ -73,6 +86,7 @@ public class ConfigTestHelper {
     assertNotNull(path + " does not exist", elem);
     return elem;
   }
+
   public void assertXmlAttribute(String expectedValue, Element e, String name) {
     assertEquals(expectedValue, e.getAttributeValue(name));
   }

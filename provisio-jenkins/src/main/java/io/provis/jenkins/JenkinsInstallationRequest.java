@@ -9,6 +9,8 @@ public class JenkinsInstallationRequest {
 
   private final File target;
   private Configuration configuration;
+  private boolean writeMasterKey;
+
   private File webappOverrides;
   private File configOverrides;
   private Map<String, String> managedVersions;
@@ -20,6 +22,10 @@ public class JenkinsInstallationRequest {
 
   public String getJenkinsVersion() {
     return configuration.get("jenkins.version");
+  }
+
+  public boolean isWriteMasterKey() {
+    return writeMasterKey;
   }
 
   public File getTarget() {
@@ -36,6 +42,11 @@ public class JenkinsInstallationRequest {
 
   public Configuration getConfiguration() {
     return configuration;
+  }
+
+  public JenkinsInstallationRequest writeMasterKey(boolean writeMasterKey) {
+    this.writeMasterKey = writeMasterKey;
+    return this;
   }
 
   public Map<String, String> getManagedVersions() {

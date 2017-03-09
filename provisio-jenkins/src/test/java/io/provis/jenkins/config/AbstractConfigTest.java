@@ -2,14 +2,11 @@ package io.provis.jenkins.config;
 
 import java.io.File;
 import java.io.InputStream;
-import java.security.SecureRandom;
-import java.util.Properties;
 import java.util.function.Consumer;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.codec.binary.Hex;
 import org.codehaus.plexus.util.FileUtils;
 import org.eclipse.sisu.launch.InjectedTest;
 
@@ -26,37 +23,35 @@ public abstract class AbstractConfigTest extends InjectedTest {
   protected ConfigTestHelper writeConfig(String id) throws Exception {
     return writeConfig(id, null);
   }
-  
+
   protected ConfigTestHelper writeConfig(String id, Consumer<MasterConfigurationBuilder> hook) throws Exception {
-    
+    return writeConfig(id, null, hook);
+  }
+
+  protected ConfigTestHelper writeConfig(String id, String configEncryptionKey, Consumer<MasterConfigurationBuilder> hook) throws Exception {
+
     File testDir = new File(baseDirectory, id);
-    
+
     FileUtils.deleteDirectory(testDir);
     FileUtils.forceMkdir(testDir);
-    
-    Properties props = new Properties();
+
+    Configuration config = new Configuration();
     try (InputStream in = this.getClass().getResourceAsStream(id + ".properties")) {
-      props.load(in);
+      config.load(in);
     }
-    
-    String masterKey = Hex.encodeHexString(randomBytes(32));
-    
+
+    config.decryptValues(configEncryptionKey);
+
     MasterConfigurationBuilder b = MasterConfiguration.builder()
-      .masterKey(masterKey)
-      .properties(props);
-    
-    if(hook != null) {
+      .configuration(config);
+
+    if (hook != null) {
       hook.accept(b);
     }
-    
-    b.build().write(testDir);
-    
-    return new ConfigTestHelper(testDir, masterKey);
+
+    b.build().write(testDir, true);
+
+    return new ConfigTestHelper(testDir, b.encryption().getMasterKeyHex());
   }
-  
-  private static byte[] randomBytes(int size) {
-    byte[] random = new byte[size];
-    new SecureRandom().nextBytes(random);
-    return random;
-  }
+
 }

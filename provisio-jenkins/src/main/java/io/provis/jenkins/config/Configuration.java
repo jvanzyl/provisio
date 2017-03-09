@@ -18,6 +18,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 
+import io.provis.jenkins.crypto.ConfigCrypto;
+
 public class Configuration implements Map<String, String> {
 
   private final Store store;
@@ -72,6 +74,17 @@ public class Configuration implements Map<String, String> {
         throw new IllegalStateException("Cannot load properties from " + file);
       }
       setData(props);
+    }
+  }
+
+  public void decryptValues(String key) {
+    ConfigCrypto cc = new ConfigCrypto(key);
+    for (String k : store.keySet()) {
+      String value = store.get(k);
+      if (value != null && value.startsWith("{{") && value.endsWith("}}")) {
+        String v = cc.decrypt(k, store.get(k));
+        store.put(k, v);
+      }
     }
   }
 
@@ -432,4 +445,5 @@ public class Configuration implements Map<String, String> {
       }
     }
   }
+
 }

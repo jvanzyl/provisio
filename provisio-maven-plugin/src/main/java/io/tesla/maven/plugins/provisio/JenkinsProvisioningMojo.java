@@ -59,6 +59,12 @@ public class JenkinsProvisioningMojo extends AbstractMojo {
   @Parameter(defaultValue = "${repositorySystemSession}")
   private RepositorySystemSession repositorySystemSession;
 
+  @Parameter(required = false, defaultValue = "true", property = "writeMasterKey")
+  private boolean writeMasterKey;
+
+  @Parameter(required = false, property = "encryptionKey")
+  private String encryptionKey;
+
   @Parameter(defaultValue = "${project.build.directory}")
   private File target;
 
@@ -98,6 +104,8 @@ public class JenkinsProvisioningMojo extends AbstractMojo {
       conf.set("project.artifactId", project.getArtifactId());
       conf.set("project.version", project.getVersion());
 
+      conf.decryptValues(encryptionKey);
+
       // collect managed dependencies
       Map<String, String> managedVersions = new HashMap<>();
       if (project.getManagedVersionMap() != null) {
@@ -107,6 +115,7 @@ public class JenkinsProvisioningMojo extends AbstractMojo {
       }
 
       JenkinsInstallationRequest req = new JenkinsInstallationRequest(output, conf)
+        .writeMasterKey(writeMasterKey)
         .configOverrides(templateDirectory)
         .webappOverrides(webappOverrides)
         .managedVersions(managedVersions);

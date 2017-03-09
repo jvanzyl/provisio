@@ -53,7 +53,7 @@ public class MasterConfiguration {
     return getConfig(mixins, cl);
   }
 
-  public void write(File outputDirectory) throws IOException {
+  public void write(File outputDirectory, boolean writeMasterKey) throws IOException {
     outputDirectory.mkdirs();
 
     // create template context
@@ -81,7 +81,7 @@ public class MasterConfiguration {
     // write encryption keys
     File secrets = new File(outputDirectory, "secrets");
     secrets.mkdirs();
-    encFactory.write(secrets);
+    encFactory.write(secrets, writeMasterKey);
   }
 
   public static MasterConfiguration fromConfig(Properties props) throws IOException {
@@ -102,11 +102,13 @@ public class MasterConfiguration {
 
     private String url;
     private int port = -1;
+    private String masterKey;
     private Configuration configuration;
-    private SecretEncryptorFactory encFactory = new SecretEncryptorFactory();
+    private SecretEncryptorFactory encFactory;
 
     private List<TemplateList> templates = new ArrayList<>();
     private List<ConfigurationMixin> mixins = new ArrayList<>();
+
 
     public MasterConfigurationBuilder() {
       this(null);
@@ -150,12 +152,16 @@ public class MasterConfiguration {
         jenkins(configuration.get("jenkins.url"), configuration.getInt("jenkins.port"));
       }
 
+      if (encFactory == null) {
+        configuration.value("jenkins.secrets.masterKey", this::masterKey);
+      }
+
       addMixinsFromServices();
       return this;
     }
 
     public MasterConfigurationBuilder masterKey(String masterKey) {
-      this.encFactory = new SecretEncryptorFactory(masterKey);
+      this.masterKey = masterKey;
       return this;
     }
 
@@ -169,6 +175,10 @@ public class MasterConfiguration {
     }
 
     public SecretEncryptorFactory encryption() {
+      if (encFactory == null) {
+        Configuration secretConf = configuration != null ? configuration.subset("jenkins.secrets") : null;
+        encFactory = new SecretEncryptorFactory(masterKey, secretConf);
+      }
       return encFactory;
     }
 
@@ -195,7 +205,7 @@ public class MasterConfiguration {
         url,
         port,
         configuration,
-        encFactory,
+        encryption(),
         templates,
         mixins);
     }
@@ -203,7 +213,7 @@ public class MasterConfiguration {
     private void addMixinsFromServices() {
       for (ConfigurationMixin m : ServiceLoader.load(ConfigurationMixin.class, getClassLoader())) {
         Configuration c = configuration.subset(m.getId());
-        if(!c.isEmpty()) {
+        if (!c.isEmpty()) {
           config(m.init(c));
         }
       }

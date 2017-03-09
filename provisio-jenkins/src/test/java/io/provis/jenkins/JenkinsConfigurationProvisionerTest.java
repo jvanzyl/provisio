@@ -33,7 +33,7 @@ public class JenkinsConfigurationProvisionerTest extends InjectedTest {
       .set("test.foo", "bar");
     
     File dir = new File(baseDirectory, "externalDeps");
-    p.provision(c, null, dir);
+    p.provision(c, null, dir, true);
     
     ConfigTestHelper h = new ConfigTestHelper(dir, null);
     Document doc = h.asXml("test.xml");

@@ -16,9 +16,12 @@ import javax.crypto.CipherOutputStream;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
 import com.google.common.io.Files;
+
+import io.provis.jenkins.config.Configuration;
 
 public class SecretEncryptorFactory {
 
@@ -31,30 +34,49 @@ public class SecretEncryptorFactory {
 
   private byte[] masterKey;
   private int keyBytes;
-  
   private Map<String, Encryptor> encryptors = new HashMap<>();
+  private Configuration conf;
 
   public SecretEncryptorFactory() {
-    this( null);
+    this(null, null);
   }
 
-  public SecretEncryptorFactory(String masterKey) {
-    this(masterKey, DEFAULT_KEY_SIZE);
+  public SecretEncryptorFactory(String masterKey, Configuration conf) {
+    this(masterKey, DEFAULT_KEY_SIZE, conf);
   }
 
-  public SecretEncryptorFactory(String masterKey, int keySize) {
+  public SecretEncryptorFactory(String masterKey, int keySize, Configuration conf) {
     this.keyBytes = keySize / 8;
+
     if (masterKey == null) {
       masterKey = Hex.encodeHexString(randomBytes(256));
     }
+
     this.masterKey = masterKey.getBytes(UTF8);
+    this.conf = conf;
+  }
+
+  public String getMasterKeyHex() {
+    return new String(masterKey);
   }
 
   public SecretEncryptor encryptor(String keyId) {
-    
+
     Encryptor encryptor = encryptors.get(keyId);
-    if(encryptor == null) {
-      byte[] key = randomBytes(256);
+    if (encryptor == null) {
+      byte[] key;
+
+      String keyStr = conf == null ? null : conf.get(keyId);
+      if (keyStr == null) {
+        key = randomBytes(256);
+      } else {
+        try {
+          key = Hex.decodeHex(keyStr.toCharArray());
+        } catch (DecoderException e) {
+          throw new IllegalStateException("Invalid hex string for jenkins.secrets." + keyId);
+        }
+      }
+
       encryptor = new Encryptor(keyId, key, new SecretEncryptor(createKey(key)));
       encryptors.put(keyId, encryptor);
     }
@@ -81,13 +103,15 @@ public class SecretEncryptorFactory {
     sr.nextBytes(random);
     return random;
   }
-  
-  public void write(File rootDir) throws IOException {
-    Files.write(masterKey, new File(rootDir, "master.key"));
-    
+
+  public void write(File rootDir, boolean includeMaster) throws IOException {
+    if (includeMaster) {
+      Files.write(masterKey, new File(rootDir, "master.key"));
+    }
+
     SecretKey master = createHashedKey(masterKey);
-    
-    for(Encryptor enc: encryptors.values()) {
+
+    for (Encryptor enc : encryptors.values()) {
       try {
         Cipher cipher = Cipher.getInstance(ALGORITHM);
         cipher.init(Cipher.ENCRYPT_MODE, master);
@@ -101,14 +125,14 @@ public class SecretEncryptorFactory {
         throw new IOException("Failed to persist the key: " + enc.keyId, e);
       }
     }
-    
+
   }
-  
+
   private static class Encryptor {
     final String keyId;
     final byte[] keyBytes;
     final SecretEncryptor encryptor;
-    
+
     public Encryptor(String keyId, byte[] keyBytes, SecretEncryptor encryptor) {
       this.keyId = keyId;
       this.keyBytes = keyBytes;

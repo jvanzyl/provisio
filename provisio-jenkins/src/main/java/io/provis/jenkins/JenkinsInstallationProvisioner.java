@@ -262,7 +262,7 @@ public class JenkinsInstallationProvisioner {
     }
 
     JenkinsConfigurationProvisioner cp = new JenkinsConfigurationProvisioner(localRepo, remoteRepoUrl);
-    return cp.provision(req.getConfiguration(), req.getConfigOverrides(), dir);
+    return cp.provision(req.getConfiguration(), req.getConfigOverrides(), dir, req.isWriteMasterKey());
   }
 
   private void updateEtc(JenkinsInstallationRequest req, MasterConfiguration configuration, File dir, String workDirPathForJvmConfig) throws IOException {
