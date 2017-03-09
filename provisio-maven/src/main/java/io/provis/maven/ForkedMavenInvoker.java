@@ -33,7 +33,17 @@ public class ForkedMavenInvoker implements MavenInvoker {
     File mavenHome = request.getMavenHome();
     Commandline cli = new Commandline();
 
-    cli.setExecutable(new File(mavenHome, "bin/mvn").getAbsolutePath());
+    File exec;
+    if (File.pathSeparatorChar == ';') {
+      exec = new File(mavenHome, "bin/mvn.cmd");
+      if (!exec.exists()) {
+        exec = new File(mavenHome, "bin/mvn.bat");
+      }
+    } else {
+      exec = new File(mavenHome, "bin/mvn");
+    }
+
+    cli.setExecutable(exec.getAbsolutePath());
 
     cli.addEnvironment("M2_HOME", mavenHome.getAbsolutePath());
     cli.addEnvironment("JAVA_HOME", javaHome.getAbsolutePath());
