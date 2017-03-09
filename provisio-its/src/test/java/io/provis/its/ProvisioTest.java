@@ -50,8 +50,7 @@ public class ProvisioTest {
   }
 
   private ProvisioningResult provision(String name, String... remoteRepositories) throws Exception {
-    //File localRepository = new File(basedir, "target/localRepository");
-    File localRepository = new File("/Users/jvanzyl/.m2/repository");
+    File localRepository = new File(basedir, "target/localRepository");
     resolutionSystem = new ResolutionSystem(localRepository);
     if (remoteRepositories.length > 0) {
       for (String remoteRepository : remoteRepositories) {
