@@ -137,7 +137,16 @@ public class ProvisioTest {
     assertEquals("com.facebook.presto.server.PrestoServer", properties.get("main-class"));
     assertEquals("presto-server", properties.get("process-name"));
   }
-  
+
+  @Test
+  public void validateMakeDirectoryAction() throws Exception {
+    String name = "it-0021";
+    deleteOutputDirectory(name);
+    ProvisioningResult result = provision(name);
+    assertDirectoryExists(result, "new-directory");
+  }
+
+  // Helpers
   
   protected ProvisioningRequest provisioningRequest(String name) throws Exception {
     File projectBasedir = runtimeProject(name);

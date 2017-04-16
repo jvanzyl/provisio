@@ -18,6 +18,7 @@ import io.provis.action.artifact.alter.Delete;
 import io.provis.action.artifact.alter.Insert;
 import io.provis.action.fileset.MakeExecutableAction;
 import io.provis.action.runtime.ArchiveAction;
+import io.provis.action.runtime.MakeDirectoryAction;
 import io.provis.model.ActionDescriptor;
 import io.provis.model.Alias;
 import io.provis.model.Implicit;
@@ -44,6 +45,7 @@ public class Actions {
         };
       }
     });
+    
     actionDescriptors.add(new ActionDescriptor() {
       @Override
       public String getName() {
@@ -62,8 +64,27 @@ public class Actions {
         };
       }
     });
-    actionDescriptors.add(new ActionDescriptor() {
 
+    actionDescriptors.add(new ActionDescriptor() {
+      @Override
+      public String getName() {
+        return "mkdir";
+      }
+
+      @Override
+      public Class<?> getImplementation() {
+        return MakeDirectoryAction.class;
+      }
+
+      @Override
+      public String[] attributes() {
+        return new String[] {
+            "name"
+        };
+      }
+    });    
+    
+    actionDescriptors.add(new ActionDescriptor() {
       @Override
       public String getName() {
         return "executable";
@@ -82,6 +103,7 @@ public class Actions {
       }
 
     });
+    
     actionDescriptors.add(new ActionDescriptor() {
 
       @Override
