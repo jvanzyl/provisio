@@ -19,11 +19,13 @@ public class MakeDirectoryAction implements ProvisioningAction {
 
   public void execute(ProvisioningContext context) {
     File directoryToMake = new File(runtimeDirectory, name);
-    if(!directoryToMake.mkdirs()) {
-      throw new RuntimeException(String.format("Unable to create the directory %s", directoryToMake));
+    if (!directoryToMake.exists()) {
+      if (!directoryToMake.mkdirs()) {
+        throw new RuntimeException(String.format("Unable to create the directory %s", directoryToMake));
+      }
     }
   }
-  
+
   public File getRuntimeDirectory() {
     return runtimeDirectory;
   }
@@ -38,5 +40,5 @@ public class MakeDirectoryAction implements ProvisioningAction {
 
   public void setName(String name) {
     this.name = name;
-  }  
+  }
 }
