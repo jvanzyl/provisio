@@ -7,20 +7,20 @@
  */
 package io.provis.action.runtime;
 
+import org.codehaus.plexus.util.StringUtils;
+
+import java.io.File;
+
 import io.provis.model.ProvisioningAction;
 import io.provis.model.ProvisioningContext;
 import io.tesla.proviso.archive.Archiver;
 import io.tesla.proviso.archive.Archiver.ArchiverBuilder;
 
-import java.io.File;
-
-import javax.inject.Named;
-
-import org.codehaus.plexus.util.StringUtils;
-
 public class ArchiveAction implements ProvisioningAction {
 
   private String name;
+  private String prefix;
+  private boolean useRoot;
   private String executable;
   private File runtimeDirectory;
 
@@ -29,9 +29,18 @@ public class ArchiveAction implements ProvisioningAction {
     if (executable != null) {
       builder.executable(StringUtils.split(executable, ","));
     }
-    Archiver archiver = builder.posixLongFileMode(true).build();
+    Archiver archiver = builder
+      .useRoot(useRoot)
+      .withPrefix(prefix)
+      .posixLongFileMode(true)
+      .build();
     try {
-      File archive = new File(runtimeDirectory, "../" + name).getCanonicalFile();
+      File archive;
+      if (name.startsWith(File.separator)) {
+        archive = new File(name);
+      } else {
+        archive = new File(new File(runtimeDirectory, "../").getCanonicalFile(), name);
+      }
       archiver.archive(archive, runtimeDirectory);
       //
       // Right now this action has some special meaning it maybe shouldn't, but we need to know what archives are produced
@@ -59,4 +68,19 @@ public class ArchiveAction implements ProvisioningAction {
     this.name = name;
   }
 
+  public String getPrefix() {
+    return prefix;
+  }
+
+  public void setPrefix(String prefix) {
+    this.prefix = prefix;
+  }
+
+  public boolean isUseRoot() {
+    return useRoot;
+  }
+
+  public void setUseRoot(boolean useRoot) {
+    this.useRoot = useRoot;
+  }
 }

@@ -73,29 +73,24 @@ public class ProvisioningMojo extends AbstractMojo {
   @Parameter(defaultValue = "${session}")
   private MavenSession session;
 
-  public void execute() throws MojoExecutionException, MojoFailureException {
 
+  public void execute() throws MojoExecutionException, MojoFailureException {
+    String projectPackaging = project.getPackaging();
     for (Runtime runtime : provisio.findDescriptors(descriptorDirectory, project)) {
-      //
       // Add the ArtifactSet reference for the runtime classpath
-      //
       ArtifactSet runtimeArtifacts = getRuntimeClasspathAsArtifactSet();
       ProvisioArtifact projectArtifact = projectArtifact();
       if (projectArtifact != null) {
         runtime.addArtifactReference("projectArtifact", projectArtifact);
         runtimeArtifacts.addArtifact(projectArtifact);
-        //
-        // If this is not a provisio-based packaging type, but we have no way to know that really. The presto-plugin
-        // packaging type uses provisio but there is no way to inherit packaging types
-        //
-        if (!project.getPackaging().equals("jar")) {
+        // Deal with the case of a non-JAR lifecycle where the JAR is needed in the reactor and externally in addition to the
+        // provisio based artifact
+        if (!projectPackaging.equals("jar")) {
           projectHelper.attachArtifact(project, "jar", projectArtifact.getFile());
         }
       }
       runtime.addArtifactSetReference("runtime.classpath", runtimeArtifacts);
-      //
       // Provision the runtime
-      //
       ProvisioningRequest request = new ProvisioningRequest();
       request.setOutputDirectory(outputDirectory);
       request.setRuntimeDescriptor(runtime);
@@ -109,18 +104,21 @@ public class ProvisioningMojo extends AbstractMojo {
       } catch (Exception e) {
         throw new MojoExecutionException("Error provisioning assembly.", e);
       }
-
       if (result.getArchives() != null) {
         if (result.getArchives().size() == 1) {
           File file = result.getArchives().get(0);
-          project.getArtifact().setFile(file);
+          if (projectPackaging.equals("jar") || projectPackaging.equals("war")) {
+            projectHelper.attachArtifact(project, "tar.gz", file);
+          } else {
+            project.getArtifact().setFile(file);            
+          }
         }
       }
     }
   }
 
   private ProvisioArtifact projectArtifact() {
-    ProvisioArtifact jarArtifact = null;
+    ProvisioArtifact projectArtifact = null;
     //
     // We also need to definitively know what others types of runtime artifacts have been created. Right now there
     // is no real protocol for knowing what something like, say, the JAR plugin did to drop off a file somewhere. We
@@ -128,10 +126,16 @@ public class ProvisioningMojo extends AbstractMojo {
     //
     File jar = new File(project.getBuild().getDirectory(), project.getArtifactId() + "-" + project.getVersion() + ".jar");
     if (jar.exists()) {
-      jarArtifact = new ProvisioArtifact(project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion());
-      jarArtifact.setFile(jar);
+      projectArtifact = new ProvisioArtifact(project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion());
+      projectArtifact.setFile(jar);
     }
-    return jarArtifact;
+    File war = new File(project.getBuild().getDirectory(), project.getArtifactId() + "-" + project.getVersion() + ".war");
+    if (war.exists()) {
+      projectArtifact = new ProvisioArtifact(project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion());
+      projectArtifact.setFile(war);
+    }
+
+    return projectArtifact;
   }
 
   //
