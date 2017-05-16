@@ -7,15 +7,12 @@
  */
 package io.provis;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
@@ -38,10 +35,15 @@ import org.eclipse.aether.util.filter.AndDependencyFilter;
 import org.eclipse.aether.util.filter.ExclusionsDependencyFilter;
 import org.eclipse.aether.util.filter.ScopeDependencyFilter;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import io.provis.action.artifact.WriteToDiskAction;
 import io.provis.model.ArtifactSet;
@@ -462,7 +464,13 @@ public class MavenProvisioner {
             if (!source.exists()) {
               throw new RuntimeException(String.format("The specified file %s does not exist.", source));
             }
-            File target = new File(new File(context.getRequest().getOutputDirectory(), fileSet.getDirectory()), source.getName());
+            checkNotNull(fileSet.getDirectory());
+            String name = source.getName();
+            // use the file "as" attribute to rename the file if requested
+            if(file.getName() != null) {
+              name = file.getName();
+            }
+            File target = new File(new File(context.getRequest().getOutputDirectory(), fileSet.getDirectory()), name);
             copy(source, target);
           }
         }

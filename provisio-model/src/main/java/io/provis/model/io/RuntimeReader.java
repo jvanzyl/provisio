@@ -54,6 +54,7 @@ public class RuntimeReader {
     xstream.alias("assembly", Runtime.class);
     xstream.alias("runtime", Runtime.class);
     xstream.useAttributeFor(Runtime.class, "id");
+    xstream.useAttributeFor(Runtime.class, "outputDirectory");
     xstream.addImplicitCollection(Runtime.class, "artifactSets");
     xstream.addImplicitCollection(Runtime.class, "resourceSets");
     xstream.addImplicitCollection(Runtime.class, "fileSets");
@@ -86,6 +87,8 @@ public class RuntimeReader {
     xstream.alias("file", File.class);
     xstream.useAttributeFor(File.class, "path");
     xstream.useAttributeFor(File.class, "touch");
+    xstream.aliasAttribute(File.class, "name", "as");
+
     // Directory
     xstream.alias("directory", Directory.class);
     xstream.useAttributeFor(Directory.class, "path");
@@ -145,6 +148,13 @@ public class RuntimeReader {
     @Override
     public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
       Runtime runtime = new Runtime();
+      // Deal with attributes
+      if (reader.getAttribute("outputDirectory") != null) {
+        runtime.setOutputDirectory(reader.getAttribute("outputDirectory"));
+      }
+      if (reader.getAttribute("id") != null) {
+        runtime.setId(reader.getAttribute("id"));
+      }      
       while (reader.hasMoreChildren()) {
         reader.moveDown();
         if (reader.getNodeName().equals("artifactSet")) {

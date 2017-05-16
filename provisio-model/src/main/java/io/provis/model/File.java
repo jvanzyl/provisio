@@ -9,8 +9,17 @@ package io.provis.model;
 
 public class File {
 
+  private String name;
   private String path;
   private String touch;
+  
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
 
   public String getPath() {
     return path;

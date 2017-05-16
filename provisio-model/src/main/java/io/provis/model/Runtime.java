@@ -18,6 +18,8 @@ import com.google.common.collect.Maps;
 public class Runtime {
 
   private String id;
+  // OutputDirectory
+  private String outputDirectory;
   // Runtime level actions
   private List<ProvisioningAction> actions;
   // ArtifactSets
@@ -44,6 +46,18 @@ public class Runtime {
 
   public String getId() {
     return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
+  
+  public String getOutputDirectory() {
+    return outputDirectory;
+  }
+
+  public void setOutputDirectory(String outputDirectory) {
+    this.outputDirectory = outputDirectory;
   }
 
   public List<ProvisioningAction> getActions() {

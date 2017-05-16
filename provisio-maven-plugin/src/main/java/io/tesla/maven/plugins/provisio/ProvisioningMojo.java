@@ -92,7 +92,11 @@ public class ProvisioningMojo extends AbstractMojo {
       runtime.addArtifactSetReference("runtime.classpath", runtimeArtifacts);
       // Provision the runtime
       ProvisioningRequest request = new ProvisioningRequest();
-      request.setOutputDirectory(outputDirectory);
+      if(runtime.getOutputDirectory() != null) {
+        request.setOutputDirectory(new File(runtime.getOutputDirectory()));        
+      } else {        
+        request.setOutputDirectory(outputDirectory);
+      }
       request.setRuntimeDescriptor(runtime);
       request.setVariables(runtime.getVariables());
       request.setManagedDependencies(provisio.getManagedDependencies(project));

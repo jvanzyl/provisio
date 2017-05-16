@@ -169,6 +169,7 @@ public class RuntimeReaderTest {
     FileSet bin = fileSets.get(0);
     assertEquals("bin", bin.getDirectory());
     assertEquals("/path/to/file0", bin.getFiles().get(0).getPath());
+    assertEquals("newfile", bin.getFiles().get(0).getName());
     FileSet conf = fileSets.get(1);
     assertEquals("conf", conf.getDirectory());
     Directory directory = conf.getDirectories().get(0);
@@ -311,6 +312,13 @@ public class RuntimeReaderTest {
     assertEquals("org.apache.maven:maven-core:3.3.9", artifacts.get(1).getCoordinate());
   }  
   
+  @Test
+  public void validateRuntimeOutputDirectory() throws IOException {
+    RuntimeReader reader = new RuntimeReader(actionDescriptors());
+    Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/assembly-with-outputDirectory.xml")));
+    assertEquals("id", runtime.getId());
+    assertEquals("outputDirectory", runtime.getOutputDirectory());
+  }  
   
   private Runtime runtime(String name) throws IOException {
     return parseDescriptor(new File(String.format("src/test/runtimes/%s/provisio.xml", name)));      

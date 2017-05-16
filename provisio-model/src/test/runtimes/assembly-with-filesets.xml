@@ -1,7 +1,7 @@
 <assembly id="cassandra">
-      
+
   <fileSet to="bin">
-    <file path="/path/to/file0"/>
+    <file path="/path/to/file0" as="newfile"/>
   </fileSet>
 
   <fileSet to="conf">
