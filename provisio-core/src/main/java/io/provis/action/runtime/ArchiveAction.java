@@ -11,6 +11,7 @@ import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
 
+import io.provis.model.Archive;
 import io.provis.model.ProvisioningAction;
 import io.provis.model.ProvisioningContext;
 import io.tesla.proviso.archive.Archiver;
@@ -21,6 +22,7 @@ public class ArchiveAction implements ProvisioningAction {
   private String name;
   private String prefix;
   private boolean useRoot;
+  private String classifier;
   private String executable;
   private File runtimeDirectory;
 
@@ -35,17 +37,21 @@ public class ArchiveAction implements ProvisioningAction {
       .posixLongFileMode(true)
       .build();
     try {
-      File archive;
+      File archiveFile;
       if (name.startsWith(File.separator)) {
-        archive = new File(name);
+        archiveFile = new File(name);
       } else {
-        archive = new File(new File(runtimeDirectory, "../").getCanonicalFile(), name);
+        archiveFile = new File(new File(runtimeDirectory, "../").getCanonicalFile(), name);
       }
-      archiver.archive(archive, runtimeDirectory);
+      archiver.archive(archiveFile, runtimeDirectory);
       //
       // Right now this action has some special meaning it maybe shouldn't, but we need to know what archives are produced
       // so that we can set/attach the artifacts in a MavenProject.
       //
+      Archive archive = new Archive(archiveFile);
+      if(classifier != null) {
+        archive.setClassifier(classifier);
+      }
       context.getResult().addArchive(archive);
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -82,5 +88,13 @@ public class ArchiveAction implements ProvisioningAction {
 
   public void setUseRoot(boolean useRoot) {
     this.useRoot = useRoot;
+  }
+
+  public String getClassifier() {
+    return classifier;
+  }
+
+  public void setClassifier(String classifier) {
+    this.classifier = classifier;
   }
 }

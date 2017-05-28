@@ -14,7 +14,7 @@ import com.google.common.collect.Lists;
 
 public class ProvisioningResult {
 
-  private List<File> archives;
+  private List<Archive> archives;
   private final ProvisioningRequest request;
   
   public ProvisioningResult(ProvisioningRequest request) {
@@ -25,11 +25,11 @@ public class ProvisioningResult {
     return request.getOutputDirectory();
   }
 
-  public List<File> getArchives() {
+  public List<Archive> getArchives() {
     return archives;
   }
 
-  public void addArchive(File archive) {
+  public void addArchive(Archive archive) {
     if (archives == null) {
       archives = Lists.newArrayList();
     }

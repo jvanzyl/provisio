@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.provis.MavenProvisioner;
+import io.provis.model.Archive;
 import io.provis.model.ArtifactSet;
 import io.provis.model.ProvisioArtifact;
 import io.provis.model.ProvisioningRequest;
@@ -92,9 +93,9 @@ public class ProvisioningMojo extends AbstractMojo {
       runtime.addArtifactSetReference("runtime.classpath", runtimeArtifacts);
       // Provision the runtime
       ProvisioningRequest request = new ProvisioningRequest();
-      if(runtime.getOutputDirectory() != null) {
-        request.setOutputDirectory(new File(runtime.getOutputDirectory()));        
-      } else {        
+      if (runtime.getOutputDirectory() != null) {
+        request.setOutputDirectory(new File(runtime.getOutputDirectory()));
+      } else {
         request.setOutputDirectory(outputDirectory);
       }
       request.setRuntimeDescriptor(runtime);
@@ -110,11 +111,16 @@ public class ProvisioningMojo extends AbstractMojo {
       }
       if (result.getArchives() != null) {
         if (result.getArchives().size() == 1) {
-          File file = result.getArchives().get(0);
+          Archive archive = result.getArchives().get(0);
           if (projectPackaging.equals("jar") || projectPackaging.equals("war")) {
-            projectHelper.attachArtifact(project, "tar.gz", file);
+            projectHelper.attachArtifact(project, "tar.gz", archive.getFile());
           } else {
-            project.getArtifact().setFile(file);            
+            // We have provisio packaging
+            if (archive.getClassifier() != null) {
+              projectHelper.attachArtifact(project, "tar.gz", archive.getClassifier(), archive.getFile());
+            } else {
+              project.getArtifact().setFile(archive.getFile());
+            }
           }
         }
       }

@@ -60,7 +60,7 @@ public class Actions {
       @Override
       public String[] attributes() {
         return new String[] {
-            "name", "executable", "prefix", "useRoot"
+            "name", "executable", "prefix", "useRoot", "classifier"
         };
       }
     });
