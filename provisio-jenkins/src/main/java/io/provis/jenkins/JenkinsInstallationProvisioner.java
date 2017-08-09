@@ -252,16 +252,7 @@ public class JenkinsInstallationProvisioner {
   private MasterConfiguration provisionMasterConfiguration(MavenProvisioner provisioner, JenkinsInstallationRequest req, File dir) throws IOException {
     log.info("Provisioning configuration");
 
-    File localRepo = provisioner.getRepositorySystemSession().getLocalRepository().getBasedir();
-    String remoteRepoUrl;
-    if (provisioner.getRemoteRepositories().isEmpty()) {
-      remoteRepoUrl = JenkinsConfigurationProvisioner.DEFAULT_REMOTE_REPO;
-    } else {
-      RemoteRepository remoteRepo = provisioner.getRemoteRepositories().get(0);
-      remoteRepoUrl = remoteRepo.getUrl();
-    }
-
-    JenkinsConfigurationProvisioner cp = new JenkinsConfigurationProvisioner(localRepo, remoteRepoUrl);
+    JenkinsConfigurationProvisioner cp = new JenkinsConfigurationProvisioner(provisioner);
     return cp.provision(req.getConfiguration(), req.getConfigOverrides(), dir, req.isWriteMasterKey());
   }
 
