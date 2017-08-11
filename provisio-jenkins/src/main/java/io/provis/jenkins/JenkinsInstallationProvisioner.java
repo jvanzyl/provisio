@@ -28,6 +28,7 @@ import org.eclipse.aether.internal.impl.SimpleLocalRepositoryManagerFactory;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.NoLocalRepositoryManagerException;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.resolution.ArtifactDescriptorResult;
 import org.eclipse.aether.transfer.AbstractTransferListener;
 import org.slf4j.Logger;
@@ -146,12 +147,17 @@ public class JenkinsInstallationProvisioner {
         Repository repo = new Repository(id, url);
         repo.setUsername(repoConf.get("username"));
         repo.setPassword(repoConf.get("password"));
-        repos.add(ResolutionSystem.createRepository(repo));
+        repos.add(updateSnapshots(ResolutionSystem.createRepository(repo)));
       }
       repos.addAll(remoteRepos);
     }
 
     return new MavenProvisioner(repositorySystem, session, repos);
+  }
+
+  private RemoteRepository updateSnapshots(RemoteRepository repo) {
+    RepositoryPolicy snapshotPolicy = new RepositoryPolicy(true, RepositoryPolicy.UPDATE_POLICY_ALWAYS, RepositoryPolicy.CHECKSUM_POLICY_WARN);
+    return new RemoteRepository.Builder(repo).setSnapshotPolicy(snapshotPolicy).build();
   }
 
   private void provisionRuntime(MavenProvisioner provisioner, JenkinsInstallationRequest req, Runtime runtime, File dir) throws Exception {
