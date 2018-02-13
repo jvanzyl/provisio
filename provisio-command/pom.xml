@@ -15,7 +15,7 @@
   <parent>
     <groupId>io.provis</groupId>
     <artifactId>provisio</artifactId>
-    <version>0.1.51</version>
+    <version>0.1.52-SNAPSHOT</version>
   </parent>
   <artifactId>provisio-command</artifactId>
   <packaging>${lifecycle}</packaging>
