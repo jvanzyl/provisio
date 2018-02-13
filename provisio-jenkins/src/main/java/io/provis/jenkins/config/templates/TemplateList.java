@@ -2,6 +2,7 @@ package io.provis.jenkins.config.templates;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -102,7 +103,7 @@ public class TemplateList {
       root = pack + '/' + root;
     }
 
-    String location = clazz.getResource(name + ".class").toString();
+    String location = URLDecoder.decode(clazz.getResource(name + ".class").toString());
     if (location.startsWith(JAR_PREFIX)) {
 
       location = location.substring(JAR_PREFIX.length());
