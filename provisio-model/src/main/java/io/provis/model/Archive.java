@@ -26,4 +26,9 @@ public class Archive {
   public void setClassifier(String classifier) {
     this.classifier = classifier;
   }
+
+  @Override
+  public String toString() {
+    return "Archive [file=" + file + ", classifier=" + classifier + "]";
+  }
 }

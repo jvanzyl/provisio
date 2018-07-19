@@ -74,24 +74,22 @@ public class ProvisioningMojo extends AbstractMojo {
   @Parameter(defaultValue = "${session}")
   private MavenSession session;
 
-
   public void execute() throws MojoExecutionException, MojoFailureException {
-    String projectPackaging = project.getPackaging();
     for (Runtime runtime : provisio.findDescriptors(descriptorDirectory, project)) {
       // Add the ArtifactSet reference for the runtime classpath
       ArtifactSet runtimeArtifacts = getRuntimeClasspathAsArtifactSet();
-      ProvisioArtifact projectArtifact = projectArtifact();
-      if (projectArtifact != null) {
+      if (project.getArtifact().getFile() != null) {
+        // A primary artifact has been set by a previous plugin, in our case this is the Takari Lifecycle adding
+        // a JAR as the artifact. The JAR plugin doesn't collaborate yet with something that is intended to
+        // produce the primary artifact.
+        ProvisioArtifact projectArtifact = new ProvisioArtifact(coordinate(project.getArtifact()));
+        projectArtifact.setFile(project.getArtifact().getFile());
         runtime.addArtifactReference("projectArtifact", projectArtifact);
         runtimeArtifacts.addArtifact(projectArtifact);
-        // Deal with the case of a non-JAR lifecycle where the JAR is needed in the reactor and externally in addition to the
-        // provisio based artifact
-        if (!projectPackaging.equals("jar")) {
-          projectHelper.attachArtifact(project, "jar", projectArtifact.getFile());
-        }
+        projectHelper.attachArtifact(project, "jar", projectArtifact.getFile());
       }
       runtime.addArtifactSetReference("runtime.classpath", runtimeArtifacts);
-      // Provision the runtime
+
       ProvisioningRequest request = new ProvisioningRequest();
       if (runtime.getOutputDirectory() != null) {
         request.setOutputDirectory(new File(runtime.getOutputDirectory()));
@@ -109,43 +107,14 @@ public class ProvisioningMojo extends AbstractMojo {
       } catch (Exception e) {
         throw new MojoExecutionException("Error provisioning assembly.", e);
       }
+      
       if (result.getArchives() != null) {
         if (result.getArchives().size() == 1) {
           Archive archive = result.getArchives().get(0);
-          if (projectPackaging.equals("jar") || projectPackaging.equals("war")) {
-            projectHelper.attachArtifact(project, "tar.gz", archive.getFile());
-          } else {
-            // We have provisio packaging
-            if (archive.getClassifier() != null) {
-              projectHelper.attachArtifact(project, "tar.gz", archive.getClassifier(), archive.getFile());
-            } else {
-              project.getArtifact().setFile(archive.getFile());
-            }
-          }
+          projectHelper.attachArtifact(project, "tar.gz", archive.getFile());
         }
       }
     }
-  }
-
-  private ProvisioArtifact projectArtifact() {
-    ProvisioArtifact projectArtifact = null;
-    //
-    // We also need to definitively know what others types of runtime artifacts have been created. Right now there
-    // is no real protocol for knowing what something like, say, the JAR plugin did to drop off a file somewhere. We
-    // need to improve this but for now we'll look.
-    //
-    File jar = new File(project.getBuild().getDirectory(), project.getArtifactId() + "-" + project.getVersion() + ".jar");
-    if (jar.exists()) {
-      projectArtifact = new ProvisioArtifact(project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion());
-      projectArtifact.setFile(jar);
-    }
-    File war = new File(project.getBuild().getDirectory(), project.getArtifactId() + "-" + project.getVersion() + ".war");
-    if (war.exists()) {
-      projectArtifact = new ProvisioArtifact(project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion());
-      projectArtifact.setFile(war);
-    }
-
-    return projectArtifact;
   }
 
   //
@@ -166,6 +135,28 @@ public class ProvisioningMojo extends AbstractMojo {
       }
     }
     return artifactSet;
+  }
+
+  private String coordinate(org.apache.maven.artifact.Artifact artifact) {
+    //
+    // <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>
+    //    
+    StringBuffer path = new StringBuffer() //
+      .append(artifact.getGroupId()) //
+      .append(':') //
+      .append(artifact.getArtifactId()) //
+      .append(':');
+
+    if (artifact.getArtifactHandler().getExtension() != null) {
+      path.append(artifact.getArtifactHandler().getExtension()) //
+        .append(':');
+      if (artifact.getClassifier() != null) {
+        path.append(artifact.getClassifier()) //
+          .append(':');
+      }
+    }
+    path.append(artifact.getVersion());
+    return path.toString();
   }
 
   private static Artifact toArtifact(org.apache.maven.artifact.Artifact artifact) {
