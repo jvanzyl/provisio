@@ -86,7 +86,6 @@ public class ProvisioningMojo extends AbstractMojo {
         projectArtifact.setFile(project.getArtifact().getFile());
         runtime.addArtifactReference("projectArtifact", projectArtifact);
         runtimeArtifacts.addArtifact(projectArtifact);
-        projectHelper.attachArtifact(project, "jar", projectArtifact.getFile());
       }
       runtime.addArtifactSetReference("runtime.classpath", runtimeArtifacts);
 
@@ -116,7 +115,7 @@ public class ProvisioningMojo extends AbstractMojo {
       }
     }
   }
-
+  
   //
   // We want to produce an artifact set the corresponds to the runtime classpath of the project. This ArtifactSet will contain:
   //
