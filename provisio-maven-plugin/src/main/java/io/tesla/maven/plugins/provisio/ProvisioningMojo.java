@@ -75,17 +75,11 @@ public class ProvisioningMojo extends AbstractMojo {
   private MavenSession session;
 
   public void execute() throws MojoExecutionException, MojoFailureException {
-    //
-    // Provisio lifecycle where packaging = provisio
-    //
-    // The provisio lifecycle invokes the Jar Mojo so that if there is code to be included in the runtime it will be packaged with the
-    // runtime as part of the runtime artifacts.
-    //
     for (Runtime runtime : provisio.findDescriptors(descriptorDirectory, project)) {
       // Add the ArtifactSet reference for the runtime classpath
       ArtifactSet runtimeArtifacts = getRuntimeClasspathAsArtifactSet();
-      if (project.getArtifact().getFile() == null) {
-        ProvisioArtifact projectArtifact = new ProvisioArtifact(coordinate(project.getAttachedArtifacts().get(0)));
+      if (project.getArtifact().getFile() != null) {
+        ProvisioArtifact projectArtifact = new ProvisioArtifact(coordinate(project.getArtifact()));
         projectArtifact.setFile(project.getArtifact().getFile());
         runtime.addArtifactReference("projectArtifact", projectArtifact);
         runtimeArtifacts.addArtifact(projectArtifact);
@@ -115,6 +109,7 @@ public class ProvisioningMojo extends AbstractMojo {
         if (result.getArchives().size() == 1) {
           Archive archive = result.getArchives().get(0);
           project.getArtifact().setFile(archive.getFile());
+          projectHelper.attachArtifact(project, "tar.gz", archive.getFile());
         }
       }
     }

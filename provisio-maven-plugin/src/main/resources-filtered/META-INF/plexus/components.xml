@@ -16,7 +16,7 @@
       <implementation>org.apache.maven.artifact.handler.DefaultArtifactHandler</implementation>
       <configuration>
         <type>provisio</type>
-        <extension>tar.gz</extension>
+        <extension>jar</extension>
         <language>java</language>
         <addedToClasspath>false</addedToClasspath>
       </configuration>

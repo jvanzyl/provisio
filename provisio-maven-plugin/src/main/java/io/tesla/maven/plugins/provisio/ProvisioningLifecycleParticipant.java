@@ -50,8 +50,6 @@ public class ProvisioningLifecycleParticipant extends AbstractMavenLifecyclePart
 
   @Override
   public void afterProjectsRead(MavenSession session) throws MavenExecutionException {
-    // Let the Takari lifecycle know this plugin is going to produce the primary artifact
-    session.getUserProperties().setProperty(ALTERNATE_LIFECYCLE_PROVIDING_PRIMARY_ARTIFACT, "true");
     Map<String, MavenProject> projectMap = new HashMap<String, MavenProject>();
     for (MavenProject project : session.getProjects()) {
       projectMap.put(project.getGroupId() + ":" + project.getArtifactId(), project);
