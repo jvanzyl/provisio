@@ -33,8 +33,7 @@ import com.google.common.collect.Sets;
 @Named("ProvisioningLifecycleParticipant")
 public class ProvisioningLifecycleParticipant extends AbstractMavenLifecycleParticipant {
 
-  static final String PROVISIO_RUNTIMES = "__@provisioRuntimes";
-  static final String PROVISIO_PARTICIPANT = "__@provisioParticipant";
+  private static final String ALTERNATE_LIFECYCLE_PROVIDING_PRIMARY_ARTIFACT = "@ALTERNATE_LIFECYCLE_PROVIDING_PRIMARY_ARTIFACT@";
   private static final String DEFAULT_DESCRIPTOR_DIRECTORY = "src/main/provisio";
   private static final String DESCRIPTOR_DIRECTORY_CONFIG_ELEMENT = "descriptorDirectory";
 
@@ -51,6 +50,8 @@ public class ProvisioningLifecycleParticipant extends AbstractMavenLifecyclePart
 
   @Override
   public void afterProjectsRead(MavenSession session) throws MavenExecutionException {
+    // Let the Takari lifecycle know this plugin is going to produce the primary artifact
+    session.getUserProperties().setProperty(ALTERNATE_LIFECYCLE_PROVIDING_PRIMARY_ARTIFACT, "true");
     Map<String, MavenProject> projectMap = new HashMap<String, MavenProject>();
     for (MavenProject project : session.getProjects()) {
       projectMap.put(project.getGroupId() + ":" + project.getArtifactId(), project);

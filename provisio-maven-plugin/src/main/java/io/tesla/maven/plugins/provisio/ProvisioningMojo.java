@@ -75,14 +75,17 @@ public class ProvisioningMojo extends AbstractMojo {
   private MavenSession session;
 
   public void execute() throws MojoExecutionException, MojoFailureException {
+    //
+    // Provisio lifecycle where packaging = provisio
+    //
+    // The provisio lifecycle invokes the Jar Mojo so that if there is code to be included in the runtime it will be packaged with the
+    // runtime as part of the runtime artifacts.
+    //
     for (Runtime runtime : provisio.findDescriptors(descriptorDirectory, project)) {
       // Add the ArtifactSet reference for the runtime classpath
       ArtifactSet runtimeArtifacts = getRuntimeClasspathAsArtifactSet();
-      if (project.getArtifact().getFile() != null) {
-        // A primary artifact has been set by a previous plugin, in our case this is the Takari Lifecycle adding
-        // a JAR as the artifact. The JAR plugin doesn't collaborate yet with something that is intended to
-        // produce the primary artifact.
-        ProvisioArtifact projectArtifact = new ProvisioArtifact(coordinate(project.getArtifact()));
+      if (project.getArtifact().getFile() == null) {
+        ProvisioArtifact projectArtifact = new ProvisioArtifact(coordinate(project.getAttachedArtifacts().get(0)));
         projectArtifact.setFile(project.getArtifact().getFile());
         runtime.addArtifactReference("projectArtifact", projectArtifact);
         runtimeArtifacts.addArtifact(projectArtifact);
@@ -106,16 +109,17 @@ public class ProvisioningMojo extends AbstractMojo {
       } catch (Exception e) {
         throw new MojoExecutionException("Error provisioning assembly.", e);
       }
-      
+
+      // We need to set the primary artifact which is the archive produced by Provisio
       if (result.getArchives() != null) {
         if (result.getArchives().size() == 1) {
           Archive archive = result.getArchives().get(0);
-          projectHelper.attachArtifact(project, "tar.gz", archive.getFile());
+          project.getArtifact().setFile(archive.getFile());
         }
       }
     }
   }
-  
+
   //
   // We want to produce an artifact set the corresponds to the runtime classpath of the project. This ArtifactSet will contain:
   //
