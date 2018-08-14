@@ -108,7 +108,6 @@ public class ProvisioningMojo extends AbstractMojo {
       if (result.getArchives() != null) {
         if (result.getArchives().size() == 1) {
           Archive archive = result.getArchives().get(0);
-          project.getArtifact().setFile(archive.getFile());
           projectHelper.attachArtifact(project, "tar.gz", archive.getFile());
         }
       }
