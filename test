@@ -10,6 +10,6 @@ mvn clean install
   (
     cd presto-server/target/presto-server-${prestoVersion}
     cp -r /Users/jvanzyl/js/presto/etc .
-    bin/launcher run
+    sudo bin/launcher run
   )
 )

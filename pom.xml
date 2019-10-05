@@ -13,7 +13,7 @@
     <version>24</version>
   </parent>
 
-  <groupId>io.provis</groupId>
+  <groupId>ca.vanzyl</groupId>
   <artifactId>provisio</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
@@ -66,17 +66,17 @@
         <version>2.4</version>
       </dependency>
       <dependency>
-        <groupId>io.provis</groupId>
+        <groupId>ca.vanzyl</groupId>
         <artifactId>provisio-core</artifactId>
         <version>1.0.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.provis</groupId>
+        <groupId>ca.vanzyl</groupId>
         <artifactId>provisio-model</artifactId>
         <version>1.0.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>io.provis</groupId>
+        <groupId>ca.vanzyl</groupId>
         <artifactId>provisio-maven</artifactId>
         <version>1.0.0-SNAPSHOT</version>
       </dependency>
