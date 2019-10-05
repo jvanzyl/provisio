@@ -15,26 +15,16 @@
 
   <groupId>io.provis</groupId>
   <artifactId>provisio</artifactId>
-  <version>0.1.49-SNAPSHOT</version>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Provisio</name>
 
   <modules>
-    <module>provisio-ant</module>
-    <module>provisio-command</module>
     <module>provisio-core</module>
-    <module>provisio-jenkins</module>
-    <module>provisio-jenkins-launcher</module>
-    <module>provisio-jenkins-extensions</module>
     <module>provisio-maven</module>
     <module>provisio-maven-plugin</module>
     <module>provisio-model</module>
-    <module>provisio-nexus</module>
-    <module>provisio-testing</module>
-    <module>provisio-jsw</module>
     <module>provisio-its</module>
-    <module>provisio-airlift</module>
-    <module>provisio-airlift-testserver</module>
   </modules>
 
   <properties>
@@ -43,10 +33,10 @@
     <surefire.runOrder>alphabetical</surefire.runOrder>
     <surefire.mem>-Xmx256m</surefire.mem>
     <mavenVersion>3.3.3</mavenVersion>
-    <takariArchiverVersion>0.1.19</takariArchiverVersion>
+    <takariArchiverVersion>0.1.20-SNAPSHOT</takariArchiverVersion>
     <aetherVersion>1.0.2.v20150114</aetherVersion>
     <takari.javaSourceVersion>1.8</takari.javaSourceVersion>
-    <takari.lifecycleVersion>1.11.12</takari.lifecycleVersion>
+    <takariLifecyclePluginVersion>1.11.12</takariLifecyclePluginVersion>
   </properties>
 
   <scm>
@@ -78,42 +68,17 @@
       <dependency>
         <groupId>io.provis</groupId>
         <artifactId>provisio-core</artifactId>
-        <version>0.1.49-SNAPSHOT</version>
+        <version>1.0.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>io.provis</groupId>
         <artifactId>provisio-model</artifactId>
-        <version>0.1.49-SNAPSHOT</version>
+        <version>1.0.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>io.provis</groupId>
         <artifactId>provisio-maven</artifactId>
-        <version>0.1.49-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>io.provis</groupId>
-        <artifactId>provisio-command</artifactId>
-        <version>0.1.49-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>io.provis</groupId>
-        <artifactId>provisio-airlift-testserver</artifactId>
-        <version>0.1.49-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>io.provis</groupId>
-        <artifactId>provisio-jenkins</artifactId>
-        <version>0.1.49-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>io.provis</groupId>
-        <artifactId>provisio-jenkins-launcher</artifactId>
-        <version>0.1.49-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>io.provis</groupId>
-        <artifactId>provisio-jenkins-extensions</artifactId>
-        <version>0.1.49-SNAPSHOT</version>
+        <version>1.0.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>io.takari</groupId>

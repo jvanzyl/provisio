@@ -1,0 +1,15 @@
+#!/bin/sh
+
+prestoVersion=320-SNAPSHOT
+
+mvn clean install
+
+(
+  cd /Users/jvanzyl/js/presto/presto
+  ./mvnw clean install -DskipTests -TC3
+  (
+    cd presto-server/target/presto-server-${prestoVersion}
+    cp -r /Users/jvanzyl/js/presto/etc .
+    bin/launcher run
+  )
+)

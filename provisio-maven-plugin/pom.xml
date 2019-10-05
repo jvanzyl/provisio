@@ -13,15 +13,14 @@
   <parent>
     <groupId>io.provis</groupId>
     <artifactId>provisio</artifactId>
-    <version>0.1.49-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
   </parent>
   <groupId>io.takari.maven.plugins</groupId>
   <artifactId>provisio-maven-plugin</artifactId>
   <packaging>takari-maven-plugin</packaging>
-  <name>Provisio :: Maven Plugin</name>  
+  <name>Provisio :: Maven Plugin</name>
   <properties>
     <incrementalbuild.version>0.7.0</incrementalbuild.version>
-    <takariLifecyclePluginVersion>1.11.12</takariLifecyclePluginVersion>
   </properties>
 
   <dependencies>
@@ -32,10 +31,6 @@
     <dependency>
       <groupId>io.provis</groupId>
       <artifactId>provisio-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.provis</groupId>
-      <artifactId>provisio-jenkins</artifactId>
     </dependency>
     <dependency>
       <groupId>io.takari</groupId>
@@ -73,7 +68,7 @@
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
-      <scope>provided</scope>      
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>

@@ -23,13 +23,17 @@ public class ArchiveAction implements ProvisioningAction {
   private String name;
   private String executable;
   private File runtimeDirectory;
+  private boolean useHardLinks;
 
   public void execute(ProvisioningContext context) {
     ArchiverBuilder builder = Archiver.builder();
     if (executable != null) {
       builder.executable(StringUtils.split(executable, ","));
     }
-    Archiver archiver = builder.posixLongFileMode(true).build();
+    Archiver archiver = builder
+        .posixLongFileMode(true)
+        .useHardLinks(useHardLinks)
+        .build();
     try {
       File archive = new File(runtimeDirectory, "../" + name).getCanonicalFile();
       archiver.archive(archive, runtimeDirectory);
@@ -58,5 +62,4 @@ public class ArchiveAction implements ProvisioningAction {
   public void setName(String name) {
     this.name = name;
   }
-
 }

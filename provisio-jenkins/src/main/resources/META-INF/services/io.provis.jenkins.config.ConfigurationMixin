@@ -1,6 +1,0 @@
-io.provis.jenkins.config.security.users.UserConfig
-io.provis.jenkins.config.credentials.JenkinsCredentials
-io.provis.jenkins.config.github.GithubPluginConfig
-io.provis.jenkins.config.jgit.JGitToolConfig
-io.provis.jenkins.config.security.gh.GithubAuthConfig
-io.provis.jenkins.config.security.ad.ActiveDirectoryConfig
