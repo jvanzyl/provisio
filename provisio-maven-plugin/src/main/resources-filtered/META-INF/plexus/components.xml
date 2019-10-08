@@ -20,7 +20,7 @@
         <language>java</language>
         <addedToClasspath>false</addedToClasspath>
       </configuration>
-    </component>  
+    </component>
     <component>
       <role>org.apache.maven.lifecycle.mapping.LifecycleMapping</role>
       <role-hint>provisio</role-hint>
@@ -46,8 +46,8 @@
                 org.apache.maven.plugins:maven-surefire-plugin:2.12.1:test
               </test>
               <package>
-                io.takari.maven.plugins:takari-lifecycle-plugin:${takariLifecyclePluginVersion}:jar,              
-                io.takari.maven.plugins:provisio-maven-plugin:${project.version}:provision
+                io.takari.maven.plugins:takari-lifecycle-plugin:${takariLifecyclePluginVersion}:jar,
+                ca.vanzyl.maven.plugins:provisio-maven-plugin:${project.version}:provision
               </package>
               <install>
                 io.takari.maven.plugins:takari-lifecycle-plugin:${takariLifecyclePluginVersion}:install
@@ -59,6 +59,6 @@
           </lifecycle>
         </lifecycles>
       </configuration>
-    </component>        
+    </component>
   </components>
 </component-set>
