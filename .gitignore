@@ -8,3 +8,4 @@ target/
 *.iws
 bin/
 .DS_Store
+test
