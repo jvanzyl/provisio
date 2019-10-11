@@ -23,7 +23,8 @@ public class ArchiveAction implements ProvisioningAction {
   private String name;
   private String executable;
   private File runtimeDirectory;
-  private boolean useHardLinks;
+  private String hardLinkIncludes;
+  private String hardLinkExcludes;
 
   public void execute(ProvisioningContext context) {
     ArchiverBuilder builder = Archiver.builder();
@@ -32,7 +33,8 @@ public class ArchiveAction implements ProvisioningAction {
     }
     Archiver archiver = builder
         .posixLongFileMode(true)
-        .useHardLinks(useHardLinks)
+        .hardLinkIncludes(split(hardLinkIncludes))
+        .hardLinkExcludes(split(hardLinkExcludes))
         .build();
     try {
       File archive = new File(runtimeDirectory, "../" + name).getCanonicalFile();
@@ -61,5 +63,12 @@ public class ArchiveAction implements ProvisioningAction {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  private String[] split(String s) {
+    if (s == null) {
+      return new String[0];
+    }
+    return StringUtils.split(s, ",");
   }
 }
