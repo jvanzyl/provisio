@@ -9,7 +9,7 @@
   <parent>
     <groupId>ca.vanzyl</groupId>
     <artifactId>provisio</artifactId>
-    <version>1.0.5-SNAPSHOT</version>
+    <version>1.0.5</version>
   </parent>
 
   <artifactId>provisio-core</artifactId>
