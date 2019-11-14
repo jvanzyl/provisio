@@ -13,7 +13,7 @@
   <parent>
     <groupId>ca.vanzyl</groupId>
     <artifactId>provisio</artifactId>
-    <version>1.0.6-SNAPSHOT</version>
+    <version>1.0.6</version>
   </parent>
   <groupId>ca.vanzyl.maven.plugins</groupId>
   <artifactId>provisio-maven-plugin</artifactId>
