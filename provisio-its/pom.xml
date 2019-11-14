@@ -1,0 +1,118 @@
+<!-- Copyright (c) 2016 Takari, Inc. All rights reserved. This program and
+  the accompanying materials are made available under the terms of the Eclipse
+  Public License v1.0 which accompanies this distribution, and is available
+  at http://www.eclipse.org/legal/epl-v10.html -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>ca.vanzyl</groupId>
+    <artifactId>provisio</artifactId>
+    <version>1.0.5-SNAPSHOT</version>
+  </parent>
+  <artifactId>provisio-its</artifactId>
+  <name>Provisio :: Integration Tests</name>
+  <packaging>takari-jar</packaging>
+
+  <properties>
+    <okhttpConnectorVersion>0.16.0</okhttpConnectorVersion>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven</artifactId>
+        <version>${mavenVersion}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>ca.vanzyl</groupId>
+      <artifactId>provisio-model</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ca.vanzyl</groupId>
+      <artifactId>provisio-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ca.vanzyl</groupId>
+      <artifactId>provisio-maven</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-aether-provider</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model-builder</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-settings</artifactId>
+    </dependency>
+    <!-- Aether -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-spi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-util</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-impl</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.takari</groupId>
+      <artifactId>takari-archiver</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.takari</groupId>
+      <artifactId>takari-archiver</artifactId>
+      <version>${takariArchiverVersion}</version>
+      <classifier>tests</classifier>
+    </dependency>
+    <!-- We should add this to Maven so that I can use the import scoped
+      POM above -->
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-transport-file</artifactId>
+      <version>${aetherVersion}</version>
+    </dependency>
+    <!-- Aether OkHttp Connector -->
+    <dependency>
+      <groupId>io.takari.aether</groupId>
+      <artifactId>aether-connector-okhttp</artifactId>
+      <version>${okhttpConnectorVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+  </dependencies>
+</project>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2016 Takari, Inc.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the Eclipse Public License v1.0
+    which accompanies this distribution, and is available at
+    http://www.eclipse.org/legal/epl-v10.html
+
+-->
+<component-set>
+  <components>
+    <component>
+      <role>org.apache.maven.artifact.handler.ArtifactHandler</role>
+      <role-hint>provisio</role-hint>
+      <implementation>org.apache.maven.artifact.handler.DefaultArtifactHandler</implementation>
+      <configuration>
+        <type>provisio</type>
+        <extension>tar.gz</extension>
+        <language>java</language>
+        <addedToClasspath>false</addedToClasspath>
+      </configuration>
+    </component>
+    <component>
+      <role>org.apache.maven.lifecycle.mapping.LifecycleMapping</role>
+      <role-hint>provisio</role-hint>
+      <implementation>org.apache.maven.lifecycle.mapping.DefaultLifecycleMapping</implementation>
+      <configuration>
+        <lifecycles>
+          <lifecycle>
+            <id>default</id>
+            <phases>
+              <process-resources>
+                io.takari.maven.plugins:takari-lifecycle-plugin:${takariLifecyclePluginVersion}:process-resources
+              </process-resources>
+              <compile>
+                io.takari.maven.plugins:takari-lifecycle-plugin:${takariLifecyclePluginVersion}:compile
+              </compile>
+              <process-test-resources>
+                io.takari.maven.plugins:takari-lifecycle-plugin:${takariLifecyclePluginVersion}:process-test-resources
+              </process-test-resources>
+              <test-compile>
+                io.takari.maven.plugins:takari-lifecycle-plugin:${takariLifecyclePluginVersion}:testCompile
+              </test-compile>
+              <test>
+                org.apache.maven.plugins:maven-surefire-plugin:2.12.1:test
+              </test>
+              <package>
+                io.takari.maven.plugins:takari-lifecycle-plugin:${takariLifecyclePluginVersion}:jar,
+                ca.vanzyl.maven.plugins:provisio-maven-plugin:${project.version}:provision
+              </package>
+              <install>
+                io.takari.maven.plugins:takari-lifecycle-plugin:${takariLifecyclePluginVersion}:install
+              </install>
+              <deploy>
+                io.takari.maven.plugins:takari-lifecycle-plugin:${takariLifecyclePluginVersion}:deploy
+              </deploy>
+            </phases>
+          </lifecycle>
+        </lifecycles>
+      </configuration>
+    </component>
+  </components>
+</component-set>
