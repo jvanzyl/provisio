@@ -235,17 +235,17 @@ public class RuntimeReaderTest {
     assertEquals("this", artifact.getReference());
     assertEquals("wrapper.jar", artifact.getName());
   }
-
+        
   @Test
   public void validateFileSetToAttributeIsUsed() throws IOException {
     Runtime runtime = runtime("it-0002");
-    FileSet fileSet = runtime.getFileSets().get(0);
+    FileSet fileSet = runtime.getFileSets().get(0);    
     assertEquals("${basedir}/src/main/etc/jvm.config", fileSet.getFiles().get(0).getPath());
     assertEquals("${basedir}/src/main/etc/config.properties", fileSet.getFiles().get(1).getPath());
     assertEquals("${basedir}/src/main/etc", fileSet.getDirectories().get(0).getPath());
     assertEquals("**/*.properties", fileSet.getDirectories().get(0).getIncludes().get(0));
-  }
-
+  }  
+  
   @Test
   public void validateRuntimeInsert() throws IOException {
     Runtime runtime = runtime("it-0003");
@@ -282,10 +282,10 @@ public class RuntimeReaderTest {
     Delete delete = alter.getDeletes().get(0);
     Assert.assertEquals("/WEB-INF/lib/hudson-core-3.3.3.jar", delete.getFiles().get(0).getPath());
   }
-
+  
   @Test
   public void validateRuntimeUsingArtifactWithExclude() throws IOException {
-    Runtime runtime = runtime("it-0006");
+    Runtime runtime = runtime("it-0006");    
     List<ArtifactSet> artifactSets = runtime.getArtifactSets();
     assertEquals(1, artifactSets.size());
     ArtifactSet artifactSet = artifactSets.get(0);
@@ -293,11 +293,11 @@ public class RuntimeReaderTest {
     List<ProvisioArtifact> artifacts = artifactSet.getArtifacts();
     assertEquals(1, artifacts.size());
     ProvisioArtifact artifact = artifacts.get(0);
-    assertEquals("org.apache.maven:maven-core:3.3.9", artifact.getCoordinate());
+    assertEquals("org.apache.maven:maven-core:3.3.9", artifact.getCoordinate());    
     assertEquals("org.codehaus.plexus:plexus-utils", artifact.getExclusions().get(0));
     assertEquals("org.apache.maven:maven-model", artifact.getExclusions().get(1));
-  }
-
+  }  
+  
   @Test
   public void validateRuntimeUsingArtifactSetWithExclude() throws IOException {
     Runtime runtime = runtime("it-0007");
@@ -307,28 +307,50 @@ public class RuntimeReaderTest {
     assertEquals("/lib", artifactSet.getDirectory());
     assertEquals(2, artifactSet.getExcludes().size());
     assertEquals("org.codehaus.plexus:plexus-utils", artifactSet.getExcludes().get(0).getId());
-    assertEquals("org.apache.maven:maven-model", artifactSet.getExcludes().get(1).getId());
+    assertEquals("org.apache.maven:maven-model", artifactSet.getExcludes().get(1).getId());   
     List<ProvisioArtifact> artifacts = artifactSet.getArtifacts();
     assertEquals(2, artifacts.size());
     assertEquals("org.codehaus.modello:modello-core:1.8.3", artifacts.get(0).getCoordinate());
     assertEquals("org.apache.maven:maven-core:3.3.9", artifacts.get(1).getCoordinate());
   }
 
-  private Runtime runtime(String name) throws IOException {
-    return parseDescriptor(new File(String.format("src/test/runtimes/%s/provisio.xml", name)));
+  @Rule
+  public ExpectedException invalidActionException = ExpectedException.none();
+
+  @Test
+  public void validateRuntimeWithInvalidActionElementsReportErrors() throws IOException {
+    invalidActionException.expect(ConversionException.class);
+    invalidActionException.expectMessage("The element 'invalid' is invalid inside the <runtime/> context.");
+    RuntimeReader reader = new RuntimeReader(actionDescriptors());
+    Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/runtime-with-invalid-action.xml")));
   }
 
+  @Rule
+  public ExpectedException invalidArtifactActionException = ExpectedException.none();
+
+  @Test
+  public void validateRuntimeWithInvalidArtifactActionElementsReportErrors() throws IOException {
+    invalidArtifactActionException.expect(ConversionException.class);
+    invalidArtifactActionException.expectMessage("The element 'invalid' is invalid inside the <artifact/> context.");
+    RuntimeReader reader = new RuntimeReader(actionDescriptors());
+    Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/runtime-with-invalid-artifact-action.xml")));
+  }
+
+  private Runtime runtime(String name) throws IOException {
+    return parseDescriptor(new File(String.format("src/test/runtimes/%s/provisio.xml", name)));      
+  }
+  
   private Runtime parseDescriptor(File descriptor, Map<String,String> variables) throws IOException {
     RuntimeReader parser = new RuntimeReader(actionDescriptors(), variables);
     try(InputStream is = new FileInputStream(descriptor)) {
-      return parser.read(is, variables);
+      return parser.read(is, variables);      
     }
   }
 
   private Runtime parseDescriptor(File descriptor) throws IOException {
     return parseDescriptor(descriptor, Maps.<String,String>newHashMap());
-  }
-
+  }  
+  
   private List<ActionDescriptor> actionDescriptors() {
     List<ActionDescriptor> actionDescriptors = Lists.newArrayList();
     actionDescriptors.add(new ActionDescriptor() {
@@ -394,7 +416,7 @@ public class RuntimeReaderTest {
         return ImmutableList.of(
             new Implicit("inserts", Alter.class, Insert.class), new Implicit("artifacts", Insert.class),
             new Implicit("deletes", Alter.class, Delete.class), new Implicit("files", Delete.class));
-      }
+      }      
     });
     return actionDescriptors;
   }

@@ -168,6 +168,9 @@ public class RuntimeReader {
           ActionDescriptor actionDescriptor = actionMap.get(actionName);
           if (actionDescriptor != null) {
             runtime.addAction((ProvisioningAction) context.convertAnother(runtime, actionDescriptor.getImplementation()));
+          } else {
+            // We can't look up a valid action so we have an invalid element
+            throw new ConversionException("The element '" + actionName + "' is invalid inside the <runtime/> context.");
           }
         }
         reader.moveUp();
@@ -240,7 +243,10 @@ public class RuntimeReader {
         } else if (nodeName.equals("exclusion")) {
           String exclude = reader.getAttribute("id");
           artifact.addExclusion(exclude);
-        } 
+        } else {
+          // We can't look up a valid action so we have an invalid element
+          throw new ConversionException("The element '" + nodeName + "' is invalid inside the <artifact/> context.");
+        }
         reader.moveUp();
       }
       return artifact;

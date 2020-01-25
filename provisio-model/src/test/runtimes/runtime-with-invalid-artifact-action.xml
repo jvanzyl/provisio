@@ -1,0 +1,18 @@
+<runtime>
+
+  <archive name="server-${project.version}.tar.gz" />
+
+  <artifactSet to="plugin/one">
+    <artifact id="com.facebook.presto:one:zip:0.74">
+      <unpack/>
+      <invalid foo="bar"/>
+    </artifact>
+  </artifactSet>
+
+  <artifactSet to="plugin/one">
+    <artifact id="com.facebook.presto:two:zip:0.74">
+      <unpack/>
+    </artifact>
+  </artifactSet>
+
+</runtime>
