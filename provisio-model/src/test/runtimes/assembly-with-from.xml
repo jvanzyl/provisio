@@ -1,0 +1,4 @@
+<assembly id="jenkins">      
+  <artifactSet to="/" ref="plugins.txt"/>
+  <archive name="${project.artifactId}-${project.version}.zip"/>
+</assembly>

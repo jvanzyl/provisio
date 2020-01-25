@@ -1,0 +1,8 @@
+<runtime>
+  <!-- Launcher -->
+  <artifactSet to="bin">
+    <artifact id="io.airlift:launcher:tar.gz:properties:0.142">
+      <unpack filter="true" />
+    </artifact>
+  </artifactSet>
+</runtime>

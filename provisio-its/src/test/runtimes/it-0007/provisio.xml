@@ -1,0 +1,8 @@
+<runtime>
+  <artifactSet to="/lib">
+    <exclusion id="org.codehaus.plexus:plexus-utils"/>
+    <exclusion id="org.apache.maven:maven-model"/>          
+    <artifact id="org.codehaus.modello:modello-core:1.8.3"/>
+    <artifact id="org.apache.maven:maven-core:3.3.9"/>
+  </artifactSet>
+</runtime>

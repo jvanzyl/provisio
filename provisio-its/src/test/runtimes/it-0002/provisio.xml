@@ -1,0 +1,9 @@
+<runtime>
+  <fileSet to="/etc">
+    <file path="${basedir}/src/main/etc/jvm.config"/>
+    <file path="${basedir}/src/main/etc/config.properties"/>
+    <directory path="${basedir}/src/main/etc">
+      <include>**/*.properties</include>
+    </directory>
+  </fileSet>
+</runtime>

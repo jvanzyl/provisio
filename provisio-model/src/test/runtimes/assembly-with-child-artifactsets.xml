@@ -1,0 +1,40 @@
+<assembly>
+  
+  <artifactSet to="/">
+    <artifact id="org.apache.maven:apache-maven:tar.gz:bin:${mavenVersion}">
+      <unpack useRoot="false" excludes="lib/slf4j-simple**,lib/wagon-file*,lib/wagon-http*,conf/logging/**,**/*.license"/>
+    </artifact>
+  </artifactSet>  
+
+  <artifactSet to="bin">
+    <artifact id="io.takari.tdm:tdm-launcher:${tdmVersion}">
+      <unpack excludes="MANIFEST.MF,.gitattributes,maven/**"/>
+    </artifact>
+  </artifactSet>  
+
+  <artifactSet to="conf">
+    <artifact id="io.takari.tdm:tdm-conf:${tdmVersion}">
+      <unpack excludes="MANIFEST.MF,.gitattributes,maven/**"/>
+    </artifact>
+  </artifactSet>  
+    
+  <artifactSet to="lib">
+    <artifact id="ch.qos.logback:logback-core:1.0.7"/>
+    <artifact id="ch.qos.logback:logback-classic:1.0.7"/>
+    <artifact id="org.fusesource.jansi:jansi:jar:1.8"/>
+    <artifact id="org.eclipse.aether:aether-connector-file:0.9.0.M2"/>
+    <artifact id="io.takari.aether:aether-connector-okhttp:0.13.0"/>
+    
+    <artifactSet to="lib/ext">
+      <artifact id="io.takari.aether:takari-concurrent-localrepo:0.0.7"/>
+      <artifact id="io.takari.maven:takari-smart-builder:0.0.2"/>
+      <artifact id="io.takari.maven:takari-workspace-reader:0.0.2"/>
+    </artifactSet>  
+
+    <artifactSet to="lib/delta">
+      <artifact id="io.takari.tdm:tdm-delta:${tdmVersion}"/>
+    </artifactSet>  
+    
+  </artifactSet>  
+  
+</assembly>

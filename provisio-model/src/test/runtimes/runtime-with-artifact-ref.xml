@@ -1,0 +1,13 @@
+<runtime>
+  <archive name="${project.artifactId}-${project.version}.tar.gz" />
+  
+  <artifactSet to="/.mvn/wrapper">
+     <artifact ref="this" as="wrapper.jar"/> 
+  </artifactSet>
+  
+  <fileSet to="/">
+    <directory path="${basedir}">
+      <include>.mvn/**</include>
+    </directory>
+  </fileSet>
+</runtime>

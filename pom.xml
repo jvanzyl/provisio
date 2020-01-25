@@ -1,0 +1,194 @@
+<!--
+
+    Copyright (C) 2015-2020 Jason van Zyl
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.takari</groupId>
+    <artifactId>takari</artifactId>
+    <version>27</version>
+  </parent>
+
+  <groupId>ca.vanzyl</groupId>
+  <artifactId>provisio</artifactId>
+  <version>1.0.8-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>Provisio</name>
+
+  <modules>
+    <module>provisio-core</module>
+    <module>provisio-maven</module>
+    <module>provisio-maven-plugin</module>
+    <module>provisio-model</module>
+    <module>provisio-its</module>
+  </modules>
+
+  <properties>
+    <lifecycle>takari-jar</lifecycle>
+    <surefire.redirectTestOutputToFile>true</surefire.redirectTestOutputToFile>
+    <surefire.runOrder>alphabetical</surefire.runOrder>
+    <surefire.mem>-Xmx256m</surefire.mem>
+    <mavenVersion>3.3.3</mavenVersion>
+    <takariArchiverVersion>0.1.26</takariArchiverVersion>
+    <aetherVersion>1.0.2.v20150114</aetherVersion>
+    <takari.licenseHeader>license-header.txt</takari.licenseHeader>
+    <takari.javaSourceVersion>1.8</takari.javaSourceVersion>
+    <takariLifecyclePluginVersion>1.11.12</takariLifecyclePluginVersion>
+  </properties>
+
+  <scm>
+    <connection>scm:git:git@github.com/takari/provisio.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/takari/provisio.git</developerConnection>
+    <url>http://github.com/takari/provisio</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven</artifactId>
+        <version>${mavenVersion}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>javax.inject</groupId>
+        <artifactId>javax.inject</artifactId>
+        <version>1</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>servlet-api</artifactId>
+        <version>2.4</version>
+      </dependency>
+      <dependency>
+        <groupId>ca.vanzyl</groupId>
+        <artifactId>provisio-core</artifactId>
+        <version>1.0.8-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>ca.vanzyl</groupId>
+        <artifactId>provisio-model</artifactId>
+        <version>1.0.8-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>ca.vanzyl</groupId>
+        <artifactId>provisio-maven</artifactId>
+        <version>1.0.8-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>io.takari</groupId>
+        <artifactId>takari-archiver</artifactId>
+        <version>${takariArchiverVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>de.pdark</groupId>
+        <artifactId>decentxml</artifactId>
+        <version>1.4</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.swizzle</groupId>
+        <artifactId>swizzle-stream</artifactId>
+        <version>1.6.2</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.10</version>
+      </dependency>
+      <!-- Guice -->
+      <dependency>
+        <groupId>org.eclipse.sisu</groupId>
+        <artifactId>org.eclipse.sisu.inject</artifactId>
+        <version>0.3.1</version>
+      </dependency>
+      <!-- Mustache -->
+      <dependency>
+        <groupId>com.github.spullara.mustache.java</groupId>
+        <artifactId>compiler</artifactId>
+        <version>0.9.2</version>
+      </dependency>
+      <!-- Testing -->
+      <dependency>
+        <groupId>org.eclipse.sisu</groupId>
+        <artifactId>org.eclipse.sisu.inject.tests</artifactId>
+        <version>0.0.0.M3</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.12</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+      <resource>
+        <directory>src/main/resources-filtered</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-banned-dependencies</id>
+            <phase>test</phase>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <excludes>
+                    <!-- banned in favor of sisu-* equivalents -->
+                    <!-- We need some Guice bits <exclude>com.google.inject:guice</exclude> -->
+                    <exclude>*:plexus-container-default</exclude>
+                  </excludes>
+                </bannedDependencies>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.eclipse.sisu</groupId>
+        <artifactId>sisu-maven-plugin</artifactId>
+        <version>0.3.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>main-index</goal>
+              <goal>test-index</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

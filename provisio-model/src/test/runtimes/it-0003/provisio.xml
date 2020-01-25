@@ -1,0 +1,13 @@
+<runtime>
+  <artifactSet to="/lib">
+    <artifact id="org.eclipse.hudson:hudson-war:war:3.3.3" as="hudson-war-3.3.3.jar">
+      <alter>
+        <insert>
+          <artifact
+            id="junit:junit:4.12"
+            as="/WEB-INF/lib/junit-4.12.jar"/>
+        </insert>
+      </alter>
+    </artifact>
+  </artifactSet>
+</runtime>
