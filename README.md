@@ -13,6 +13,7 @@ A Maven-based provisioning mechanism and replacement for the maven-assembly-plug
 - Support for standard addition of files to a runtime
 - Support for automatic exclusions in parent/child artifactSet relationships
 
+Provisio was originally created for the [Presto](https://prestosql.io/) project to provide a common way to build [Presto plugins](https://github.com/prestosql/presto-maven-plugin) and build the [Presto Server](https://github.com/prestosql/presto/tree/master/presto-server). You'll notice how small the Presto Server [`pom.xml`](https://github.com/prestosql/presto/blob/master/presto-server/pom.xml) is even though, at the time of this writing, there are 30+ plugins packaged in the Presto Server build as per the [Provisio descriptor](https://github.com/prestosql/presto/blob/master/presto-server/src/main/provisio/presto.xml). As you'll read below, you only need to specify what you need in the Provisio descriptor and Maven will figure out the rest, correctly, without having to pollute your `pom.xml` with duplicated dependendency declarations.
 
 ## Support for building runtimes
 
