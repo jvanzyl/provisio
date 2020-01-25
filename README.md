@@ -17,7 +17,7 @@ Provisio was originally created for the [Presto](https://prestosql.io/) project 
 
 ## Support for building runtimes
 
-To use Provisio declare its use in your project's `pom.xml` and be sure to set the packaging to `provisio` and enable the plugin as an extension. Provisio implements a Maven `LifecyclePartipant` that inspects all the artifacts used in your runtime descriptor and will order your build accordingly. You might notice below the conspicuous lack of a dependencies section: you do not need to include a dependnecy in your `pom.xml` for an artifact produced in the current build to have it be included in your runtime. Provisio will find all the artifact references in your runtime descriptor, determine the correct build ordering, and instruct Maven to make the necessary changes.
+To use Provisio declare its use in your project's `pom.xml` and be sure to set the packaging to `provisio` and enable the plugin as an extension. Provisio implements a Maven `LifecyclePartipant` that inspects all the artifacts used in your runtime descriptor and will order your build accordingly. You might notice below the conspicuous lack of a dependencies section: you do not need to include a dependency in your `pom.xml` for an artifact produced in the current build to have it be included in your runtime. Provisio will find all the artifact references in your runtime descriptor, determine the correct build ordering, and instruct Maven to make the necessary changes.
 
 ```
 <project>
@@ -25,7 +25,7 @@ To use Provisio declare its use in your project's `pom.xml` and be sure to set t
   <artifacId>ollie-server</artifacId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>provisio</packaging>
-  
+
   <build>
     <plugins>
       <plugin>
@@ -95,7 +95,7 @@ Provisio descriptors are searched for in `src/main/provisio` and the runtime des
 
 What follows are various techniques and capabilities for building runtimes. Provisio is very good at working with the zip and tar.gz formats, and very good at manipulating Maven artifacts and sets of Maven artifacts.
 
-## Hardlinking in TAR archives 
+## Hardlinking in TAR archives
 
 ```
 <runtime>
