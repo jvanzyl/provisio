@@ -2,19 +2,20 @@
 
 A Maven-based provisioning mechanism and replacement for the maven-assembly-plugin.
 
-- Support for building runtimes, like the maven-assembly-plugin, that are aware of their dependencies in a multi-module build
-- Support for hardlinking in TAR archives with corresponding support for dereferencing hardlinks when unpacking archives
-- Support for excluding artifacts while resolving a specific artifact
-- Support for globally excluding artifacts while transitively resolving artifacts
-- Support for filtering resources while unpacking archives
-- Support for [Mustache](https://github.com/spullara/mustache.java) filtering resources while unpacking archives
-- Support for deleting an artifact out of an archive on the fly
-- Support for inserting artifacts into archives on the fly
-- Support for standard addition of files to a runtime
-- Support for automatic exclusions in parent/child artifactSet relationships
+- [Support for building runtimes, like the maven-assembly-plugin, that are aware of their dependencies in a multi-module build](#feature0)
+- [Support for hardlinking in TAR archives with corresponding support for dereferencing hardlinks when unpacking archives](#feature1)
+- [Support for excluding artifacts while resolving a specific artifact](#feature2)
+- [Support for globally excluding artifacts while transitively resolving artifacts](#feature3)
+- [Support for filtering resources while unpacking archives](#feature4)
+- [Support for Mustache filtering resources while unpacking archives](#feature5)
+- [Support for deleting an artifact out of an archive on the fly](#feature6)
+- [Support for inserting artifacts into archives on the fly](#feature7)
+- [Support for standard addition of files to a runtime](#feature8)
+- [Support for automatic exclusions in parent/child artifactSet relationships](#feature9)
 
 Provisio was originally created for the [Presto](https://prestosql.io/) project to provide a common way to build [Presto plugins](https://github.com/prestosql/presto-maven-plugin) and build the [Presto Server](https://github.com/prestosql/presto/tree/master/presto-server). You'll notice how small the Presto Server [`pom.xml`](https://github.com/prestosql/presto/blob/master/presto-server/pom.xml) is even though, at the time of this writing, there are 30+ plugins packaged in the Presto Server build as per the [Provisio descriptor](https://github.com/prestosql/presto/blob/master/presto-server/src/main/provisio/presto.xml). As you'll read below, you only need to specify what you need in the Provisio descriptor and Maven will figure out the rest, correctly, without having to pollute your `pom.xml` with duplicated dependendency declarations.
 
+<a name="feature0"></a>
 ## Support for building runtimes
 
 To use Provisio declare its use in your project's `pom.xml` and be sure to set the packaging to `provisio` and enable the plugin as an extension. Provisio implements a Maven `LifecyclePartipant` that inspects all the artifacts used in your runtime descriptor and will order your build accordingly. You might notice below the conspicuous lack of a dependencies section: you do not need to include a dependency in your `pom.xml` for an artifact produced in the current build to have it be included in your runtime. Provisio will find all the artifact references in your runtime descriptor, determine the correct build ordering, and instruct Maven to make the necessary changes.
@@ -95,6 +96,7 @@ Provisio descriptors are searched for in `src/main/provisio` and the runtime des
 
 What follows are various techniques and capabilities for building runtimes. Provisio is very good at working with the zip and tar.gz formats, and very good at manipulating Maven artifacts and sets of Maven artifacts.
 
+<a name="feature1"></a>
 ## Hardlinking in TAR archives
 
 ```
@@ -114,6 +116,7 @@ What follows are various techniques and capabilities for building runtimes. Prov
 
 ```
 
+<a name="feature2"></a>
 ## Excluding artifacts while resolving a specific artifact
 
 ```
@@ -127,6 +130,7 @@ What follows are various techniques and capabilities for building runtimes. Prov
 </runtime>
 ```
 
+<a name="feature3"></a>
 ## Globally excluding artifacts while transitively resolving artifacts
 
 ```
@@ -140,6 +144,7 @@ What follows are various techniques and capabilities for building runtimes. Prov
 </runtime>
 ```
 
+<a name="feature4"></a>
 ## Filtering resources while unpacking archives
 
 ```
@@ -152,7 +157,9 @@ What follows are various techniques and capabilities for building runtimes. Prov
 </runtime>
 ```
 
+<a name="feature5"></a>
 ## Mustache filtering resources while unpacking archives
+
 
 ```
 <runtime>
@@ -164,6 +171,7 @@ What follows are various techniques and capabilities for building runtimes. Prov
 </runtime>
 ```
 
+<a name="feature6"></a>
 ## Deleting an artifact out of an archive on the fly
 
 ```
@@ -180,6 +188,7 @@ What follows are various techniques and capabilities for building runtimes. Prov
 </runtime>
 ```
 
+<a name="feature7"></a>
 ## Inserting artifacts into archives on the fly
 
 ```
@@ -198,6 +207,7 @@ What follows are various techniques and capabilities for building runtimes. Prov
 </runtime>
 ```
 
+<a name="feature8"></a>
 ## Standard addition of files to a runtime
 
 ```
@@ -218,6 +228,7 @@ What follows are various techniques and capabilities for building runtimes. Prov
 </runtime>
 ```
 
+<a name="feature9"></a>
 ## Automatic exclusions in parent/child artifactSet relationships
 
 ```
@@ -247,3 +258,5 @@ What follows are various techniques and capabilities for building runtimes. Prov
 # References
 
 http://www.unix.com/tips-tutorials/19060-unix-file-permissions.html
+
+[mustache]: https://github.com/spullara/mustache.java
