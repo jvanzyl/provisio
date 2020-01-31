@@ -68,7 +68,7 @@ public class Actions {
       @Override
       public String[] attributes() {
         return new String[] {
-            "dir"
+            "dir", "file"
         };
       }
     });

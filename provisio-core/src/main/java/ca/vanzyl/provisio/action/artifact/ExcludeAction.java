@@ -17,24 +17,45 @@ package ca.vanzyl.provisio.action.artifact;
 
 import ca.vanzyl.provisio.model.ProvisioningAction;
 import ca.vanzyl.provisio.model.ProvisioningContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Named;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Comparator;
 
 @Named("exclude")
 public class ExcludeAction implements ProvisioningAction {
+
+  private static final Logger logger = LoggerFactory.getLogger(ExcludeAction.class);
+
   private String dir;
+  private String file;
   private File outputDirectory;
 
   @Override
   public void execute(ProvisioningContext context) {
     try {
       if(dir != null) {
+        logger.info("Excluding directory {} in {}", dir, outputDirectory);
+        Path dirToDelete = outputDirectory.toPath().resolve(dir);
+        if(!Files.exists(dirToDelete)) {
+          throw new RuntimeException("The excluded dir you specified doesn't exist:" + dirToDelete);
+        }
         deletePath(outputDirectory.toPath().resolve(dir));
+      }
+
+      if(file != null) {
+        logger.info("Excluding file {} in {}", file, outputDirectory);
+        Path fileToDelete = outputDirectory.toPath().resolve(file);
+        if(!Files.exists(fileToDelete)) {
+          throw new RuntimeException("The excluded file you specified doesn't exist:" + fileToDelete);
+        }
+        Files.delete(outputDirectory.toPath().resolve(file));
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -55,6 +76,14 @@ public class ExcludeAction implements ProvisioningAction {
 
   public void setDir(String dir) {
     this.dir = dir;
+  }
+
+  public String getFile() {
+    return file;
+  }
+
+  public void setFile(String file) {
+    this.file = file;
   }
 
   public void deletePath(Path pathToBeDeleted) throws IOException {
