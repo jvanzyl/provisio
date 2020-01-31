@@ -36,16 +36,21 @@ import ca.vanzyl.provisio.MavenProvisioner;
 import ca.vanzyl.provisio.perms.PosixModes;
 import io.tesla.proviso.archive.Archiver;
 import io.tesla.proviso.archive.UnArchiver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The unpack is an operation that results in any number of artifacts and resources being contributed to the runtime. The archive to be unpacked can
  * make the metadata about its contents available, or we need to determine the information about the contents by examining the contents.
- * 
+ *
  * @author jvanzyl
  *
  */
 @Named("insert")
 public class AlterAction implements ProvisioningAction {
+
+  private static Logger logger = LoggerFactory.getLogger(AlterAction.class);
+
   private List<Insert> inserts;
   private List<Delete> deletes;
   private ProvisioArtifact artifact;
@@ -64,7 +69,7 @@ public class AlterAction implements ProvisioningAction {
         .build();
       File unpackDirectory = new File(outputDirectory, "unpack");
       unarchiver.unarchive(archive, unpackDirectory);
-      
+
       // Make any modifications to the archive
       if (inserts != null) {
         for (Insert insert : inserts) {
@@ -76,28 +81,51 @@ public class AlterAction implements ProvisioningAction {
           }
         }
       }
-      
+
       if(deletes != null) {
         for (Delete delete : deletes) {
           for (ca.vanzyl.provisio.model.File fileModel : delete.getFiles()) {
+            logger.info("Deleting file {} from {}", fileModel.getPath(), artifact);
             File target = new File(unpackDirectory, fileModel.getPath());
+            if(!target.exists()) {
+              throw new RuntimeException("The file specified to delete does not exist: " + fileModel.getPath());
+            }
             FileUtils.forceDelete(target);
           }
         }
       }
-      
+
       // Set all the files readable so we can repack them
       setFilesReadable(unpackDirectory);
-      // Pack the archive back up      
+      // Pack the archive back up
       Archiver archiver = Archiver.builder()
         .useRoot(false)
         .build();
-      File alteredArtifact = new File(outputDirectory, artifact.getName());
+      String artifactName = artifact.getName() != null ? artifact.getName() : coordinateToPath(artifact);
+      File alteredArtifact = new File(outputDirectory, artifactName);
       archiver.archive(alteredArtifact, unpackDirectory);
       FileUtils.deleteDirectory(unpackDirectory);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private String coordinateToPath(ProvisioArtifact a) {
+
+    StringBuffer path = new StringBuffer()
+      .append(a.getArtifactId())
+      .append("-")
+      .append(a.getVersion());
+
+    if(a.getClassifier() != null) {
+      path.append("-")
+        .append(a.getClassifier());
+    }
+
+    path.append(".")
+      .append(a.getExtension());
+
+    return path.toString();
   }
 
   private void setFilesReadable(File directory) throws IOException {
@@ -129,11 +157,11 @@ public class AlterAction implements ProvisioningAction {
   public void setInserts(List<Insert> inserts) {
     this.inserts = inserts;
   }
-  
+
   public List<Delete> getDeletes() {
     return deletes;
   }
-  
+
   public void setDeletes(List<Delete> deletes) {
     this.deletes = deletes;
   }
