@@ -35,6 +35,7 @@ import io.tesla.proviso.archive.Archiver.ArchiverBuilder;
 
 import java.io.File;
 
+import io.tesla.proviso.archive.UnArchiver;
 import org.codehaus.plexus.util.StringUtils;
 
 public class ArchiveAction implements ProvisioningAction {
@@ -63,6 +64,21 @@ public class ArchiveAction implements ProvisioningAction {
       // so that we can set/attach the artifacts in a MavenProject.
       //
       context.getResult().addArchive(archive);
+
+      //
+      // In the case we have made a hardlinked tarball, unpack the tarball for convenience so that it can
+      // be used in subsequent operations because the runtime directory itself does not contain hardlinked
+      // contents. For example if you want to make a Docker image using hardlinked contents. It might
+      // be better to have the runtime directory be hardlinked before tarring it up.
+      //
+      if(hardLinkIncludes != null) {
+        UnArchiver unArchiver = UnArchiver
+          .builder()
+          .useRoot(false)
+          .build();
+        unArchiver.unarchive(archive, new File(runtimeDirectory + "-hardlinks"));
+      }
+
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
