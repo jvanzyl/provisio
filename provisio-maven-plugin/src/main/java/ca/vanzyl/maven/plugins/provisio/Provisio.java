@@ -100,6 +100,7 @@ public class Provisio {
     variables.put("project.version", project.getVersion());
     variables.put("project.groupId", project.getGroupId());
     variables.put("project.artifactId", project.getArtifactId());
+    variables.put("project.build.directory", project.getBuild().getDirectory());
     variables.put("basedir", project.getBasedir().getAbsolutePath());
     return parser.read(inputStream, variables);
   }
