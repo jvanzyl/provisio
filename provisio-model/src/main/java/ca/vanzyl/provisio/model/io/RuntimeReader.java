@@ -100,6 +100,7 @@ public class RuntimeReader {
     xstream.useAttributeFor(Directory.class, "path");
     xstream.addImplicitCollection(Directory.class, "includes", "include", String.class);
     xstream.addImplicitCollection(Directory.class, "excludes", "exclude", String.class);
+    xstream.useAttributeFor(Directory.class, "flatten");
 
     xstream.registerConverter(new RuntimeConverter());
     xstream.registerConverter(new ArtifactConverter());

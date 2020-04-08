@@ -1,0 +1,9 @@
+<assembly id="concord-k8s-builder">
+
+  <fileSet to="concord">
+    <directory path="${basedir}/k8s-import" flatten="true">
+      <include>**/concord-k8s*.yml</include>
+    </directory>
+  </fileSet>
+
+</assembly>

@@ -479,13 +479,16 @@ public class MavenProvisioner {
         for (Directory directory : fileSet.getDirectories()) {
           File sourceDirectory = new File(directory.getPath());
           File targetDirectory = new File(context.getRequest().getOutputDirectory(), fileSet.getDirectory());
-          copyDirectoryStructure(sourceDirectory, targetDirectory, directory.getIncludes(), directory.getExcludes());
+          copyDirectoryStructure(sourceDirectory, targetDirectory, directory);
         }
       }
     }
   }
 
-  private void copyDirectoryStructure(File sourceDirectory, File targetDirectory, List<String> includes, List<String> excludes) throws IOException {
+  private void copyDirectoryStructure(File sourceDirectory, File targetDirectory, Directory directory) throws IOException {
+    List<String> includes = directory.getIncludes();
+    List<String> excludes = directory.getExcludes();
+
     String includesString = null;
     if (includes != null && !includes.isEmpty()) {
       includesString = joiner.join(includes);
@@ -494,11 +497,20 @@ public class MavenProvisioner {
     if (excludes != null && !excludes.isEmpty()) {
       excludesString = joiner.join(excludes);
     }
-    List<String> relativePaths = FileUtils.getFileNames(sourceDirectory, includesString, excludesString, false);
-    for (String relativePath : relativePaths) {
-      File source = new File(sourceDirectory, relativePath);
-      File target = new File(targetDirectory, relativePath);
-      copy(source, target);
+
+    if (directory.isFlatten()) {
+      List<File> paths = FileUtils.getFiles(sourceDirectory, includesString, excludesString);
+      for (File source : paths) {
+        File target = new File(targetDirectory, source.getName());
+        copy(source, target);
+      }
+    } else {
+      List<String> relativePaths = FileUtils.getFileNames(sourceDirectory, includesString, excludesString, false);
+      for (String relativePath : relativePaths) {
+        File source = new File(sourceDirectory, relativePath);
+        File target = new File(targetDirectory, relativePath);
+        copy(source, target);
+      }
     }
   }
 

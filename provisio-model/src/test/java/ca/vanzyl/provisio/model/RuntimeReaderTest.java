@@ -2,6 +2,7 @@ package ca.vanzyl.provisio.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -165,7 +166,20 @@ public class RuntimeReaderTest {
   }
 
   @Test
-  public void validateRuntimeUsingFileSets() throws IOException {
+  public void validateRuntimeUsingFileSetsWithFlattenedDirectories() throws IOException {
+    RuntimeReader reader = new RuntimeReader(actionDescriptors());
+    Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/assembly-with-flatten.xml")));
+    List<FileSet> fileSets = runtime.getFileSets();
+    FileSet conf = fileSets.get(0);
+    assertEquals("concord", conf.getDirectory());
+    Directory directory = conf.getDirectories().get(0);
+    assertEquals("${basedir}/k8s-import", directory.getPath());
+    assertEquals("**/concord-k8s*.yml", directory.getIncludes().get(0));
+    assertTrue(directory.isFlatten());
+  }
+
+  @Test
+  public void validateRuntimeUsingFileSet() throws IOException {
     RuntimeReader reader = new RuntimeReader(actionDescriptors());
     Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/assembly-with-filesets.xml")));
     List<FileSet> fileSets = runtime.getFileSets();

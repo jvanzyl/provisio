@@ -24,6 +24,7 @@ public class Directory {
   private String path;
   private List<String> includes;
   private List<String> excludes;
+  private boolean flatten;
 
   public String getPath() {
     return path;
@@ -45,5 +46,15 @@ public class Directory {
       excludes = Lists.newArrayList();
     }
     return excludes;
+  }
+
+  public boolean isFlatten()
+  {
+    return flatten;
+  }
+
+  public void setFlatten(boolean flatten)
+  {
+    this.flatten = flatten;
   }
 }
