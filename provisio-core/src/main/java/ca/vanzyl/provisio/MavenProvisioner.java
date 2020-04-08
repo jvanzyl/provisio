@@ -120,8 +120,8 @@ public class MavenProvisioner {
     // Child ArtifactSets
     //
     if (artifactSet.getArtifactSets() != null) {
-      for (ArtifactSet childFileSet : artifactSet.getArtifactSets()) {
-        processArtifactSet(context, childFileSet);
+      for (ArtifactSet childArtifactSet : artifactSet.getArtifactSets()) {
+        processArtifactSet(context, childArtifactSet);
       }
     }
   }
@@ -143,7 +143,7 @@ public class MavenProvisioner {
   }
 
   //
-  // Process actions that apply across filesets
+  // Process actions that apply across artifact sets
   //
   private void processArtifactSetActions(ProvisioningContext context, ArtifactSet artifactSet) throws Exception {}
 
