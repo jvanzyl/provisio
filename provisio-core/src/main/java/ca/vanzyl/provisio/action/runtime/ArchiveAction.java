@@ -45,6 +45,7 @@ public class ArchiveAction implements ProvisioningAction {
   private File runtimeDirectory;
   private String hardLinkIncludes;
   private String hardLinkExcludes;
+  private boolean useRoot = true;
 
   public void execute(ProvisioningContext context) {
     ArchiverBuilder builder = Archiver.builder();
@@ -53,6 +54,7 @@ public class ArchiveAction implements ProvisioningAction {
     }
     Archiver archiver = builder
         .posixLongFileMode(true)
+        .useRoot(useRoot)
         .hardLinkIncludes(split(hardLinkIncludes))
         .hardLinkExcludes(split(hardLinkExcludes))
         .build();
@@ -105,5 +107,15 @@ public class ArchiveAction implements ProvisioningAction {
       return new String[0];
     }
     return StringUtils.split(s, ",");
+  }
+
+  public boolean isUseRoot()
+  {
+    return useRoot;
+  }
+
+  public void setUseRoot(boolean useRoot)
+  {
+    this.useRoot = useRoot;
   }
 }
