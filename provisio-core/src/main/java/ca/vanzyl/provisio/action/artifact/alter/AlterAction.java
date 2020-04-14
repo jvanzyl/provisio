@@ -15,6 +15,8 @@
  */
 package ca.vanzyl.provisio.action.artifact.alter;
 
+import static ca.vanzyl.provisio.ProvisioUtils.coordinateToPath;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -108,24 +110,6 @@ public class AlterAction implements ProvisioningAction {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private String coordinateToPath(ProvisioArtifact a) {
-
-    StringBuffer path = new StringBuffer()
-      .append(a.getArtifactId())
-      .append("-")
-      .append(a.getVersion());
-
-    if(a.getClassifier() != null) {
-      path.append("-")
-        .append(a.getClassifier());
-    }
-
-    path.append(".")
-      .append(a.getExtension());
-
-    return path.toString();
   }
 
   private void setFilesReadable(File directory) throws IOException {
