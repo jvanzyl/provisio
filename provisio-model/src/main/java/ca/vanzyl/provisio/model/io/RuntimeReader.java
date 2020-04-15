@@ -15,6 +15,7 @@
  */
 package ca.vanzyl.provisio.model.io;
 
+import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
@@ -58,7 +59,7 @@ public class RuntimeReader {
   }
 
   public RuntimeReader(List<ActionDescriptor> actions, Map<String, String> versionMap) {
-    xstream = new XStream();
+    xstream = new XStream(new PureJavaReflectionProvider());
     // Allow both "assembly" and "runtime" as the root elements
     xstream.alias("assembly", Runtime.class);
     xstream.alias("runtime", Runtime.class);
