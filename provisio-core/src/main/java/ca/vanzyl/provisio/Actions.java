@@ -87,7 +87,7 @@ public class Actions {
       @Override
       public String[] attributes() {
         return new String[] {
-            "name", "executable", "hardLinkIncludes", "hardLinkExcludes"
+            "name", "executable", "hardLinkIncludes", "hardLinkExcludes", "useRoot"
         };
       }
     });
