@@ -45,6 +45,8 @@ public class ArchiveAction implements ProvisioningAction {
   private File runtimeDirectory;
   private String hardLinkIncludes;
   private String hardLinkExcludes;
+  // Historic behavior is to useRoot=true because this is the default for the Takari Archiver, but we
+  // want to allow setting useRoot=false to eliminate the initial leading directory entry.
   private boolean useRoot = true;
 
   public void execute(ProvisioningContext context) {
