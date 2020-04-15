@@ -20,7 +20,7 @@
   <parent>
     <groupId>ca.vanzyl</groupId>
     <artifactId>provisio</artifactId>
-    <version>1.0.14</version>
+    <version>1.0.15-SNAPSHOT</version>
   </parent>
   <artifactId>provisio-its</artifactId>
   <name>Provisio :: Integration Tests</name>
