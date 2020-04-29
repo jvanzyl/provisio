@@ -65,9 +65,9 @@ import com.google.common.collect.Sets;
 
 public class MavenProvisioner {
 
-  private RepositorySystem repositorySystem;
-  private RepositorySystemSession repositorySystemSession;
-  private List<RemoteRepository> remoteRepositories;
+  private final RepositorySystem repositorySystem;
+  private final RepositorySystemSession repositorySystemSession;
+  private final List<RemoteRepository> remoteRepositories;
 
   public MavenProvisioner(RepositorySystem repositorySystem, RepositorySystemSession repositorySystemSession, List<RemoteRepository> remoteRepositories) {
     this.repositorySystem = repositorySystem;
