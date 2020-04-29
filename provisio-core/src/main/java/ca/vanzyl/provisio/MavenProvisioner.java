@@ -74,18 +74,6 @@ public class MavenProvisioner {
     this.repositorySystemSession = repositorySystemSession;
     this.remoteRepositories = remoteRepositories;
   }
-  
-  public RepositorySystem getRepositorySystem() {
-    return repositorySystem;
-  }
-  
-  public RepositorySystemSession getRepositorySystemSession() {
-    return repositorySystemSession;
-  }
-  
-  public List<RemoteRepository> getRemoteRepositories() {
-    return remoteRepositories;
-  }
 
   public ProvisioningResult provision(ProvisioningRequest request) throws Exception {
     ProvisioningResult result = new ProvisioningResult(request);
@@ -355,7 +343,7 @@ public class MavenProvisioner {
       DependencyFilter exclusionsFilter = new ExclusionsDependencyFilter(exclusions);
       dependencyRequest.setFilter(new AndDependencyFilter(exclusionsFilter, systemScopeFilter));
     } else {
-      dependencyRequest.setFilter(systemScopeFilter);      
+      dependencyRequest.setFilter(systemScopeFilter);
     }
 
     for (String coordinate : context.getRequest().getManagedDependencies()) {

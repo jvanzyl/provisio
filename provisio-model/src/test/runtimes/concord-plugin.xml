@@ -1,0 +1,14 @@
+<assembly>
+    <artifactSet
+      to="/"
+      ref="runtime.classpath"
+      providedBom="com.walmartlabs.concord:concord-targetplatform:pom:1.44.0" />
+
+    <fileSet to="/">
+        <directory path="${basedir}/target">
+            <include>${project.artifactId}-${project.version}-services.jar</include>
+        </directory>
+    </fileSet>
+
+    <archive name="${project.artifactId}-${project.version}.zip" />
+</assembly>
