@@ -339,6 +339,14 @@ public class RuntimeReaderTest {
     Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/runtime-with-invalid-action.xml")));
   }
 
+  @Test
+  public void validateRuntimeWithArtifactSetProvidedBom() throws IOException {
+    RuntimeReader reader = new RuntimeReader(actionDescriptors());
+    Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/concord-plugin.xml")));
+    ArtifactSet artifactSet = runtime.getArtifactSets().get(0);
+    assertEquals("com.walmartlabs.concord:concord-targetplatform:pom:1.44.0", artifactSet.getProvidedBom());
+  }
+
   @Rule
   public ExpectedException invalidArtifactActionException = ExpectedException.none();
 

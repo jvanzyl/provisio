@@ -72,6 +72,7 @@ public class RuntimeReader {
     xstream.alias("artifactSet", ArtifactSet.class);
     xstream.aliasAttribute(ArtifactSet.class, "directory", "to");
     xstream.aliasAttribute(ArtifactSet.class, "reference", "ref");
+    xstream.useAttributeFor(ArtifactSet.class, "providedBom");
     xstream.addImplicitCollection(ArtifactSet.class, "artifacts", ProvisioArtifact.class);
     xstream.alias("exclude", Exclusion.class);
     xstream.useAttributeFor(Exclusion.class, "id");

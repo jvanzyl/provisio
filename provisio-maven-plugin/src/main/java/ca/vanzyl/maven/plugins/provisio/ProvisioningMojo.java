@@ -15,6 +15,7 @@
  */
 package ca.vanzyl.maven.plugins.provisio;
 
+import ca.vanzyl.provisio.model.ProvisioArchive;
 import java.io.File;
 import java.util.Collections;
 import java.util.Map;
@@ -120,8 +121,13 @@ public class ProvisioningMojo extends AbstractMojo {
 
       if (result.getArchives() != null) {
         if (result.getArchives().size() == 1) {
-          File file = result.getArchives().get(0);
-          project.getArtifact().setFile(file);
+          ProvisioArchive provisioArchive = result.getArchives().get(0);
+          if(project.getPackaging().equals("jar") || project.getPackaging().equals("takari-jar")) {
+            projectHelper.attachArtifact(project, provisioArchive.extension(), provisioArchive.file());
+          } else {
+            // We have something like provisio or presto-plugin
+            project.getArtifact().setFile(provisioArchive.file());
+          }
         }
       }
     }

@@ -1,17 +1,19 @@
 /**
  * Copyright (C) 2015-2020 Jason van Zyl
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing permissions and limitations under the License.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing permissions and limitations under the License.
  */
 /**
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,14 +30,13 @@
  */
 package ca.vanzyl.provisio.action.runtime;
 
+import ca.vanzyl.provisio.model.ProvisioArchive;
 import ca.vanzyl.provisio.model.ProvisioningAction;
 import ca.vanzyl.provisio.model.ProvisioningContext;
 import io.tesla.proviso.archive.Archiver;
 import io.tesla.proviso.archive.Archiver.ArchiverBuilder;
-
-import java.io.File;
-
 import io.tesla.proviso.archive.UnArchiver;
+import java.io.File;
 import org.codehaus.plexus.util.StringUtils;
 
 public class ArchiveAction implements ProvisioningAction {
@@ -67,7 +68,14 @@ public class ArchiveAction implements ProvisioningAction {
       // Right now this action has some special meaning it maybe shouldn't, but we need to know what archives are produced
       // so that we can set/attach the artifacts in a MavenProject.
       //
-      context.getResult().addArchive(archive);
+      String extension;
+      if (archive.getName().endsWith("tar.gz")) {
+        extension = "tar.gz";
+      } else {
+        extension = "zip";
+      }
+      ProvisioArchive provisioArchive = new ProvisioArchive(archive, extension);
+      context.getResult().addArchive(provisioArchive);
 
       //
       // In the case we have made a hardlinked tarball, unpack the tarball for convenience so that it can
@@ -75,11 +83,11 @@ public class ArchiveAction implements ProvisioningAction {
       // contents. For example if you want to make a Docker image using hardlinked contents. It might
       // be better to have the runtime directory be hardlinked before tarring it up.
       //
-      if(hardLinkIncludes != null) {
+      if (hardLinkIncludes != null) {
         UnArchiver unArchiver = UnArchiver
-          .builder()
-          .useRoot(false)
-          .build();
+            .builder()
+            .useRoot(false)
+            .build();
         unArchiver.unarchive(archive, new File(runtimeDirectory + "-hardlinks"));
       }
 
@@ -111,13 +119,11 @@ public class ArchiveAction implements ProvisioningAction {
     return StringUtils.split(s, ",");
   }
 
-  public boolean isUseRoot()
-  {
+  public boolean isUseRoot() {
     return useRoot;
   }
 
-  public void setUseRoot(boolean useRoot)
-  {
+  public void setUseRoot(boolean useRoot) {
     this.useRoot = useRoot;
   }
 }

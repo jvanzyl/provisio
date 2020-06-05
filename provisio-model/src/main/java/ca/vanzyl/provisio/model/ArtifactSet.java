@@ -30,6 +30,7 @@ public class ArtifactSet {
   private String directory;
   private String reference;
   private String from;
+  private String providedBom;
 
   private List<ProvisioArtifact> artifacts = Lists.newArrayList();
   private List<Resource> resources = Lists.newArrayList();
@@ -65,6 +66,16 @@ public class ArtifactSet {
 
   public void setFrom(String from) {
     this.from = from;
+  }
+
+  public String getProvidedBom()
+  {
+    return providedBom;
+  }
+
+  public void setProvidedBom(String providedBom)
+  {
+    this.providedBom = providedBom;
   }
 
   public void addArtifact(ProvisioArtifact artifact) {
