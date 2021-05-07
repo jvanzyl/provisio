@@ -12,6 +12,7 @@ A Maven-based provisioning mechanism and replacement for the maven-assembly-plug
 - [Support for inserting artifacts into archives on the fly](#feature7)
 - [Support for standard addition of files to a runtime](#feature8)
 - [Support for automatic exclusions in parent/child artifactSet relationships](#feature9)
+- [Support for generating dependencies for pom.xml](#feature10)
 
 Provisio was originally created for the [Presto](https://prestosql.io/) project to provide a common way to build [Presto plugins](https://github.com/prestosql/presto-maven-plugin) and build the [Presto Server](https://github.com/prestosql/presto/tree/master/presto-server). You'll notice how small the Presto Server [`pom.xml`](https://github.com/prestosql/presto/blob/master/presto-server/pom.xml) is even though, at the time of this writing, there are 30+ plugins packaged in the Presto Server build as per the [Provisio descriptor](https://github.com/prestosql/presto/blob/master/presto-server/src/main/provisio/presto.xml). As you'll read below, you only need to specify what you need in the Provisio descriptor and Maven will figure out the rest, correctly, without having to pollute your `pom.xml` with duplicated dependendency declarations.
 
@@ -253,6 +254,21 @@ What follows are various techniques and capabilities for building runtimes. Prov
     </artifactSet>
   </artifactSet>
 </runtime>
+```
+
+<a name="feature10"></a>
+## Generating dependencies
+
+If you do need all the dependencies to be defined in `pom.xml`, for example to use other Maven plugins that process them, use the `generate` Mojo to avoid having to manage them manually:
+```
+mvn provisio:generateDependencies -DpomFile=pom-generated.xml
+```
+
+Without `-DpomFile=pom-generated.xml`, dependencies would be added to the existing `pom.xml`, but it won't preserve any comments.
+
+To only check if the `pom.xml` file is already up to date, run:
+```
+mvn provisio:verifyDependencies
 ```
 
 # References
