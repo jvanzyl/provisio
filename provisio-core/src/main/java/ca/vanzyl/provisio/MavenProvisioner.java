@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -83,6 +84,17 @@ public class MavenProvisioner {
     processResourceSets(context);
     processFileSets(context);
     processRuntimeActions(context);
+
+    return result;
+  }
+
+  public Set<ProvisioArtifact> resolveArtifacts(ProvisioningRequest request) throws Exception {
+    ProvisioningContext context = new ProvisioningContext(request, null);
+
+    Set<ProvisioArtifact> result = new HashSet<>();
+    for (ArtifactSet artifactSet : context.getRequest().getRuntimeModel().getArtifactSets()) {
+      result.addAll(resolveArtifactSet(context, artifactSet));
+    }
 
     return result;
   }
