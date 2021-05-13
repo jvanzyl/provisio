@@ -25,4 +25,4 @@ jobs:
         with:
           java-version: 8
       - name: Build & Test
-        run: ./mvnw -B verify
+        run: ./mvnw -B install
