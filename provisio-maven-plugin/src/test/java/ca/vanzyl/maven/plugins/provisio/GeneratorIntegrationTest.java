@@ -55,6 +55,17 @@ public class GeneratorIntegrationTest
         testGenerator("basic");
     }
 
+    @Test
+    public void testConflict()
+            throws Exception
+    {
+        File basedir = resources.getBasedir("conflict");
+        maven.forProject(basedir)
+                .withCliOption("-DpomFile=generated.xml")
+                .execute("provisio:generateDependencies")
+                .assertLogText("[ERROR] Failed to execute goal ca.vanzyl.provisio.maven.plugins:provisio-maven-plugin:1.0.16-SNAPSHOT:generateDependencies (default-cli) on project conflict: Found different versions of the same dependency: junit:junit:jar:4.13.2, junit:junit:jar:4.13.1 -> [Help 1]");
+    }
+
     protected void testGenerator(String projectId)
             throws Exception
     {

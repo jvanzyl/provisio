@@ -23,10 +23,12 @@ import io.takari.incrementalbuild.Incremental;
 import io.takari.incrementalbuild.Incremental.Configuration;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
@@ -49,8 +51,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public abstract class BaseMojo
         extends AbstractMojo {
@@ -150,6 +158,45 @@ public abstract class BaseMojo
     return request;
   }
 
+  protected void checkDuplicates(List<ProvisioArtifact> artifacts)
+          throws MojoFailureException
+  {
+    Map<String, Set<String>> grouped = new HashMap<>();
+    for (ProvisioArtifact artifact : artifacts) {
+      String key = artifact.toVersionlessCoordinate();
+      if (!grouped.containsKey(key)) {
+        grouped.put(key, new HashSet<>());
+      }
+      grouped.get(key).add(key + ":" + artifact.getVersion());
+    }
+    List<String> duplicates = grouped.values()
+            .stream()
+            .filter(strings -> strings.size() > 1)
+            .map(strings -> String.join(", ", strings))
+            .collect(Collectors.toList());
+    if (duplicates.size() != 0) {
+      throw new MojoFailureException("Found different versions of the same dependency: " + String.join(", ", duplicates));
+    }
+  }
+
+  protected List<Dependency> getDependencies(List<ProvisioArtifact> artifacts)
+  {
+    List<Dependency> dependencies = new ArrayList<>();
+    for (ProvisioArtifact artifact : artifacts) {
+      Dependency dependency = new Dependency();
+      dependency.setGroupId(artifact.getGroupId());
+      dependency.setArtifactId(artifact.getArtifactId());
+      dependency.setVersion(artifact.getVersion());
+      if (artifact.getClassifier() != null && artifact.getClassifier().length() != 0) {
+        dependency.setClassifier(artifact.getClassifier());
+      }
+      if (artifact.getExtension() != null && artifact.getExtension().length() != 0 && !artifact.getExtension().equals("jar")) {
+        dependency.setType(artifact.getExtension());
+      }
+      dependencies.add(dependency);
+    }
+    return dependencies;
+  }
 
   public static Model readModel(File pomFile, Model defaultModel)
           throws MojoExecutionException

@@ -28,7 +28,9 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -47,7 +49,7 @@ public class ValidatorMojo
     {
         MavenProvisioner provisioner = new MavenProvisioner(repositorySystem, repositorySystemSession, project.getRemoteProjectRepositories());
 
-        Set<ProvisioArtifact> artifacts = new HashSet<>();
+        List<ProvisioArtifact> artifacts = new ArrayList<>();
         for (Runtime runtime : provisio.findDescriptors(descriptorDirectory, project)) {
             runtime.addArtifactSetReference("runtime.classpath", getRuntimeClasspathAsArtifactSet());
 
@@ -59,36 +61,18 @@ public class ValidatorMojo
                 throw new MojoExecutionException("Error resolving artifacts.", e);
             }
         }
+        checkDuplicates(artifacts);
         Model model = readModel(pomFile, project.getModel().clone());
         Set<String> dependencies = flattenDependencies(getDependencies(artifacts));
         Set<String> modelDependencies = flattenDependencies(model.getDependencies()
                 .stream()
                 .filter(d -> d.getScope() == null || d.getScope().equals("compile"))
-                .collect(Collectors.toSet()));
+                .collect(Collectors.toList()));
 
         checkDependencies(modelDependencies, dependencies);
     }
 
-    private Set<Dependency> getDependencies(Set<ProvisioArtifact> artifacts)
-    {
-        Set<Dependency> dependencies = new HashSet<>();
-        for (ProvisioArtifact artifact : artifacts) {
-            Dependency dependency = new Dependency();
-            dependency.setGroupId(artifact.getGroupId());
-            dependency.setArtifactId(artifact.getArtifactId());
-            dependency.setVersion(artifact.getVersion());
-            if (artifact.getClassifier() != null && artifact.getClassifier().length() != 0) {
-                dependency.setClassifier(artifact.getClassifier());
-            }
-            if (artifact.getExtension() != null && artifact.getExtension().length() != 0 && !artifact.getExtension().equals("jar")) {
-                dependency.setType(artifact.getExtension());
-            }
-            dependencies.add(dependency);
-        }
-        return dependencies;
-    }
-
-    private Set<String> flattenDependencies(Set<Dependency> dependencies)
+    private Set<String> flattenDependencies(List<Dependency> dependencies)
     {
         return dependencies
                 .stream()

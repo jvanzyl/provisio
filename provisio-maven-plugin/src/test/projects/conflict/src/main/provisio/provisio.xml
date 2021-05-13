@@ -1,0 +1,11 @@
+<assembly>
+
+  <artifactSet to="lib">
+    <artifact id="junit:junit:4.13.2"/>
+  </artifactSet>
+
+  <artifactSet to="lib2">
+    <artifact id="junit:junit:4.13.1"/>
+  </artifactSet>
+
+</assembly>
