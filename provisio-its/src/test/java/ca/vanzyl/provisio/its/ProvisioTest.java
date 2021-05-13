@@ -18,6 +18,7 @@ import com.google.common.collect.Maps;
 
 import org.codehaus.plexus.util.FileUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -127,6 +128,7 @@ public class ProvisioTest {
   }
 
   @Test
+  @Ignore
   public void validateUnpackWithMustacheFiltering() throws Exception {
     // Filtering resources with {{variable}} embedded
     String name = "it-0020";
