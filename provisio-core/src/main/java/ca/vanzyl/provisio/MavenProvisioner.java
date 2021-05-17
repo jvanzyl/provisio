@@ -88,12 +88,23 @@ public class MavenProvisioner {
     return result;
   }
 
-  public Set<ProvisioArtifact> resolveArtifacts(ProvisioningRequest request) throws Exception {
+  public Set<ProvisioArtifact> resolveArtifacts(ProvisioningRequest request) {
     ProvisioningContext context = new ProvisioningContext(request, null);
 
     Set<ProvisioArtifact> result = new HashSet<>();
     for (ArtifactSet artifactSet : context.getRequest().getRuntimeModel().getArtifactSets()) {
       result.addAll(resolveArtifactSet(context, artifactSet));
+    }
+
+    return result;
+  }
+
+  public List<ProvisioArtifact> getArtifacts(ProvisioningRequest request) {
+    ProvisioningContext context = new ProvisioningContext(request, null);
+
+    List<ProvisioArtifact> result = new ArrayList<>();
+    for (ArtifactSet artifactSet : context.getRequest().getRuntimeModel().getArtifactSets()) {
+      result.addAll(getArtifactsFromSet(context, artifactSet));
     }
 
     return result;
@@ -224,6 +235,29 @@ public class MavenProvisioner {
     }
 
     return resolvedArtifacts;
+  }
+
+  private List<ProvisioArtifact> getArtifactsFromSet(ProvisioningContext context, ArtifactSet artifactSet) {
+    List<ProvisioArtifact> artifacts;
+    if (artifactSet.getReference() != null) {
+      Runtime runtime = context.getRequest().getRuntimeModel();
+      if (runtime.getArtifactSetReferences() == null) {
+        throw new RuntimeException(String.format("The reference '%s' is being requested but the artifactSet references are null.", artifactSet.getReference()));
+      }
+      ArtifactSet referenceArtifactSet = runtime.getArtifactSetReferences().get(artifactSet.getReference());
+      if (referenceArtifactSet == null) {
+        throw new RuntimeException(String.format("The is no '%s' artifactSet reference available.", artifactSet.getReference()));
+      }
+      artifacts = referenceArtifactSet.getArtifacts();
+    } else {
+      artifacts = artifactSet.getArtifacts();
+    }
+    if (artifactSet.getArtifactSets() != null) {
+      for (ArtifactSet childSet : artifactSet.getArtifactSets()) {
+        artifacts.addAll(getArtifactsFromSet(context, childSet));
+      }
+    }
+    return artifacts;
   }
 
   public Set<ProvisioArtifact> resolveArtifact(ProvisioningContext context, ProvisioArtifact artifact) {

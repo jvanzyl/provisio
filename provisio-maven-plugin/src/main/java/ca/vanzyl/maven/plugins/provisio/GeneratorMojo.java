@@ -58,7 +58,7 @@ public class GeneratorMojo
 
             ProvisioningRequest request = getRequest(runtime);
             try {
-                artifacts.addAll(provisioner.resolveArtifacts(request));
+                artifacts.addAll(provisioner.getArtifacts(request));
             }
             catch (Exception e) {
                 throw new MojoExecutionException("Error resolving artifacts.", e);

@@ -51,8 +51,7 @@ public class ValidatorIntegrationTest
         maven.forProject(basedir)
                 .execute("provisio:validateDependencies")
                 .assertLogText("[ERROR] Failed to execute goal ca.vanzyl.provisio.maven.plugins:provisio-maven-plugin:")
-                .assertLogText("validateDependencies (default-cli) on project basic: Missing dependencies: junit:junit:jar:4.13.2, org.hamcrest:hamcrest-core:jar:1.3 -> [Help 1]");
-
+                .assertLogText("validateDependencies (default-cli) on project basic: Missing dependencies: junit:junit:jar:4.13.2 -> [Help 1]");
     }
 
     @Test
