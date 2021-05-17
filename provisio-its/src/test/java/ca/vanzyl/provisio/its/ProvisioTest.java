@@ -9,6 +9,7 @@ import ca.vanzyl.provisio.maven.MavenInstallationProvisioner;
 import ca.vanzyl.provisio.maven.MavenInvoker;
 import ca.vanzyl.provisio.maven.MavenRequest;
 import ca.vanzyl.provisio.maven.MavenResult;
+import ca.vanzyl.provisio.model.ProvisioArtifact;
 import ca.vanzyl.provisio.model.ProvisioningRequest;
 import ca.vanzyl.provisio.model.ProvisioningResult;
 import ca.vanzyl.provisio.model.Runtime;
@@ -25,6 +26,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 

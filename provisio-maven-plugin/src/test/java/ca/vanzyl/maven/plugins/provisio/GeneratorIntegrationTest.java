@@ -82,7 +82,6 @@ public class GeneratorIntegrationTest
 
         String[] expected = {
                 "junit:junit:jar:4.13.2:runtime",
-                "org.hamcrest:hamcrest-core:jar:1.3:runtime",
                 "io.trino:trino-spi:jar:356:provided"};
         assertArrayEquals(expected, dependencies.toArray());
     }
