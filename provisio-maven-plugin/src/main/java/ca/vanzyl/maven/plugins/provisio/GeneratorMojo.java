@@ -24,6 +24,7 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
@@ -33,19 +34,19 @@ import org.codehaus.plexus.util.WriterFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
-@Mojo(name = "generateDependencies", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
+@Mojo(name = "generateDependencies", defaultPhase = LifecyclePhase.GENERATE_RESOURCES, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class GeneratorMojo
         extends BaseMojo
 {
     /**
-     * Location of an existing POM file in which dependencies should be updated.
+     * Where to put the dependency extended pom.
      */
-    @Parameter(required = true, property = "pomFile", defaultValue = "${basedir}/pom.xml")
-    private File pomFile;
+    @Parameter(property = "dependencyExtendedPomLocation", defaultValue = "${project.build.directory}/generated/provisio/dependency-extended-pom.xml")
+    private File dependencyExtendedPomLocation;
 
     public void execute()
             throws MojoExecutionException, MojoFailureException
@@ -64,37 +65,29 @@ public class GeneratorMojo
                 throw new MojoExecutionException("Error resolving artifacts.", e);
             }
         }
+        if (artifacts.size() == 0) {
+            return;
+        }
         checkDuplicates(artifacts);
-        Model model = readModel(pomFile, project.getModel().clone());
+        Model model = project.getOriginalModel().clone();
         List<Dependency> dependencies = getDependencies(artifacts);
         mergeDependencies(model, dependencies);
-        writeModel(pomFile, model);
+        writeModel(model);
+        project.setPomFile(dependencyExtendedPomLocation);
     }
 
-    private void mergeDependencies(Model model, List<Dependency> dependencies)
-    {
-        for (Dependency dependency : model.getDependencies()) {
-            if (dependency.getScope() != null && !dependency.getScope().equals("compile")) {
-                dependencies.add(dependency);
-            }
-        }
-        ArrayList<Dependency> sorted = new ArrayList<>(dependencies);
-        sorted.sort(
-                Comparator.comparing(Dependency::getScope, Comparator.nullsFirst(Comparator.naturalOrder()))
-                        .thenComparing(Dependency::getGroupId)
-                        .thenComparing(Dependency::getArtifactId)
-                        .thenComparing(Dependency::getVersion)
-                        .thenComparing(Dependency::getClassifier, Comparator.nullsFirst(Comparator.naturalOrder()))
-                        .thenComparing(Dependency::getType, Comparator.nullsFirst(Comparator.naturalOrder())));
-        model.setDependencies(sorted);
-    }
-
-    private void writeModel(File pomFile, Model model)
+    private void writeModel(Model model)
             throws MojoExecutionException
     {
+        getLog().info( "Dependency-extended POM written at: " + dependencyExtendedPomLocation.getAbsolutePath() );
+        try {
+            Files.createDirectories(dependencyExtendedPomLocation.toPath().getParent());
+        } catch (IOException e) {
+            throw new MojoExecutionException("Error creating parent directories for the POM file: " + e.getMessage(), e);
+        }
         Writer writer = null;
         try {
-            writer = WriterFactory.newXmlWriter(pomFile);
+            writer = WriterFactory.newXmlWriter(dependencyExtendedPomLocation);
             new MavenXpp3Writer().write(writer, model);
             writer.close();
         }

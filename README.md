@@ -261,7 +261,7 @@ What follows are various techniques and capabilities for building runtimes. Prov
 
 If you do need all the dependencies to be defined in `pom.xml`, for example to use other Maven plugins that process them, use the `generate` Mojo to avoid having to manage them manually:
 ```
-mvn provisio:generateDependencies -DpomFile=pom-generated.xml
+mvn provisio:generateDependencies -DdependencyExtendedPomLocation=pom-generated.xml
 ```
 
 Without `-DpomFile=pom-generated.xml`, dependencies would be added to the existing `pom.xml`, but it won't preserve any comments.
