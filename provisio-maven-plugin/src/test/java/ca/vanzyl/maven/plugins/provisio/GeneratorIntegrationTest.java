@@ -22,11 +22,19 @@ import io.takari.maven.testing.executor.MavenVersions;
 import io.takari.maven.testing.executor.junit.MavenJUnitTestRunner;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.ReaderFactory;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,10 +69,10 @@ public class GeneratorIntegrationTest
     {
         File basedir = resources.getBasedir("conflict");
         maven.forProject(basedir)
-                .withCliOption("-DpomFile=generated.xml")
+                .withCliOption("-DdependencyExtendedPomLocation=generated.xml")
                 .execute("provisio:generateDependencies")
                 .assertLogText("[ERROR] Failed to execute goal ca.vanzyl.provisio.maven.plugins:provisio-maven-plugin:")
-                .assertLogText("generateDependencies (default-cli) on project conflict: Found different versions of the same dependency: junit:junit:jar:4.13.2, junit:junit:jar:4.13.1 -> [Help 1]");
+                .assertLogText("generateDependencies (default-cli) on project conflict: Found different versions of the same dependency: org.scala-lang:scala-library:jar:2.13.5, org.scala-lang:scala-library:jar:2.13.6 -> [Help 1]");
 
     }
 
@@ -73,17 +81,42 @@ public class GeneratorIntegrationTest
     {
         File basedir = resources.getBasedir(projectId);
         maven.forProject(basedir)
-                .withCliOption("-DpomFile=generated.xml")
+                .withCliOption("-DdependencyExtendedPomLocation=generated.xml")
                 .execute("provisio:generateDependencies")
                 .assertErrorFreeLog();
 
-        Model model = BaseMojo.readModel(new File(basedir, "generated.xml"), null);
+        Model model = readModel(new File(basedir, "generated.xml"));
         List<String> dependencies = flattenDependencies(model.getDependencies());
 
         String[] expected = {
-                "junit:junit:jar:4.13.2:runtime",
+                "org.scala-lang:scala-library:jar:2.13.6:runtime",
                 "io.trino:trino-spi:jar:356:provided"};
         assertArrayEquals(expected, dependencies.toArray());
+    }
+
+
+    private Model readModel(File pomFile)
+            throws MojoExecutionException
+    {
+        Reader reader = null;
+        try {
+            reader = ReaderFactory.newXmlReader(pomFile);
+            final Model model = new MavenXpp3Reader().read(reader);
+            reader.close();
+            return model;
+        }
+        catch (FileNotFoundException e) {
+            return null;
+        }
+        catch (IOException e) {
+            throw new MojoExecutionException("Error reading POM " + pomFile, e);
+        }
+        catch (XmlPullParserException e) {
+            throw new MojoExecutionException("Error parsing POM " + pomFile, e);
+        }
+        finally {
+            IOUtil.close(reader);
+        }
     }
 
     private List<String> flattenDependencies(List<Dependency> dependencies)

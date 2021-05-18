@@ -38,6 +38,9 @@
           <lifecycle>
             <id>default</id>
             <phases>
+              <generate-resources>
+                ca.vanzyl.provisio.maven.plugins:provisio-maven-plugin:${project.version}:generateDependencies
+              </generate-resources>
               <process-resources>
                 io.takari.maven.plugins:takari-lifecycle-plugin:${takariLifecyclePluginVersion}:process-resources
               </process-resources>
@@ -89,6 +92,9 @@
           <lifecycle>
             <id>default</id>
             <phases>
+              <generate-resources>
+                ca.vanzyl.provisio.maven.plugins:provisio-maven-plugin:${project.version}:generateDependencies
+              </generate-resources>
               <process-resources>
                 io.takari.maven.plugins:takari-lifecycle-plugin:${takariLifecyclePluginVersion}:process-resources
               </process-resources>

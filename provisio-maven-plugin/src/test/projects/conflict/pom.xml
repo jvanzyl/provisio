@@ -4,7 +4,7 @@
     <parent>
         <groupId>ca.vanzyl</groupId>
         <artifactId>provisio</artifactId>
-        <version>1.0.17-SNAPSHOT</version>
+        <version>1.0.18-SNAPSHOT</version>
     </parent>
     <groupId>ca.vanzyl.provisio.maven.plugins.its</groupId>
     <artifactId>conflict</artifactId>
@@ -36,6 +36,7 @@
             <plugin>
                 <groupId>ca.vanzyl.provisio.maven.plugins</groupId>
                 <artifactId>provisio-maven-plugin</artifactId>
+                <version>1.0.18-SNAPSHOT</version>
                 <extensions>true</extensions>
             </plugin>
         </plugins>

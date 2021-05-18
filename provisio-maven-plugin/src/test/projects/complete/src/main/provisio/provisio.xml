@@ -1,7 +1,7 @@
 <assembly>
 
   <artifactSet to="lib">
-    <artifact id="junit:junit:4.13.2"/>
+    <artifact id="org.scala-lang:scala-library:2.13.6"/>
   </artifactSet>
 
 </assembly>

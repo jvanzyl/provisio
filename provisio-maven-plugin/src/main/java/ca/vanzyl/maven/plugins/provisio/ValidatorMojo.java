@@ -62,7 +62,7 @@ public class ValidatorMojo
             }
         }
         checkDuplicates(artifacts);
-        Model model = readModel(pomFile, project.getModel().clone());
+        Model model = project.getModel().clone();
         Set<String> dependencies = flattenDependencies(getDependencies(artifacts));
         Set<String> modelDependencies = flattenDependencies(model.getDependencies()
                 .stream()

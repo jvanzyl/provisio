@@ -38,7 +38,7 @@ public class ProvisioningMojo extends BaseMojo {
   @Parameter(defaultValue = "${project.build.directory}/${project.artifactId}-${project.version}")
   private File outputDirectory;
 
-  public void execute() throws MojoExecutionException, MojoFailureException {
+  public void execute() throws MojoExecutionException {
     MavenProvisioner provisioner = new MavenProvisioner(repositorySystem, repositorySystemSession, project.getRemoteProjectRepositories());
 
     for (Runtime runtime : provisio.findDescriptors(descriptorDirectory, project)) {

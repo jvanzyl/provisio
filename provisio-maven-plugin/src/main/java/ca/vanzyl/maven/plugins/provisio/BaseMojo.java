@@ -48,11 +48,9 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -198,27 +196,21 @@ public abstract class BaseMojo
     return dependencies;
   }
 
-  public static Model readModel(File pomFile, Model defaultModel)
-          throws MojoExecutionException
+  protected void mergeDependencies(Model model, List<Dependency> dependencies)
   {
-    Reader reader = null;
-    try {
-      reader = ReaderFactory.newXmlReader(pomFile);
-      final Model model = new MavenXpp3Reader().read(reader);
-      reader.close();
-      return model;
+    for (Dependency dependency : model.getDependencies()) {
+      if (dependency.getScope() != null && !dependency.getScope().equals("compile")) {
+        dependencies.add(dependency);
+      }
     }
-    catch (FileNotFoundException e) {
-      return defaultModel;
-    }
-    catch (IOException e) {
-      throw new MojoExecutionException("Error reading POM " + pomFile, e);
-    }
-    catch (XmlPullParserException e) {
-      throw new MojoExecutionException("Error parsing POM " + pomFile, e);
-    }
-    finally {
-      IOUtil.close(reader);
-    }
+    ArrayList<Dependency> sorted = new ArrayList<>(dependencies);
+    sorted.sort(
+            Comparator.comparing(Dependency::getScope, Comparator.nullsFirst(Comparator.naturalOrder()))
+                    .thenComparing(Dependency::getGroupId)
+                    .thenComparing(Dependency::getArtifactId)
+                    .thenComparing(Dependency::getVersion, Comparator.nullsFirst(Comparator.naturalOrder()))
+                    .thenComparing(Dependency::getClassifier, Comparator.nullsFirst(Comparator.naturalOrder()))
+                    .thenComparing(Dependency::getType, Comparator.nullsFirst(Comparator.naturalOrder())));
+    model.setDependencies(sorted);
   }
 }
