@@ -31,6 +31,7 @@ import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import com.thoughtworks.xstream.security.NoTypePermission;
 
 import ca.vanzyl.provisio.model.Alias;
 import ca.vanzyl.provisio.model.ArtifactSet;
@@ -60,6 +61,13 @@ public class RuntimeReader {
 
   public RuntimeReader(List<ActionDescriptor> actions, Map<String, String> versionMap) {
     xstream = new XStream(new PureJavaReflectionProvider());
+    // clear out existing permissions and start a whitelist
+    xstream.addPermission(NoTypePermission.NONE);
+    // allow only specific packages
+    xstream.allowTypesByWildcard(new String[] {
+            "ca.vanzyl.provisio.model.**",
+            "ca.vanzyl.provisio.action.**",
+    });
     // Allow both "assembly" and "runtime" as the root elements
     xstream.alias("assembly", Runtime.class);
     xstream.alias("runtime", Runtime.class);
