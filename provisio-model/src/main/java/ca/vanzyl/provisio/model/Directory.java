@@ -15,9 +15,8 @@
  */
 package ca.vanzyl.provisio.model;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import com.google.common.collect.Lists;
 
 public class Directory {
 
@@ -36,14 +35,14 @@ public class Directory {
 
   public List<String> getIncludes() {
     if (includes == null) {
-      includes = Lists.newArrayList();
+      includes = new ArrayList<>();
     }
     return includes;
   }
 
   public List<String> getExcludes() {
     if (excludes == null) {
-      excludes = Lists.newArrayList();
+      excludes = new ArrayList<>();
     }
     return excludes;
   }

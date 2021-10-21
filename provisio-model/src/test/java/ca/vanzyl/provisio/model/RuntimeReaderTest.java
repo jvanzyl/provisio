@@ -8,6 +8,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,9 +26,6 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import org.junit.rules.ExpectedException;
 
 public class RuntimeReaderTest {
@@ -49,7 +50,7 @@ public class RuntimeReaderTest {
 
   @Test
   public void validateRuntimeReaderUsingVariables() throws IOException {
-    Map<String, String> variables = Maps.newHashMap();
+    Map<String, String> variables = new HashMap<>();
     variables.put("airshipVersion", "0.92");
     variables.put("prestoVersion", "0.74");
     RuntimeReader reader = new RuntimeReader(actionDescriptors());
@@ -72,7 +73,7 @@ public class RuntimeReaderTest {
 
   @Test
   public void validateRuntimeReaderUsingVariablesAndCustomActions() throws Exception {
-    Map<String, String> variables = Maps.newHashMap();
+    Map<String, String> variables = new HashMap<>();
     variables.put("airshipVersion", "0.92");
     variables.put("prestoVersion", "0.74");
     RuntimeReader reader = new RuntimeReader(actionDescriptors());
@@ -96,10 +97,10 @@ public class RuntimeReaderTest {
 
   @Test
   public void validateRuntimeReaderUsingVersionMap() throws Exception {
-    Map<String, String> variables = Maps.newHashMap();
+    Map<String, String> variables = new HashMap<>();
     variables.put("airshipVersion", "0.92");
     variables.put("prestoVersion", "0.74");
-    Map<String, String> versionMap = Maps.newHashMap();
+    Map<String, String> versionMap = new HashMap<>();
     versionMap.put("io.airlift:launcher:tar.gz:bin", "0.92");
     versionMap.put("io.airlift:launcher:tar.gz:properties", "0.92");
     versionMap.put("com.facebook.presto:presto-main:jar", "0.74");
@@ -131,7 +132,7 @@ public class RuntimeReaderTest {
 
   @Test
   public void validateRuntimeReaderUsingVariablesAndRuntimeActions() throws IOException {
-    Map<String, String> variables = Maps.newHashMap();
+    Map<String, String> variables = new HashMap<>();
     variables.put("airshipVersion", "0.92");
     variables.put("prestoVersion", "0.74");
     RuntimeReader reader = new RuntimeReader(actionDescriptors());
@@ -209,7 +210,7 @@ public class RuntimeReaderTest {
 
   @Test
   public void validateAssemblyUsingChildArtifactSets() throws IOException {
-    Map<String, String> variables = Maps.newHashMap();
+    Map<String, String> variables = new HashMap<>();
     variables.put("mavenVersion", "3.2.3");
     variables.put("tdmVersion", "3.2.1");
     RuntimeReader reader = new RuntimeReader(actionDescriptors());
@@ -234,7 +235,7 @@ public class RuntimeReaderTest {
 
   @Test
   public void validateRuntimeUsingArtifactReference() throws IOException {
-    Map<String, String> variables = Maps.newHashMap();
+    Map<String, String> variables = new HashMap<>();
     variables.put("mavenVersion", "3.2.3");
     variables.put("tdmVersion", "3.2.1");
     RuntimeReader reader = new RuntimeReader(actionDescriptors());
@@ -370,11 +371,11 @@ public class RuntimeReaderTest {
   }
 
   private Runtime parseDescriptor(File descriptor) throws IOException {
-    return parseDescriptor(descriptor, Maps.<String,String>newHashMap());
+    return parseDescriptor(descriptor, new HashMap<>());
   }  
   
   private List<ActionDescriptor> actionDescriptors() {
-    List<ActionDescriptor> actionDescriptors = Lists.newArrayList();
+    List<ActionDescriptor> actionDescriptors = new ArrayList<>();
     actionDescriptors.add(new ActionDescriptor() {
       @Override
       public String getName() {
@@ -430,14 +431,15 @@ public class RuntimeReaderTest {
 
       @Override
       public List<Alias> aliases() {
-        return ImmutableList.of(new Alias("insert", Insert.class), new Alias("delete", Delete.class));
+        return Collections.unmodifiableList(Arrays.asList(
+            new Alias("insert", Insert.class), new Alias("delete", Delete.class)));
       }
 
       @Override
       public List<Implicit> implicits() {
-        return ImmutableList.of(
+        return Collections.unmodifiableList(Arrays.asList(
             new Implicit("inserts", Alter.class, Insert.class), new Implicit("artifacts", Insert.class),
-            new Implicit("deletes", Alter.class, Delete.class), new Implicit("files", Delete.class));
+            new Implicit("deletes", Alter.class, Delete.class), new Implicit("files", Delete.class)));
       }      
     });
     return actionDescriptors;

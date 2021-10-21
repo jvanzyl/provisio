@@ -15,14 +15,14 @@
  */
 package ca.vanzyl.provisio.action.artifact.alter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ca.vanzyl.provisio.model.ProvisioArtifact;
-import com.google.common.collect.Lists;
 
 public class Insert {
   
-  private List<ProvisioArtifact> artifacts = Lists.newArrayList();
+  private List<ProvisioArtifact> artifacts = new ArrayList<>();
   
   public List<ProvisioArtifact> getArtifacts() {
     return artifacts;

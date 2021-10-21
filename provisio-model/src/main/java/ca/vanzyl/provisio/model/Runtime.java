@@ -15,13 +15,12 @@
  */
 package ca.vanzyl.provisio.model;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 public class Runtime {
 
@@ -42,12 +41,12 @@ public class Runtime {
   private List<FileSet> fileSets;
 
   public Runtime() {
-    this.actions = Lists.newArrayList();
-    this.artifactSets = Lists.newArrayList();
-    this.artifactSetReferences = Maps.newHashMap();
-    this.artifactReferences = Maps.newHashMap();
-    this.resourceSets = Lists.newArrayList();
-    this.fileSets = Lists.newArrayList();
+    this.actions = new ArrayList<>();
+    this.artifactSets = new ArrayList<>();
+    this.artifactSetReferences = new HashMap<>();
+    this.artifactReferences = new HashMap<>();
+    this.resourceSets = new ArrayList<>();
+    this.fileSets = new ArrayList<>();
   }
 
   public String getId() {
@@ -111,7 +110,7 @@ public class Runtime {
   }
 
   public Set<String> getGAsOfArtifacts() {
-    Set<String> dependenciesInVersionlessForm = new HashSet<String>();
+    Set<String> dependenciesInVersionlessForm = new HashSet<>();
     for (ArtifactSet artifactSet : artifactSets) {
       if (artifactSet.getArtifacts() != null) {
         for (ProvisioArtifact artifact : artifactSet.getArtifacts()) {
@@ -125,7 +124,7 @@ public class Runtime {
   }
 
   public Set<String> getVersionlessCoordinatesOfArtifacts() {
-    Set<String> dependenciesInVersionlessForm = new HashSet<String>();
+    Set<String> dependenciesInVersionlessForm = new HashSet<>();
     for (ArtifactSet artifactSet : artifactSets) {
       if (artifactSet.getArtifacts() != null) {
         for (ProvisioArtifact artifact : artifactSet.getArtifacts()) {

@@ -16,13 +16,12 @@
 package ca.vanzyl.provisio.model;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 public class ArtifactSet {
 
@@ -32,17 +31,17 @@ public class ArtifactSet {
   private String from;
   private String providedBom;
 
-  private List<ProvisioArtifact> artifacts = Lists.newArrayList();
-  private List<Resource> resources = Lists.newArrayList();
+  private List<ProvisioArtifact> artifacts = new ArrayList<>();
+  private List<Resource> resources = new ArrayList<>();
   // children
-  private List<ArtifactSet> artifactSets = Lists.newArrayList();
+  private List<ArtifactSet> artifactSets = new ArrayList<>();
   private List<Exclusion> exclusions;
 
   // runtime
   private ArtifactSet parent;
   private File outputDirectory;
-  private Map<String, ProvisioArtifact> artifactMap = Maps.newLinkedHashMap();
-  private Set<ProvisioArtifact> resolvedArtifacts = Sets.newHashSet();
+  private Map<String, ProvisioArtifact> artifactMap = new LinkedHashMap<>();
+  private Set<ProvisioArtifact> resolvedArtifacts = new HashSet<>();
 
   public String getDirectory() {
     return directory;

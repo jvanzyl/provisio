@@ -15,9 +15,8 @@
  */
 package ca.vanzyl.provisio.model;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import com.google.common.collect.Lists;
 
 public class FileSet {
 
@@ -35,14 +34,14 @@ public class FileSet {
 
   public List<File> getFiles() {
     if (files == null) {
-      files = Lists.newArrayList();
+      files = new ArrayList<>();
     }
     return files;
   }
 
   public List<Directory> getDirectories() {
     if (directories == null) {
-      directories = Lists.newArrayList();
+      directories = new ArrayList<>();
     }
     return directories;
   }

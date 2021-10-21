@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -59,10 +60,7 @@ import org.eclipse.aether.util.filter.AndDependencyFilter;
 import org.eclipse.aether.util.filter.ExclusionsDependencyFilter;
 import org.eclipse.aether.util.filter.ScopeDependencyFilter;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import static java.util.stream.Collectors.toSet;
 
 public class MavenProvisioner {
 
@@ -207,7 +205,7 @@ public class MavenProvisioner {
     //   </artifactSet>
     // </artifactSet>
     //
-    Set<ProvisioArtifact> parentResolved = artifactSet.getParent() != null ? artifactSet.getParent().getResolvedArtifacts() : Sets.newHashSet();
+    Set<ProvisioArtifact> parentResolved = artifactSet.getParent() != null ? artifactSet.getParent().getResolvedArtifacts() : new HashSet<>();
     Set<ProvisioArtifact> resolvedArtifacts = resolveArtifacts(context, artifacts, parentResolved, artifactSet.getExcludes());
 
     artifactSet.setResolvedArtifacts(resolvedArtifacts);
@@ -228,7 +226,9 @@ public class MavenProvisioner {
       //
       // contained by childArtifacts and not contained in parentArtifacts
       //
-      Set<ProvisioArtifact> childResolvedArtifacts = Sets.difference(resolvedArtifacts, parentArtifacts);
+      Set<ProvisioArtifact> childResolvedArtifacts = resolvedArtifacts.stream()
+          .filter(a -> !parentArtifacts.contains(a))
+          .collect(toSet());
       artifactSet.setResolvedArtifacts(childResolvedArtifacts);
     } else {
       artifactSet.setResolvedArtifacts(resolvedArtifacts);
@@ -261,7 +261,7 @@ public class MavenProvisioner {
   }
 
   public Set<ProvisioArtifact> resolveArtifact(ProvisioningContext context, ProvisioArtifact artifact) {
-    return resolveArtifacts(context, ImmutableList.of(artifact), Sets.<ProvisioArtifact>newHashSet(), Lists.<ca.vanzyl.provisio.model.Exclusion>newArrayList());
+    return resolveArtifacts(context, Collections.singletonList(artifact), new HashSet<>(), new ArrayList<>());
   }
 
   private Set<ProvisioArtifact> resolveArtifacts(ProvisioningContext context, List<ProvisioArtifact> artifacts, Set<ProvisioArtifact> managedArtifacts, List<ca.vanzyl.provisio.model.Exclusion> excludes) {
@@ -270,17 +270,17 @@ public class MavenProvisioner {
     // We need to defend against a null set
     //
     if (artifacts == null) {
-      artifacts = Lists.newArrayList();
+      artifacts = new ArrayList<>();
     }
 
     if (managedArtifacts == null) {
-      managedArtifacts = Sets.newHashSet();
+      managedArtifacts = new HashSet<>();
     }
 
     //
     // Artifacts that have been handed to us that have been resolved or provided locally
     //
-    List<ProvisioArtifact> providedArtifacts = Lists.newArrayList();
+    List<ProvisioArtifact> providedArtifacts = new ArrayList<>();
     for (ProvisioArtifact artifact : artifacts) {
       if (artifact.getReference() != null) {
         Runtime runtime = context.getRequest().getRuntimeModel();
@@ -362,7 +362,7 @@ public class MavenProvisioner {
       // </project>
       //
       if (artifact.getExclusions() != null) {
-        Set<Exclusion> exclusions = Sets.newHashSet();
+        Set<Exclusion> exclusions = new HashSet<>();
         for (String exclusion : artifact.getExclusions()) {
           String[] ga = StringUtils.split(exclusion, ":");
           if (ga.length == 2) {
@@ -382,7 +382,7 @@ public class MavenProvisioner {
     DependencyFilter systemScopeFilter = new ScopeDependencyFilter(JavaScopes.SYSTEM);
     DependencyRequest dependencyRequest = new DependencyRequest(request, null);
     if (excludes != null) {
-      List<String> exclusions = Lists.newArrayList();
+      List<String> exclusions = new ArrayList<>();
       for (ca.vanzyl.provisio.model.Exclusion exclusion : excludes) {
         exclusions.add(exclusion.getId());
       }
@@ -416,7 +416,7 @@ public class MavenProvisioner {
     }
 
     Map<String, ProvisioArtifact> artifactMapKeyedByGa = new HashMap<String, ProvisioArtifact>();
-    Set<ProvisioArtifact> resolvedArtifacts = Sets.newHashSet();
+    Set<ProvisioArtifact> resolvedArtifacts = new HashSet<>();
     for (Artifact a : resultArtifacts) {
       String ga = a.getGroupId() + ":" + a.getArtifactId();
       if (a instanceof ProvisioArtifact) {
@@ -482,8 +482,6 @@ public class MavenProvisioner {
   //
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  static Joiner joiner = Joiner.on(',').skipNulls();
-
   private void processFileSets(ProvisioningContext context) throws Exception {
     List<FileSet> fileSets = context.getRequest().getRuntime().getFileSets();
     if (fileSets != null) {
@@ -525,11 +523,11 @@ public class MavenProvisioner {
 
     String includesString = null;
     if (includes != null && !includes.isEmpty()) {
-      includesString = joiner.join(includes);
+      includesString = String.join(",", includes);;
     }
     String excludesString = null;
     if (excludes != null && !excludes.isEmpty()) {
-      excludesString = joiner.join(excludes);
+      excludesString = String.join(",", excludes);
     }
 
     if (directory.isFlatten()) {

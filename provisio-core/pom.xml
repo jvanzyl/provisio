@@ -92,14 +92,6 @@
       <groupId>io.takari</groupId>
       <artifactId>takari-archiver</artifactId>
     </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.sisu</groupId>
-      <artifactId>org.eclipse.sisu.inject.tests</artifactId>
-    </dependency>
     <!-- Test -->
     <dependency>
       <groupId>org.eclipse.aether</groupId>
@@ -110,7 +102,7 @@
     <dependency>
       <groupId>io.takari.aether</groupId>
       <artifactId>aether-connector-okhttp</artifactId>
-      <version>0.13.0</version>
+      <version>0.17.8</version>
       <scope>test</scope>
     </dependency>
     <dependency>

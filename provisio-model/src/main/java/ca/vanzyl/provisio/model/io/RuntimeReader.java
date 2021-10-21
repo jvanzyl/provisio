@@ -18,12 +18,12 @@ package ca.vanzyl.provisio.model.io;
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import ca.vanzyl.provisio.model.ActionDescriptor;
 import ca.vanzyl.provisio.model.FileSet;
-import com.google.common.collect.Maps;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.converters.Converter;
@@ -133,7 +133,7 @@ public class RuntimeReader {
     }
 
     this.versionMap = versionMap;
-    this.actionMap = Maps.newHashMap();
+    this.actionMap = new HashMap<>();
     for (ActionDescriptor actionDescriptor : actions) {
       this.actionMap.put(actionDescriptor.getName(), actionDescriptor);
     }

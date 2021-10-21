@@ -24,10 +24,11 @@ import java.io.OutputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.io.ByteStreams;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
+
+import static ca.vanzyl.provisio.ProvisioUtils.copy;
 
 public abstract class SimpleProvisioner {
 
@@ -80,7 +81,7 @@ public abstract class SimpleProvisioner {
       throw new IOException("Unexpected code " + response);
     }
     try (OutputStream os = new FileOutputStream(file)) {
-      ByteStreams.copy(response.body().byteStream(), os);
+      copy(response.body().byteStream(), os);
     }
     return file;
   }

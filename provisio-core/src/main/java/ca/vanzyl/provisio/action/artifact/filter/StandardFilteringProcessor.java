@@ -16,7 +16,6 @@
 package ca.vanzyl.provisio.action.artifact.filter;
 
 import ca.vanzyl.provisio.model.io.InterpolatingInputStream;
-import com.google.common.io.ByteStreams;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,6 +24,8 @@ import java.util.Map;
 
 import io.tesla.proviso.archive.Selector;
 import io.tesla.proviso.archive.UnarchivingEntryProcessor;
+
+import static ca.vanzyl.provisio.ProvisioUtils.copy;
 
 public class StandardFilteringProcessor implements UnarchivingEntryProcessor {
 
@@ -42,6 +43,6 @@ public class StandardFilteringProcessor implements UnarchivingEntryProcessor {
 
   @Override
   public void processStream(String entryName, InputStream inputStream, OutputStream outputStream) throws IOException {
-    ByteStreams.copy(new InterpolatingInputStream(inputStream, variables), outputStream);
+    copy(new InterpolatingInputStream(inputStream, variables), outputStream);
   }
 }

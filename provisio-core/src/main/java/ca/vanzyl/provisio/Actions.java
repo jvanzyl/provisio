@@ -15,6 +15,8 @@
  */
 package ca.vanzyl.provisio;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import ca.vanzyl.provisio.action.artifact.ExcludeAction;
@@ -28,13 +30,11 @@ import ca.vanzyl.provisio.action.runtime.MakeDirectoryAction;
 import ca.vanzyl.provisio.model.ActionDescriptor;
 import ca.vanzyl.provisio.model.Alias;
 import ca.vanzyl.provisio.model.Implicit;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 
 public class Actions {
 
   public static List<ActionDescriptor> defaultActionDescriptors() {
-    List<ActionDescriptor> actionDescriptors = Lists.newArrayList();
+    List<ActionDescriptor> actionDescriptors = new ArrayList<>();
     actionDescriptors.add(new ActionDescriptor() {
       @Override
       public String getName() {
@@ -150,12 +150,12 @@ public class Actions {
 
       @Override
       public List<Alias> aliases() {
-        return ImmutableList.of(new Alias("insert", Insert.class), new Alias("delete", Delete.class));
+        return Arrays.asList(new Alias("insert", Insert.class), new Alias("delete", Delete.class));
       }
 
       @Override
       public List<Implicit> implicits() {
-        return ImmutableList.of(
+        return Arrays.asList(
             new Implicit("inserts", AlterAction.class, Insert.class), new Implicit("artifacts", Insert.class),
             new Implicit("deletes", AlterAction.class, Delete.class), new Implicit("files", Delete.class));
       }

@@ -15,9 +15,8 @@
  */
 package ca.vanzyl.provisio.model;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import com.google.common.collect.Lists;
 
 public interface ActionDescriptor {
   String getName();
@@ -25,11 +24,11 @@ public interface ActionDescriptor {
   String[] attributes();
   
   default List<Alias> aliases() { 
-    return Lists.newArrayList();
+    return new ArrayList<>();
   }
   
   default List<Implicit> implicits() { 
-    return Lists.newArrayList();
+    return new ArrayList<>();
   }
   
 }

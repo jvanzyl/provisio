@@ -74,11 +74,6 @@
         <version>1</version>
       </dependency>
       <dependency>
-        <groupId>javax.servlet</groupId>
-        <artifactId>servlet-api</artifactId>
-        <version>2.4</version>
-      </dependency>
-      <dependency>
         <groupId>ca.vanzyl</groupId>
         <artifactId>provisio-core</artifactId>
         <version>1.0.19-SNAPSHOT</version>
@@ -99,11 +94,6 @@
         <version>${takariArchiverVersion}</version>
       </dependency>
       <dependency>
-        <groupId>de.pdark</groupId>
-        <artifactId>decentxml</artifactId>
-        <version>1.4</version>
-      </dependency>
-      <dependency>
         <groupId>org.codehaus.swizzle</groupId>
         <artifactId>swizzle-stream</artifactId>
         <version>1.6.2</version>
@@ -111,18 +101,7 @@
       <dependency>
         <groupId>com.thoughtworks.xstream</groupId>
         <artifactId>xstream</artifactId>
-        <version>1.4.17</version>
-      </dependency>
-      <dependency>
-        <groupId>commons-codec</groupId>
-        <artifactId>commons-codec</artifactId>
-        <version>1.10</version>
-      </dependency>
-      <!-- Guice -->
-      <dependency>
-        <groupId>org.eclipse.sisu</groupId>
-        <artifactId>org.eclipse.sisu.inject</artifactId>
-        <version>0.3.1</version>
+        <version>1.4.18</version>
       </dependency>
       <!-- Mustache -->
       <dependency>
@@ -132,15 +111,9 @@
       </dependency>
       <!-- Testing -->
       <dependency>
-        <groupId>org.eclipse.sisu</groupId>
-        <artifactId>org.eclipse.sisu.inject.tests</artifactId>
-        <version>0.0.0.M3</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.13.1</version>
+        <version>4.13.2</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
@@ -184,7 +157,7 @@
       <plugin>
         <groupId>org.eclipse.sisu</groupId>
         <artifactId>sisu-maven-plugin</artifactId>
-        <version>0.3.1</version>
+        <version>0.3.5</version>
         <executions>
           <execution>
             <goals>
