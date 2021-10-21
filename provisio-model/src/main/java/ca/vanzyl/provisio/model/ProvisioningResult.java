@@ -10,8 +10,8 @@
  */
 package ca.vanzyl.provisio.model;
 
-import com.google.common.collect.Lists;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ProvisioningResult {
@@ -33,7 +33,7 @@ public class ProvisioningResult {
 
   public void addArchive(ProvisioArchive archive) {
     if (archives == null) {
-      archives = Lists.newArrayList();
+      archives = new ArrayList<>();
     }
     archives.add(archive);
   }

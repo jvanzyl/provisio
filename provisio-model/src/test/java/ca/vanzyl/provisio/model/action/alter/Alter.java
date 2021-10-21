@@ -1,15 +1,15 @@
 package ca.vanzyl.provisio.model.action.alter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ca.vanzyl.provisio.model.ProvisioningAction;
 import ca.vanzyl.provisio.model.ProvisioningContext;
-import com.google.common.collect.Lists;
 
 public class Alter implements ProvisioningAction {
 
-  private List<Insert> inserts = Lists.newArrayList();
-  private List<Delete> deletes = Lists.newArrayList();
+  private List<Insert> inserts = new ArrayList<>();
+  private List<Delete> deletes = new ArrayList<>();
 
   public List<Insert> getInserts() {
     return inserts;

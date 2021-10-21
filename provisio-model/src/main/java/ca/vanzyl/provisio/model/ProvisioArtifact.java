@@ -16,14 +16,13 @@
 package ca.vanzyl.provisio.model;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.aether.artifact.AbstractArtifact;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
-
-import com.google.common.collect.Lists;
 
 public class ProvisioArtifact extends AbstractArtifact {
 
@@ -87,7 +86,7 @@ public class ProvisioArtifact extends AbstractArtifact {
 
   public void addAction(ProvisioningAction action) {
     if (actions == null) {
-      actions = Lists.newArrayList();
+      actions = new ArrayList<>();
     }
     actions.add(action);
   }
@@ -193,7 +192,7 @@ public class ProvisioArtifact extends AbstractArtifact {
   
   public void addExclusion(String exclude) {
     if(exclusions == null) {
-      exclusions = Lists.newArrayList();
+      exclusions = new ArrayList<>();
     }
     exclusions.add(exclude);
   }

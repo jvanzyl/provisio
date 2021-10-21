@@ -20,6 +20,7 @@ import static ca.vanzyl.provisio.ProvisioUtils.coordinateToPath;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -31,8 +32,6 @@ import ca.vanzyl.provisio.model.ProvisioArtifact;
 import ca.vanzyl.provisio.model.ProvisioningAction;
 import ca.vanzyl.provisio.model.ProvisioningContext;
 import org.codehaus.plexus.util.FileUtils;
-
-import com.google.common.io.Files;
 
 import ca.vanzyl.provisio.MavenProvisioner;
 import ca.vanzyl.provisio.perms.PosixModes;
@@ -79,7 +78,7 @@ public class AlterAction implements ProvisioningAction {
             provisioner.resolveArtifact(context, insertArtifact);
             File source = insertArtifact.getFile();
             File target = new File(unpackDirectory, insertArtifact.getName());
-            Files.copy(source, target);
+            Files.copy(source.toPath(), target.toPath());
           }
         }
       }

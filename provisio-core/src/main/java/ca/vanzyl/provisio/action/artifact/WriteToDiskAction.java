@@ -17,16 +17,17 @@ package ca.vanzyl.provisio.action.artifact;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import javax.inject.Named;
 
 import ca.vanzyl.provisio.model.ProvisioArtifact;
 import ca.vanzyl.provisio.model.ProvisioningAction;
 import ca.vanzyl.provisio.model.ProvisioningContext;
-import com.google.common.base.Preconditions;
-import com.google.common.io.Files;
 
 import ca.vanzyl.provisio.ProvisioningException;
+
+import static java.util.Objects.requireNonNull;
 
 @Named("write")
 public class WriteToDiskAction implements ProvisioningAction {
@@ -35,7 +36,7 @@ public class WriteToDiskAction implements ProvisioningAction {
   private File outputDirectory;
 
   public WriteToDiskAction(ProvisioArtifact artifact, File outputDirectory) {
-    Preconditions.checkArgument(outputDirectory != null, "outputDirectory cannot be null.");
+    requireNonNull(outputDirectory, "outputDirectory cannot be null.");
     this.artifact = artifact;
     this.outputDirectory = outputDirectory;
   }
@@ -51,10 +52,10 @@ public class WriteToDiskAction implements ProvisioningAction {
 
   public void copy(File source, File target) {
     try {
-      if (target.getParentFile().exists() == false) {
+      if (!target.getParentFile().exists()) {
         target.getParentFile().mkdirs();
       }
-      Files.copy(source, target);
+      Files.copy(source.toPath(), target.toPath());
     } catch (IOException e) {
       throw new ProvisioningException("Error copying " + source + " to " + target, e);
     }
