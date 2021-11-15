@@ -22,7 +22,7 @@
   <parent>
     <groupId>io.takari</groupId>
     <artifactId>takari</artifactId>
-    <version>27</version>
+    <version>47</version>
   </parent>
 
   <groupId>ca.vanzyl</groupId>
@@ -49,7 +49,6 @@
     <aetherVersion>1.0.2.v20150114</aetherVersion> <!-- Align with Aether version used in $mavenVersion -->
     <sisuVersion>0.3.5</sisuVersion>
     <takari.licenseHeader>license-header.txt</takari.licenseHeader>
-    <takari.javaSourceVersion>1.8</takari.javaSourceVersion>
   </properties>
 
   <scm>
