@@ -28,7 +28,7 @@ import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import com.thoughtworks.xstream.converters.reflection.SunUnsafeReflectionProvider;
+import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.security.NoTypePermission;
@@ -55,7 +55,7 @@ public class RuntimeReader {
   }
 
   public RuntimeReader(List<ActionDescriptor> actions, Map<String, String> versionMap) {
-    xstream = new XStream(new SunUnsafeReflectionProvider());
+    xstream = new XStream(new PureJavaReflectionProvider());
     xstream.addPermission(NoTypePermission.NONE);
     xstream.addPermission(NullPermission.NULL);
     xstream.addPermission(PrimitiveTypePermission.PRIMITIVES);
