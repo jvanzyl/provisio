@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
+import java.nio.file.StandardCopyOption;
 import javax.inject.Named;
 
 import ca.vanzyl.provisio.model.ProvisioArtifact;
@@ -55,7 +56,7 @@ public class WriteToDiskAction implements ProvisioningAction {
       if (!target.getParentFile().exists()) {
         target.getParentFile().mkdirs();
       }
-      Files.copy(source.toPath(), target.toPath());
+      Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
     } catch (IOException e) {
       throw new ProvisioningException("Error copying " + source + " to " + target, e);
     }

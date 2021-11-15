@@ -23,6 +23,7 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 
@@ -78,7 +79,7 @@ public class AlterAction implements ProvisioningAction {
             provisioner.resolveArtifact(context, insertArtifact);
             File source = insertArtifact.getFile();
             File target = new File(unpackDirectory, insertArtifact.getName());
-            Files.copy(source.toPath(), target.toPath());
+            Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
           }
         }
       }
