@@ -1,49 +1,44 @@
 /**
  * Copyright (C) 2015-2020 Jason van Zyl
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing permissions and limitations under the License.
  */
 package ca.vanzyl.provisio.model.io;
 
-import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import ca.vanzyl.provisio.model.ActionDescriptor;
-import ca.vanzyl.provisio.model.FileSet;
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.converters.ConversionException;
-import com.thoughtworks.xstream.converters.Converter;
-import com.thoughtworks.xstream.converters.MarshallingContext;
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import com.thoughtworks.xstream.io.HierarchicalStreamReader;
-import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
-import com.thoughtworks.xstream.security.NoTypePermission;
-
 import ca.vanzyl.provisio.model.Alias;
 import ca.vanzyl.provisio.model.ArtifactSet;
 import ca.vanzyl.provisio.model.Directory;
 import ca.vanzyl.provisio.model.Exclusion;
 import ca.vanzyl.provisio.model.File;
+import ca.vanzyl.provisio.model.FileSet;
 import ca.vanzyl.provisio.model.Implicit;
 import ca.vanzyl.provisio.model.ProvisioArtifact;
 import ca.vanzyl.provisio.model.ProvisioningAction;
 import ca.vanzyl.provisio.model.Resource;
 import ca.vanzyl.provisio.model.ResourceSet;
 import ca.vanzyl.provisio.model.Runtime;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.ConversionException;
+import com.thoughtworks.xstream.converters.Converter;
+import com.thoughtworks.xstream.converters.MarshallingContext;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.converters.reflection.SunUnsafeReflectionProvider;
+import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import com.thoughtworks.xstream.security.NoTypePermission;
+import com.thoughtworks.xstream.security.NullPermission;
+import com.thoughtworks.xstream.security.PrimitiveTypePermission;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class RuntimeReader {
 
@@ -60,13 +55,13 @@ public class RuntimeReader {
   }
 
   public RuntimeReader(List<ActionDescriptor> actions, Map<String, String> versionMap) {
-    xstream = new XStream(new PureJavaReflectionProvider());
-    // clear out existing permissions and start a whitelist
+    xstream = new XStream(new SunUnsafeReflectionProvider());
     xstream.addPermission(NoTypePermission.NONE);
-    // allow only specific packages
-    xstream.allowTypesByWildcard(new String[] {
-            "ca.vanzyl.provisio.model.**",
-            "ca.vanzyl.provisio.action.**",
+    xstream.addPermission(NullPermission.NULL);
+    xstream.addPermission(PrimitiveTypePermission.PRIMITIVES);
+    xstream.allowTypesByWildcard(new String[]{
+        "ca.vanzyl.provisio.model.**",
+        "ca.vanzyl.provisio.action.**",
     });
     // Allow both "assembly" and "runtime" as the root elements
     xstream.alias("assembly", Runtime.class);
@@ -160,7 +155,8 @@ public class RuntimeReader {
     }
 
     @Override
-    public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {}
+    public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+    }
 
     @Override
     public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
@@ -201,7 +197,8 @@ public class RuntimeReader {
     }
 
     @Override
-    public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {}
+    public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+    }
 
     @Override
     public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
@@ -239,7 +236,7 @@ public class RuntimeReader {
             coordinate += ":" + version;
           } else {
             throw new RuntimeException(
-              String.format("A version for %s cannot be found. You either need to specify one in your dependencyManagement section, or explicity set one in your assembly descriptor.", coordinate));
+                String.format("A version for %s cannot be found. You either need to specify one in your dependencyManagement section, or explicity set one in your assembly descriptor.", coordinate));
           }
         }
         artifact = new ProvisioArtifact(coordinate, name);
