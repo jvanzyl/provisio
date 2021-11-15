@@ -48,7 +48,7 @@
     <dependency>
       <groupId>org.eclipse.sisu</groupId>
       <artifactId>org.eclipse.sisu.inject</artifactId>
-      <version>0.3.0</version> <!-- Aligned with Maven -->
+      <version>${sisuVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.sonatype.sisu</groupId>
