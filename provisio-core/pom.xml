@@ -94,9 +94,9 @@
     </dependency>
     <!-- Test -->
     <dependency>
-      <groupId>org.eclipse.aether</groupId>
-      <artifactId>aether-connector-file</artifactId>
-      <version>0.9.0.M2</version>
+      <groupId>org.eclipse.aether</groupId> <!-- Align with used maven, GAV changes between 3.3.x-3.5.x! -->
+      <artifactId>aether-transport-file</artifactId>
+      <version>${aetherVersion}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
