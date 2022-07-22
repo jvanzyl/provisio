@@ -19,7 +19,7 @@ Provisio was originally created for the [Presto](https://prestosql.io/) project 
 <a name="feature0"></a>
 ## Support for building runtimes
 
-To use Provisio declare its use in your project's `pom.xml` and be sure to set the packaging to `provisio` and enable the plugin as an extension. Provisio implements a Maven `LifecyclePartipant` that inspects all the artifacts used in your runtime descriptor and will order your build accordingly. You might notice below the conspicuous lack of a dependencies section: you do not need to include a dependency in your `pom.xml` for an artifact produced in the current build to have it be included in your runtime. Provisio will find all the artifact references in your runtime descriptor, determine the correct build ordering, and instruct Maven to make the necessary changes.
+To use Provisio declare its use in your project's `pom.xml` and be sure to set the packaging to `provisio` and enable the plugin as an extension. Provisio implements a Maven `LifecycleParticipant` that inspects all the artifacts used in your runtime descriptor and will order your build accordingly. You might notice below the conspicuous lack of a dependencies section: you do not need to include a dependency in your `pom.xml` for an artifact produced in the current build to have it be included in your runtime. Provisio will find all the artifact references in your runtime descriptor, determine the correct build ordering, and instruct Maven to make the necessary changes.
 
 ```
 <project>
