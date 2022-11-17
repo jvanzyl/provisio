@@ -47,20 +47,20 @@
       <artifactId>plexus-utils</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.aether</groupId>
-      <artifactId>aether-spi</artifactId>
+      <groupId>org.apache.maven.resolver</groupId>
+      <artifactId>maven-resolver-spi</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.aether</groupId>
-      <artifactId>aether-api</artifactId>
+      <groupId>org.apache.maven.resolver</groupId>
+      <artifactId>maven-resolver-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.aether</groupId>
-      <artifactId>aether-impl</artifactId>
+      <groupId>org.apache.maven.resolver</groupId>
+      <artifactId>maven-resolver-impl</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.aether</groupId>
-      <artifactId>aether-util</artifactId>
+      <groupId>org.apache.maven.resolver</groupId>
+      <artifactId>maven-resolver-util</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -94,8 +94,8 @@
     </dependency>
     <!-- Test -->
     <dependency>
-      <groupId>org.eclipse.aether</groupId> <!-- Align with used maven, GAV changes between 3.3.x-3.5.x! -->
-      <artifactId>aether-transport-file</artifactId>
+      <groupId>org.apache.maven.resolver</groupId> <!-- Align with used maven -->
+      <artifactId>maven-resolver-transport-file</artifactId>
       <version>${aetherVersion}</version>
       <scope>test</scope>
     </dependency>
@@ -107,7 +107,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
-      <artifactId>maven-aether-provider</artifactId>
+      <artifactId>maven-resolver-provider</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

@@ -22,7 +22,7 @@
   <parent>
     <groupId>io.takari</groupId>
     <artifactId>takari</artifactId>
-    <version>47</version>
+    <version>50</version>
   </parent>
 
   <groupId>ca.vanzyl</groupId>
@@ -44,9 +44,9 @@
     <surefire.redirectTestOutputToFile>true</surefire.redirectTestOutputToFile>
     <surefire.runOrder>alphabetical</surefire.runOrder>
     <surefire.mem>-Xmx256m</surefire.mem>
-    <mavenVersion>3.3.3</mavenVersion>
+    <mavenVersion>3.6.3</mavenVersion>
     <takariArchiverVersion>0.1.26</takariArchiverVersion>
-    <aetherVersion>1.0.2.v20150114</aetherVersion> <!-- Align with Aether version used in $mavenVersion -->
+    <aetherVersion>1.4.1</aetherVersion> <!-- Align with Aether version used in $mavenVersion -->
     <sisuVersion>0.3.5</sisuVersion>
     <takari.licenseHeader>license-header.txt</takari.licenseHeader>
   </properties>
@@ -101,6 +101,11 @@
         <groupId>com.thoughtworks.xstream</groupId>
         <artifactId>xstream</artifactId>
         <version>1.4.18</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId> <!-- Is gone from Maven -->
+        <artifactId>guava</artifactId>
+        <version>31.0.1-jre</version>
       </dependency>
       <!-- Mustache -->
       <dependency>
