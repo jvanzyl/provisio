@@ -35,10 +35,17 @@ import ca.vanzyl.provisio.MavenProvisioner;
 @Mojo(name = "provision", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class ProvisioningMojo extends BaseMojo {
 
+  @Parameter(defaultValue = "false", property = "skipProvision")
+  private boolean skipProvision;
+
   @Parameter(defaultValue = "${project.build.directory}/${project.artifactId}-${project.version}")
   private File outputDirectory;
 
   public void execute() throws MojoExecutionException {
+    if (skipProvision) {
+      getLog().info("Skipping provision");
+      return;
+    }
     MavenProvisioner provisioner = new MavenProvisioner(repositorySystem, repositorySystemSession, project.getRemoteProjectRepositories());
 
     for (Runtime runtime : provisio.findDescriptors(descriptorDirectory, project)) {
