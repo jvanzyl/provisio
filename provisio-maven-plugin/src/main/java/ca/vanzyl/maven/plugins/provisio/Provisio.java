@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -96,7 +97,7 @@ public class Provisio {
   public Runtime parseDescriptor(InputStream inputStream, MavenProject project) {
     RuntimeReader parser = new RuntimeReader(Actions.defaultActionDescriptors(), versionMap(project));
     Map<String, String> variables = Maps.newHashMap();
-    variables.putAll((Map) project.getProperties());
+    variables.putAll((Map) getPropertiesWithSystemOverrides(project));
     variables.put("project.version", project.getVersion());
     variables.put("project.groupId", project.getGroupId());
     variables.put("project.artifactId", project.getArtifactId());
@@ -104,6 +105,12 @@ public class Provisio {
     variables.put("project.basedir", project.getBasedir().getAbsolutePath());
     variables.put("basedir", project.getBasedir().getAbsolutePath());
     return parser.read(inputStream, variables);
+  }
+
+  private static Properties getPropertiesWithSystemOverrides(MavenProject project) {
+    Properties properties = new Properties(project.getProperties());
+    properties.putAll(System.getProperties());
+    return properties;
   }
 
   //

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>ca.vanzyl.provisio.maven.plugins.its</groupId>
+    <artifactId>complete</artifactId>
+    <version>1.0</version>
+    <packaging>trino-plugin</packaging>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <dep.scala.version>2.13.1</dep.scala.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>2.13.6</version>
+        </dependency>
+        <dependency>
+            <groupId>io.trino</groupId>
+            <artifactId>trino-spi</artifactId>
+            <version>356</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.trino</groupId>
+                <artifactId>trino-maven-plugin</artifactId>
+                <version>10</version>
+                <extensions>true</extensions>
+            </plugin>
+
+            <plugin>
+                <groupId>ca.vanzyl.provisio.maven.plugins</groupId>
+                <artifactId>provisio-maven-plugin</artifactId>
+                <version>${it-plugin.version}</version>
+                <extensions>true</extensions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
