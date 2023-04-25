@@ -1,0 +1,7 @@
+<assembly>
+
+  <artifactSet to="lib">
+    <artifact id="org.scala-lang:scala-library:${dep.scala.version}"/>
+  </artifactSet>
+
+</assembly>
