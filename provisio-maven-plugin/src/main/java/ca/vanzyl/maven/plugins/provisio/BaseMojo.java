@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -203,14 +204,14 @@ public abstract class BaseMojo
         dependencies.add(dependency);
       }
     }
-    ArrayList<Dependency> sorted = new ArrayList<>(dependencies);
-    sorted.sort(
-            Comparator.comparing(Dependency::getScope, Comparator.nullsFirst(Comparator.naturalOrder()))
-                    .thenComparing(Dependency::getGroupId)
-                    .thenComparing(Dependency::getArtifactId)
-                    .thenComparing(Dependency::getVersion, Comparator.nullsFirst(Comparator.naturalOrder()))
-                    .thenComparing(Dependency::getClassifier, Comparator.nullsFirst(Comparator.naturalOrder()))
-                    .thenComparing(Dependency::getType, Comparator.nullsFirst(Comparator.naturalOrder())));
-    model.setDependencies(sorted);
+    Comparator<Dependency> comparator = Comparator.comparing(Dependency::getScope, Comparator.nullsFirst(Comparator.naturalOrder()))
+            .thenComparing(Dependency::getGroupId)
+            .thenComparing(Dependency::getArtifactId)
+            .thenComparing(Dependency::getVersion, Comparator.nullsFirst(Comparator.naturalOrder()))
+            .thenComparing(Dependency::getClassifier, Comparator.nullsFirst(Comparator.naturalOrder()))
+            .thenComparing(Dependency::getType, Comparator.nullsFirst(Comparator.naturalOrder()));
+    TreeSet<Dependency> sorted = new TreeSet<>(comparator);
+    sorted.addAll(dependencies);
+    model.setDependencies(new ArrayList<>(sorted));
   }
 }
