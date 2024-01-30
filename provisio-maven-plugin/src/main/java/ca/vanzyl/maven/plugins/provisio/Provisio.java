@@ -90,8 +90,7 @@ public class Provisio {
 
   public Runtime parseDescriptor(InputStream inputStream, MavenProject project) {
     RuntimeReader parser = new RuntimeReader(Actions.defaultActionDescriptors(), versionMap(project));
-    Map<String, String> variables = new HashMap<>();
-    variables.putAll((Map) getPropertiesWithSystemOverrides(project));
+    Map<String, String> variables = new HashMap<>(getPropertiesWithSystemOverrides(project));
     variables.put("project.version", project.getVersion());
     variables.put("project.groupId", project.getGroupId());
     variables.put("project.artifactId", project.getArtifactId());
@@ -101,9 +100,13 @@ public class Provisio {
     return parser.read(inputStream, variables);
   }
 
-  private static Properties getPropertiesWithSystemOverrides(MavenProject project) {
-    Properties properties = new Properties(project.getProperties());
-    properties.putAll(System.getProperties());
+  private static Map<String, String> getPropertiesWithSystemOverrides(MavenProject project) {
+    Map<String, String> properties = new HashMap<>();
+    project.getProperties().forEach((k, v) -> properties.put(String.valueOf(k), String.valueOf(v)));
+    // TODO: this is WRONG and will not work in future Maven versions
+    // Maven3 "pushes" user properties into Java System Properties, and that will stop happening
+    // Maven Session is needed here, see https://issues.apache.org/jira/browse/MNG-7556 and future changes
+    System.getProperties().forEach((k, v) -> properties.put(String.valueOf(k), String.valueOf(v)));
     return properties;
   }
 
