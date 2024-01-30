@@ -15,7 +15,7 @@
  */
 package ca.vanzyl.provisio;
 
-import io.tesla.proviso.archive.UnArchiver;
+import ca.vanzyl.provisio.archive.UnArchiver;
 
 import java.io.File;
 import java.io.FileOutputStream;

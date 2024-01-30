@@ -14,8 +14,6 @@ import ca.vanzyl.provisio.model.ProvisioningRequest;
 import ca.vanzyl.provisio.model.ProvisioningResult;
 import ca.vanzyl.provisio.model.Runtime;
 import ca.vanzyl.provisio.model.io.RuntimeReader;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 
 import org.codehaus.plexus.util.FileUtils;
 import org.junit.Before;
@@ -26,14 +24,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import ca.vanzyl.provisio.Actions;
 import ca.vanzyl.provisio.MavenProvisioner;
-import io.tesla.proviso.archive.ArchiveValidator;
-import io.tesla.proviso.archive.ZipArchiveValidator;
+import ca.vanzyl.provisio.archive.ArchiveValidator;
+import ca.vanzyl.provisio.archive.ZipArchiveValidator;
 
 public class ProvisioTest {
 
@@ -163,12 +159,12 @@ public class ProvisioTest {
     request.setRuntimeDescriptor(parseDescriptor(descriptor));
     // If there is a provisio.properties file for inserting values use it
     File propertiesFile = new File(projectBasedir, "provisio.properties");
-    Map<String, String> provisioProperties = Maps.newHashMap();
+    Map<String, String> provisioProperties = new HashMap<>();
     if (propertiesFile.exists()) {
       Properties properties = new Properties();
       try (InputStream is = new FileInputStream(propertiesFile)) {
         properties.load(is);
-        provisioProperties.putAll(Maps.fromProperties(properties));
+        properties.forEach((k, v) -> provisioProperties.put(String.valueOf(k), String.valueOf(v)));
       }
     }
     provisioProperties.put("basedir", basedir.getAbsolutePath());
@@ -197,9 +193,9 @@ public class ProvisioTest {
   }
   
   public static Runtime parseDescriptor(File descriptor) throws Exception {
-    RuntimeReader parser = new RuntimeReader(Actions.defaultActionDescriptors(), Maps.<String, String>newHashMap());
+    RuntimeReader parser = new RuntimeReader(Actions.defaultActionDescriptors(), new HashMap<>());
     try (InputStream is = new FileInputStream(descriptor)) {
-      return parser.read(is, ImmutableMap.of("basedir", descriptor.getParentFile().getAbsolutePath()));
+      return parser.read(is, Map.of("basedir", descriptor.getParentFile().getAbsolutePath()));
     }
   }
 

@@ -1,6 +1,7 @@
 package ca.vanzyl.provisio.its;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
@@ -19,30 +20,23 @@ import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
 import org.eclipse.aether.spi.connector.transport.TransporterFactory;
 import org.eclipse.aether.spi.io.FileProcessor;
+import org.eclipse.aether.supplier.RepositorySystemSupplier;
 import org.eclipse.aether.transfer.AbstractTransferListener;
 import org.eclipse.aether.transport.file.FileTransporterFactory;
 import org.eclipse.aether.util.repository.AuthenticationBuilder;
 
-import com.google.common.collect.Lists;
-
-import io.takari.aether.connector.AetherRepositoryConnectorFactory;
-
 public class ResolutionSystem {
 
-  private File localRepository;
-  private RepositorySystem system;
-  private RepositorySystemSession session;
-  private List<RemoteRepository> remoteRepositories;
+  private final File localRepository;
+  private final RepositorySystem system;
+  private final RepositorySystemSession session;
+  private final List<RemoteRepository> remoteRepositories;
 
   public ResolutionSystem(File localRepository) {
-    DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
-    locator.addService(RepositoryConnectorFactory.class, AetherRepositoryConnectorFactory.class);
-    locator.addService(TransporterFactory.class, FileTransporterFactory.class);    
-    locator.addService(FileProcessor.class, DefaultFileProcessor.class);
     this.localRepository = localRepository;
-    this.system = locator.getService(RepositorySystem.class);
+    this.system = new RepositorySystemSupplier().get();
     this.session = repositorySystemSession();
-    this.remoteRepositories = Lists.newArrayList();
+    this.remoteRepositories = new ArrayList<>();
   }
 
   public ArtifactType getArtifactType(String typeId) {
