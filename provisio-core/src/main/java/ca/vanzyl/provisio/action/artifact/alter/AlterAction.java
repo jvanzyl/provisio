@@ -36,8 +36,8 @@ import org.codehaus.plexus.util.FileUtils;
 
 import ca.vanzyl.provisio.MavenProvisioner;
 import ca.vanzyl.provisio.perms.PosixModes;
-import io.tesla.proviso.archive.Archiver;
-import io.tesla.proviso.archive.UnArchiver;
+import ca.vanzyl.provisio.archive.Archiver;
+import ca.vanzyl.provisio.archive.UnArchiver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

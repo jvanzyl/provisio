@@ -18,10 +18,7 @@ package ca.vanzyl.maven.plugins.provisio;
 import ca.vanzyl.provisio.model.Runtime;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -34,8 +31,6 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
-
-import com.google.common.collect.Sets;
 
 @Singleton
 @Named("ProvisioningLifecycleParticipant")
@@ -110,7 +105,7 @@ public class ProvisioningLifecycleParticipant extends AbstractMavenLifecyclePart
     // For all our descriptors we need to find all the artifacts requested that might refer to projects
     // in the current build so we can influence build ordering.
     //
-    Set<String> dependencyCoordinatesInVersionlessForm = Sets.newHashSet();
+    Set<String> dependencyCoordinatesInVersionlessForm = new HashSet<>();
 
     List<Runtime> runtimes = provisio.findDescriptorsInFileSystem(descriptorDirectory, project);
     for (Runtime runtime : runtimes) {

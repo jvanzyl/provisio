@@ -22,7 +22,7 @@
   <parent>
     <groupId>io.takari</groupId>
     <artifactId>takari</artifactId>
-    <version>50</version>
+    <version>51</version>
   </parent>
 
   <groupId>ca.vanzyl</groupId>
@@ -44,10 +44,10 @@
     <surefire.redirectTestOutputToFile>true</surefire.redirectTestOutputToFile>
     <surefire.runOrder>alphabetical</surefire.runOrder>
     <surefire.mem>-Xmx256m</surefire.mem>
-    <mavenVersion>3.6.3</mavenVersion>
-    <takariArchiverVersion>0.1.26</takariArchiverVersion>
-    <aetherVersion>1.4.1</aetherVersion> <!-- Align with Aether version used in $mavenVersion -->
-    <sisuVersion>0.3.5</sisuVersion>
+    <mavenVersion>3.9.6</mavenVersion>
+    <takariArchiverVersion>0.1.29</takariArchiverVersion>
+    <aetherVersion>1.9.18</aetherVersion> <!-- Align with Aether version used in $mavenVersion -->
+    <sisuVersion>0.9.0.M2</sisuVersion> <!-- Align with Sisu version used in $mavenVersion -->
     <takari.licenseHeader>license-header.txt</takari.licenseHeader>
   </properties>
 
@@ -100,18 +100,13 @@
       <dependency>
         <groupId>com.thoughtworks.xstream</groupId>
         <artifactId>xstream</artifactId>
-        <version>1.4.18</version>
-      </dependency>
-      <dependency>
-        <groupId>com.google.guava</groupId> <!-- Is gone from Maven -->
-        <artifactId>guava</artifactId>
-        <version>31.0.1-jre</version>
+        <version>1.4.20</version>
       </dependency>
       <!-- Mustache -->
       <dependency>
         <groupId>com.github.spullara.mustache.java</groupId>
         <artifactId>compiler</artifactId>
-        <version>0.9.2</version>
+        <version>0.9.11</version>
       </dependency>
       <!-- Testing -->
       <dependency>

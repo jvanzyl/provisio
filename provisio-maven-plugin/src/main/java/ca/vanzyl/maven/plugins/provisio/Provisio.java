@@ -19,10 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -36,9 +33,6 @@ import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.util.FileUtils;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 import ca.vanzyl.provisio.Actions;
 
@@ -54,14 +48,14 @@ public class Provisio {
   }
 
   public List<Runtime> findDescriptors(File descriptorDirectory, MavenProject project) {
-    List<Runtime> runtimes = Lists.newArrayList();
+    List<Runtime> runtimes = new ArrayList<>();
     runtimes.addAll(findDescriptorsInFileSystem(descriptorDirectory, project));
     runtimes.addAll(findDescriptorsForPackagingTypeInExtensionRealms(project));
     return runtimes;
   }
 
   public List<Runtime> findDescriptorsInFileSystem(File descriptorDirectory, MavenProject project) {
-    List<Runtime> runtimes = Lists.newArrayList();
+    List<Runtime> runtimes = new ArrayList<>();
     if (descriptorDirectory.exists()) {
       try {
         List<File> descriptors = FileUtils.getFiles(descriptorDirectory, "*.xml", null);
@@ -77,7 +71,7 @@ public class Provisio {
   }
 
   public List<Runtime> findDescriptorsForPackagingTypeInExtensionRealms(MavenProject project) {
-    List<Runtime> runtimes = Lists.newArrayList();
+    List<Runtime> runtimes = new ArrayList<>();
     if (project.getClassRealm() != null) {
       Collection<ClassRealm> extensionRealms = project.getClassRealm().getImportRealms();
       if (extensionRealms != null) {
@@ -96,7 +90,7 @@ public class Provisio {
 
   public Runtime parseDescriptor(InputStream inputStream, MavenProject project) {
     RuntimeReader parser = new RuntimeReader(Actions.defaultActionDescriptors(), versionMap(project));
-    Map<String, String> variables = Maps.newHashMap();
+    Map<String, String> variables = new HashMap<>();
     variables.putAll((Map) getPropertiesWithSystemOverrides(project));
     variables.put("project.version", project.getVersion());
     variables.put("project.groupId", project.getGroupId());
@@ -117,7 +111,7 @@ public class Provisio {
   // The version map to use when versions are not specified for the artifacts in the assembly/runtime document.
   //
   private Map<String, String> versionMap(MavenProject project) {
-    Map<String, String> versionMap = Maps.newHashMap();
+    Map<String, String> versionMap = new HashMap<>();
     DependencyManagement dependencyManagement = project.getDependencyManagement();
     if (dependencyManagement != null) {
       for (Dependency managedDependency : project.getDependencyManagement().getDependencies()) {
@@ -135,7 +129,7 @@ public class Provisio {
   }
 
   public List<String> getManagedDependencies(MavenProject project) {
-    List<String> managedDependencies = Lists.newArrayList();
+    List<String> managedDependencies = new ArrayList<>();
     DependencyManagement dependencyManagement = project.getDependencyManagement();
     if (dependencyManagement != null) {
       for (Dependency managedDependency : project.getDependencyManagement().getDependencies()) {

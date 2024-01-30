@@ -27,7 +27,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Map;
 
-import io.tesla.proviso.archive.UnarchivingEntryProcessor;
+import ca.vanzyl.provisio.archive.UnarchivingEntryProcessor;
 
 public class MustacheFilteringProcessor implements UnarchivingEntryProcessor {
 

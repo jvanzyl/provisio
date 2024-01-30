@@ -22,8 +22,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
-import io.tesla.proviso.archive.Selector;
-import io.tesla.proviso.archive.UnarchivingEntryProcessor;
+import ca.vanzyl.provisio.archive.Selector;
+import ca.vanzyl.provisio.archive.UnarchivingEntryProcessor;
 
 import static ca.vanzyl.provisio.ProvisioUtils.copy;
 
