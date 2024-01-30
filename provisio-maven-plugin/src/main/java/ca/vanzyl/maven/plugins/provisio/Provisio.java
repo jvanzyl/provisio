@@ -32,6 +32,7 @@ import javax.inject.Singleton;
 import ca.vanzyl.provisio.model.Runtime;
 import ca.vanzyl.provisio.model.io.RuntimeReader;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.project.MavenProject;
@@ -45,10 +46,12 @@ import ca.vanzyl.provisio.Actions;
 public class Provisio {
 
   private final ArtifactHandlerManager artifactHandlerManager;
+  private final MavenSession session;
 
   @Inject
-  public Provisio(ArtifactHandlerManager artifactHandlerManager) {
+  public Provisio(ArtifactHandlerManager artifactHandlerManager, MavenSession session) {
     this.artifactHandlerManager = artifactHandlerManager;
+    this.session = session;
   }
 
   public List<Runtime> findDescriptors(File descriptorDirectory, MavenProject project) {
@@ -94,7 +97,7 @@ public class Provisio {
 
   public Runtime parseDescriptor(InputStream inputStream, MavenProject project) {
     RuntimeReader parser = new RuntimeReader(Actions.defaultActionDescriptors(), versionMap(project));
-    Map<String, String> variables = new HashMap<>(getPropertiesWithSystemOverrides(project));
+    Map<String, String> variables = new HashMap<>(getPropertiesWithSystemOverrides(project, session));
     variables.put("project.version", project.getVersion());
     variables.put("project.groupId", project.getGroupId());
     variables.put("project.artifactId", project.getArtifactId());
@@ -104,13 +107,10 @@ public class Provisio {
     return parser.read(inputStream, variables);
   }
 
-  private static Map<String, String> getPropertiesWithSystemOverrides(MavenProject project) {
+  private static Map<String, String> getPropertiesWithSystemOverrides(MavenProject project, MavenSession session) {
     Map<String, String> properties = new HashMap<>();
     project.getProperties().forEach((k, v) -> properties.put(String.valueOf(k), String.valueOf(v)));
-    // TODO: this is WRONG and will not work in future Maven versions
-    // Maven3 "pushes" user properties into Java System Properties, and that will stop happening
-    // Maven Session is needed here, see https://issues.apache.org/jira/browse/MNG-7556 and future changes
-    System.getProperties().forEach((k, v) -> properties.put(String.valueOf(k), String.valueOf(v)));
+    session.getUserProperties().forEach((k, v) -> properties.put(String.valueOf(k), String.valueOf(v)));
     return properties;
   }
 
