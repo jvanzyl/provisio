@@ -68,6 +68,11 @@
         <scope>import</scope>
       </dependency>
       <dependency>
+        <groupId>org.apache.maven.resolver</groupId>
+        <artifactId>maven-resolver-supplier</artifactId>
+        <version>${aetherVersion}</version>
+      </dependency>
+      <dependency>
         <groupId>javax.inject</groupId>
         <artifactId>javax.inject</artifactId>
         <version>1</version>
