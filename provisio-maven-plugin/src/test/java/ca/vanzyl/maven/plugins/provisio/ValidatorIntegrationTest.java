@@ -39,7 +39,7 @@ public class ValidatorIntegrationTest
     public ValidatorIntegrationTest(MavenRuntimeBuilder mavenBuilder)
             throws Exception
     {
-        this.maven = mavenBuilder.withCliOptions("-B", "-U", "-Ddep.scala.version=2.13.6").build();
+        this.maven = mavenBuilder.withCliOptions("-B", "-U").build();
     }
 
     @Test
@@ -59,16 +59,6 @@ public class ValidatorIntegrationTest
             throws Exception
     {
         File basedir = resources.getBasedir("complete");
-        maven.forProject(basedir)
-                .execute("provisio:validateDependencies")
-                .assertErrorFreeLog();
-    }
-
-    @Test
-    public void testCompleteWithPropertyOverride()
-            throws Exception
-    {
-        File basedir = resources.getBasedir("property-override");
         maven.forProject(basedir)
                 .execute("provisio:validateDependencies")
                 .assertErrorFreeLog();
