@@ -33,9 +33,9 @@ package ca.vanzyl.provisio.action.runtime;
 import ca.vanzyl.provisio.model.ProvisioArchive;
 import ca.vanzyl.provisio.model.ProvisioningAction;
 import ca.vanzyl.provisio.model.ProvisioningContext;
-import io.tesla.proviso.archive.Archiver;
-import io.tesla.proviso.archive.Archiver.ArchiverBuilder;
-import io.tesla.proviso.archive.UnArchiver;
+import ca.vanzyl.provisio.archive.Archiver;
+import ca.vanzyl.provisio.archive.Archiver.ArchiverBuilder;
+import ca.vanzyl.provisio.archive.UnArchiver;
 import java.io.File;
 import org.codehaus.plexus.util.StringUtils;
 
