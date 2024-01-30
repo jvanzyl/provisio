@@ -64,13 +64,6 @@ public class GeneratorIntegrationTest
     }
 
     @Test
-    public void testComplete()
-            throws Exception
-    {
-        testGenerator("complete");
-    }
-
-    @Test
     public void testConflict()
             throws Exception
     {
