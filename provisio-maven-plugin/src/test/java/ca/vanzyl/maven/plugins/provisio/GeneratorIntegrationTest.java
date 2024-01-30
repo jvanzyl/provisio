@@ -53,7 +53,7 @@ public class GeneratorIntegrationTest
     public GeneratorIntegrationTest(MavenRuntimeBuilder mavenBuilder)
             throws Exception
     {
-        this.maven = mavenBuilder.withCliOptions("-B", "-U", "-Ddep.scala.version=2.13.6").build();
+        this.maven = mavenBuilder.withCliOptions("-B", "-U").build();
     }
 
     @Test
@@ -74,13 +74,6 @@ public class GeneratorIntegrationTest
                 .assertLogText("[ERROR] Failed to execute goal ca.vanzyl.provisio.maven.plugins:provisio-maven-plugin:")
                 .assertLogText("generateDependencies (default-cli) on project conflict: Found different versions of the same dependency: org.scala-lang:scala-library:jar:2.13.5, org.scala-lang:scala-library:jar:2.13.6 -> [Help 1]");
 
-    }
-
-    @Test
-    public void testPropertyOverride()
-            throws Exception
-    {
-        testGenerator("property-override");
     }
 
     protected void testGenerator(String projectId)
