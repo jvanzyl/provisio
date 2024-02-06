@@ -147,8 +147,8 @@ public class Provisio {
   }
 
   public String toCoordinate(Dependency d) {
-    StringBuffer sb = new StringBuffer().append(d.getGroupId()).append(":").append(d.getArtifactId()).append(":").append(d.getType());
-    if (d.getClassifier() != null && d.getClassifier().isEmpty() == false) {
+    StringBuilder sb = new StringBuilder().append(d.getGroupId()).append(":").append(d.getArtifactId()).append(":").append(d.getType());
+    if (d.getClassifier() != null && !d.getClassifier().isEmpty()) {
       sb.append(":").append(d.getClassifier());
     }
     sb.append(":").append(d.getVersion());
@@ -156,8 +156,8 @@ public class Provisio {
   }
 
   public String toVersionlessCoordinate(Dependency d) {
-    StringBuffer sb = new StringBuffer().append(d.getGroupId()).append(":").append(d.getArtifactId()).append(":").append(d.getType());
-    if (d.getClassifier() != null && d.getClassifier().isEmpty() == false) {
+    StringBuilder sb = new StringBuilder().append(d.getGroupId()).append(":").append(d.getArtifactId()).append(":").append(d.getType());
+    if (d.getClassifier() != null && !d.getClassifier().isEmpty()) {
       sb.append(":").append(d.getClassifier());
     }
     return sb.toString();
@@ -165,8 +165,6 @@ public class Provisio {
 
   public String toVersionlessCoordinate(MavenProject project) {
     String extension = artifactHandlerManager.getArtifactHandler(project.getPackaging()).getExtension();
-    StringBuffer sb = new StringBuffer().append(project.getGroupId()).append(":").append(project.getArtifactId()).append(":").append(extension);
-    return sb.toString();
+    return project.getGroupId() + ":" + project.getArtifactId() + ":" + extension;
   }
-
 }

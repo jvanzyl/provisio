@@ -27,8 +27,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.WriterFactory;
 
 import java.io.File;
@@ -38,7 +36,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mojo(name = "generateDependencies", defaultPhase = LifecyclePhase.GENERATE_RESOURCES, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
+@Mojo(name = "generateDependencies", defaultPhase = LifecyclePhase.GENERATE_RESOURCES, threadSafe = true)
 public class GeneratorMojo
         extends BaseMojo
 {
@@ -48,6 +46,7 @@ public class GeneratorMojo
     @Parameter(property = "dependencyExtendedPomLocation", defaultValue = "${project.build.directory}/generated/provisio/dependency-extended-pom.xml")
     private File dependencyExtendedPomLocation;
 
+    @Override
     public void execute()
             throws MojoExecutionException, MojoFailureException
     {
@@ -65,7 +64,7 @@ public class GeneratorMojo
                 throw new MojoExecutionException("Error resolving artifacts.", e);
             }
         }
-        if (artifacts.size() == 0) {
+        if (artifacts.isEmpty()) {
             return;
         }
         checkDuplicates(artifacts);
@@ -85,17 +84,11 @@ public class GeneratorMojo
         } catch (IOException e) {
             throw new MojoExecutionException("Error creating parent directories for the POM file: " + e.getMessage(), e);
         }
-        Writer writer = null;
-        try {
-            writer = WriterFactory.newXmlWriter(dependencyExtendedPomLocation);
+        try (Writer writer = WriterFactory.newXmlWriter(dependencyExtendedPomLocation)) {
             new MavenXpp3Writer().write(writer, model);
-            writer.close();
         }
         catch (IOException e) {
             throw new MojoExecutionException("Error writing POM file: " + e.getMessage(), e);
-        }
-        finally {
-            IOUtil.close(writer);
         }
     }
 }

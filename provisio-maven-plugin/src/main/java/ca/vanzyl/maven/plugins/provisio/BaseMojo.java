@@ -21,27 +21,27 @@ import ca.vanzyl.provisio.model.ProvisioningRequest;
 import ca.vanzyl.provisio.model.Runtime;
 import io.takari.incrementalbuild.Incremental;
 import io.takari.incrementalbuild.Incremental.Configuration;
-import org.apache.maven.artifact.handler.ArtifactHandler;
-import org.apache.maven.execution.MavenSession;
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
-import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.ReaderFactory;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
-import org.eclipse.aether.artifact.ArtifactProperties;
-import org.eclipse.aether.artifact.ArtifactType;
-import org.eclipse.aether.artifact.DefaultArtifact;
-import org.eclipse.aether.artifact.DefaultArtifactType;
+import org.eclipse.aether.collection.CollectRequest;
+import org.eclipse.aether.graph.DefaultDependencyNode;
+import org.eclipse.aether.graph.DependencyFilter;
+import org.eclipse.aether.resolution.ArtifactResult;
+import org.eclipse.aether.resolution.DependencyRequest;
+import org.eclipse.aether.resolution.DependencyResolutionException;
+import org.eclipse.aether.resolution.DependencyResult;
+import org.eclipse.aether.util.artifact.JavaScopes;
+import org.eclipse.aether.util.filter.ScopeDependencyFilter;
+import org.eclipse.aether.util.graph.visitor.DependencyGraphDumper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,20 +83,22 @@ public abstract class BaseMojo
   @Parameter(required = true, defaultValue = "${basedir}/src/main/provisio")
   protected File descriptorDirectory;
 
-  @Parameter(defaultValue = "${session}")
-  protected MavenSession session;
-
   protected ProvisioArtifact projectArtifact() {
     ProvisioArtifact jarArtifact = null;
     //
     // We also need to definitively know what others types of runtime artifacts have been created. Right now there
     // is no real protocol for knowing what something like, say, the JAR plugin did to drop off a file somewhere. We
     // need to improve this but for now we'll look.
+    // ===
+    // While this above is still true, this check below is better, in a sense it allows JAR plugin to drop off file
+    // anywhere.
     //
-    File jar = new File(project.getBuild().getDirectory(), project.getArtifactId() + "-" + project.getVersion() + ".jar");
-    if (jar.exists()) {
+    Artifact projectArtifact = RepositoryUtils.toArtifact(project.getArtifact());
+    if (projectArtifact.getFile() != null
+            && projectArtifact.getFile().getName().endsWith(".jar")
+            && projectArtifact.getFile().exists()) {
       jarArtifact = new ProvisioArtifact(project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion());
-      jarArtifact.setFile(jar);
+      jarArtifact.setFile(projectArtifact.getFile());
     }
     return jarArtifact;
   }
@@ -113,39 +115,51 @@ public abstract class BaseMojo
     // for this Mojo. I think this will be sufficient for anything related to creating a runtime.
     //
     ArtifactSet artifactSet = new ArtifactSet();
-    for (org.apache.maven.artifact.Artifact mavenArtifact : project.getArtifacts()) {
-      if (!mavenArtifact.getScope().equals("system") && !mavenArtifact.getScope().equals("provided")) {
-        artifactSet.addArtifact(new ProvisioArtifact(toArtifact(mavenArtifact)));
-      }
+    for (Artifact mavenArtifact : resolveRuntimeScopeTransitively()) {
+      artifactSet.addArtifact(new ProvisioArtifact(mavenArtifact));
     }
     return artifactSet;
   }
 
-  private static Artifact toArtifact(org.apache.maven.artifact.Artifact artifact) {
-    if (artifact == null) {
-      return null;
+
+  /**
+   * This method is in use instead of project offering mojo asked resolution scope due presence of:
+   * <a href="https://issues.apache.org/jira/browse/MNG-8041">MNG-8041</a>
+   */
+  private List<Artifact> resolveRuntimeScopeTransitively() {
+    DependencyFilter runtimeFilter = new ScopeDependencyFilter(JavaScopes.SYSTEM, JavaScopes.PROVIDED, JavaScopes.TEST);
+    List<org.eclipse.aether.graph.Dependency> dependencies = project.getDependencies().stream()
+            .map(d -> RepositoryUtils.toDependency(d, repositorySystemSession.getArtifactTypeRegistry()))
+            .filter(d -> !JavaScopes.TEST.equals(d.getScope()))
+            .collect(Collectors.toList());
+    List<org.eclipse.aether.graph.Dependency> managedDependencies = Collections.emptyList();
+    if (project.getDependencyManagement() != null) {
+      managedDependencies = project.getDependencyManagement().getDependencies().stream()
+                      .map(d -> RepositoryUtils.toDependency(d, repositorySystemSession.getArtifactTypeRegistry()))
+                      .collect(Collectors.toList());
     }
 
-    String version = artifact.getVersion();
-    if (version == null && artifact.getVersionRange() != null) {
-      version = artifact.getVersionRange().toString();
+    CollectRequest collectRequest = new CollectRequest();
+    collectRequest.setRootArtifact(RepositoryUtils.toArtifact(project.getArtifact()));
+    collectRequest.setRepositories(project.getRemoteProjectRepositories());
+    collectRequest.setDependencies(dependencies);
+    collectRequest.setManagedDependencies(managedDependencies);
+    DependencyRequest request = new DependencyRequest(collectRequest, runtimeFilter);
+    try {
+      DependencyResult result = repositorySystem.resolveDependencies(repositorySystemSession, request);
+
+      if (logger.isDebugEnabled() && result.getRoot() != null) {
+        logger.debug("BaseMojo -- Collection result for {}", request.getCollectRequest());
+        result.getRoot().accept(new DependencyGraphDumper(logger::debug));
+      }
+
+      return result.getArtifactResults().stream()
+              .map(ArtifactResult::getArtifact)
+              .collect(Collectors.toList());
+    } catch (DependencyResolutionException e) {
+      logger.error("Failed to resolve runtime dependencies", e);
+      throw new RuntimeException(e);
     }
-
-    Map<String, String> props = null;
-    if (org.apache.maven.artifact.Artifact.SCOPE_SYSTEM.equals(artifact.getScope())) {
-      String localPath = (artifact.getFile() != null) ? artifact.getFile().getPath() : "";
-      props = Collections.singletonMap(ArtifactProperties.LOCAL_PATH, localPath);
-    }
-
-    Artifact result = new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier(), artifact.getArtifactHandler().getExtension(), version, props,
-      newArtifactType(artifact.getType(), artifact.getArtifactHandler()));
-    result = result.setFile(artifact.getFile());
-
-    return result;
-  }
-
-  private static ArtifactType newArtifactType(String id, ArtifactHandler handler) {
-    return new DefaultArtifactType(id, handler.getExtension(), handler.getClassifier(), handler.getLanguage(), handler.isAddedToClasspath(), handler.isIncludesDependencies());
   }
 
   protected ProvisioningRequest getRequest(Runtime runtime)
@@ -173,7 +187,7 @@ public abstract class BaseMojo
             .filter(strings -> strings.size() > 1)
             .map(strings -> String.join(", ", strings))
             .collect(Collectors.toList());
-    if (duplicates.size() != 0) {
+    if (!duplicates.isEmpty()) {
       throw new MojoFailureException("Found different versions of the same dependency: " + String.join(", ", duplicates));
     }
   }
@@ -186,10 +200,10 @@ public abstract class BaseMojo
       dependency.setGroupId(artifact.getGroupId());
       dependency.setArtifactId(artifact.getArtifactId());
       dependency.setVersion(artifact.getVersion());
-      if (artifact.getClassifier() != null && artifact.getClassifier().length() != 0) {
+      if (artifact.getClassifier() != null && !artifact.getClassifier().isEmpty()) {
         dependency.setClassifier(artifact.getClassifier());
       }
-      if (artifact.getExtension() != null && artifact.getExtension().length() != 0 && !artifact.getExtension().equals("jar")) {
+      if (artifact.getExtension() != null && !artifact.getExtension().isEmpty() && !artifact.getExtension().equals("jar")) {
         dependency.setType(artifact.getExtension());
       }
       dependencies.add(dependency);
