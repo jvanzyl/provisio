@@ -24,15 +24,13 @@ import ca.vanzyl.provisio.model.ProvisioningRequest;
 import ca.vanzyl.provisio.model.ProvisioningResult;
 import ca.vanzyl.provisio.model.Runtime;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import ca.vanzyl.provisio.MavenProvisioner;
 
-@Mojo(name = "provision", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
+@Mojo(name = "provision", defaultPhase = LifecyclePhase.PACKAGE, threadSafe = true)
 public class ProvisioningMojo extends BaseMojo {
 
   @Parameter(defaultValue = "false", property = "skipProvision")
@@ -41,6 +39,7 @@ public class ProvisioningMojo extends BaseMojo {
   @Parameter(defaultValue = "${project.build.directory}/${project.artifactId}-${project.version}")
   private File outputDirectory;
 
+  @Override
   public void execute() throws MojoExecutionException {
     if (skipProvision) {
       getLog().info("Skipping provision");

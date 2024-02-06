@@ -26,51 +26,39 @@ import org.junit.runner.RunWith;
 
 import java.io.File;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 @RunWith(MavenJUnitTestRunner.class)
 @MavenVersions({"3.6.3", "3.8.8", "3.9.6"})
 @SuppressWarnings({"JUnitTestNG", "PublicField"})
-public class ValidatorIntegrationTest
+public class ProvisioningIntegrationTest
 {
     @Rule
     public final TestResources resources = new TestResources();
 
     public final MavenRuntime maven;
 
-    public ValidatorIntegrationTest(MavenRuntimeBuilder mavenBuilder)
+    public ProvisioningIntegrationTest(MavenRuntimeBuilder mavenBuilder)
             throws Exception
     {
-        this.maven = mavenBuilder.withCliOptions("-B", "-U", "-Ddep.scala.version=2.13.6").build();
+        this.maven = mavenBuilder.withCliOptions("-B", "-U").build();
     }
 
     @Test
-    public void testIncomplete()
+    public void testTransitiveWithLocalTestScope()
             throws Exception
     {
-        File basedir = resources.getBasedir("basic");
-
+        File basedir = resources.getBasedir("transitive-test");
         maven.forProject(basedir)
-                .execute("provisio:validateDependencies")
-                .assertLogText("[ERROR] Failed to execute goal ca.vanzyl.provisio.maven.plugins:provisio-maven-plugin:")
-                .assertLogText("validateDependencies (default-cli) on project basic: Missing dependencies: org.scala-lang:scala-library:jar:2.13.6 -> [Help 1]");
-    }
-
-    @Test
-    public void testComplete()
-            throws Exception
-    {
-        File basedir = resources.getBasedir("complete");
-        maven.forProject(basedir)
-                .execute("provisio:validateDependencies")
+                .withCliOption("-X")
+                .execute("provisio:provision")
                 .assertErrorFreeLog();
-    }
 
-    @Test
-    public void testCompleteWithPropertyOverride()
-            throws Exception
-    {
-        File basedir = resources.getBasedir("property-override");
-        maven.forProject(basedir)
-                .execute("provisio:validateDependencies")
-                .assertErrorFreeLog();
+        File libdir = new File(basedir, "target/test-1.0/lib");
+        assertTrue("guice exists", new File(libdir, "guice-7.0.0.jar").isFile());
+        assertTrue("guava exists", new File(libdir, "guava-31.0.1-jre.jar").isFile());
+        assertFalse("slf4j-api not exists", new File(libdir, "slf4j-api-2.0.11.jar").isFile());
+        assertTrue("slf4j-simple exists", new File(libdir, "slf4j-simple-2.0.11.jar").isFile());
     }
 }

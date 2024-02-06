@@ -108,6 +108,11 @@
       <artifactId>maven-resolver-impl</artifactId>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.maven.resolver</groupId>
+      <artifactId>maven-resolver-util</artifactId>
+      <!-- NOT provided: to work with 3.8 and 3.9 -->
+    </dependency>
     <!-- Test -->
     <dependency>
       <groupId>io.takari.maven.plugins</groupId>

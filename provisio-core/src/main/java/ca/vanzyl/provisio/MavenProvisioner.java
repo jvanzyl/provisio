@@ -59,10 +59,14 @@ import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.util.filter.AndDependencyFilter;
 import org.eclipse.aether.util.filter.ExclusionsDependencyFilter;
 import org.eclipse.aether.util.filter.ScopeDependencyFilter;
+import org.eclipse.aether.util.graph.visitor.DependencyGraphDumper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.util.stream.Collectors.toSet;
 
 public class MavenProvisioner {
+  private static final Logger logger = LoggerFactory.getLogger(MavenProvisioner.class);
 
   private final RepositorySystem repositorySystem;
   private final RepositorySystemSession repositorySystemSession;
@@ -379,7 +383,7 @@ public class MavenProvisioner {
     //
     // Add an exclude filter if necessary
     //
-    DependencyFilter systemScopeFilter = new ScopeDependencyFilter(JavaScopes.SYSTEM);
+    DependencyFilter systemScopeFilter = new ScopeDependencyFilter(JavaScopes.SYSTEM, JavaScopes.PROVIDED, JavaScopes.TEST);
     DependencyRequest dependencyRequest = new DependencyRequest(request, null);
     if (excludes != null) {
       List<String> exclusions = new ArrayList<>();
@@ -443,6 +447,12 @@ public class MavenProvisioner {
       }
     }
     DependencyResult result = repositorySystem.resolveDependencies(repositorySystemSession, request);
+
+    if (logger.isDebugEnabled() && result.getRoot() != null) {
+      logger.debug("MavenProvisioner -- Collection result for {}", request.getCollectRequest());
+      result.getRoot().accept(new DependencyGraphDumper(logger::debug));
+    }
+
     List<Artifact> artifacts = new ArrayList<Artifact>();
     for (ArtifactResult ar : result.getArtifactResults()) {
       artifacts.add(ar.getArtifact());

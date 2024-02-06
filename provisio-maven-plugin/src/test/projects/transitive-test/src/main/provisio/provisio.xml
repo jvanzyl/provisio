@@ -1,0 +1,3 @@
+<runtime>
+    <artifactSet to="/lib" ref="runtime.classpath" />
+</runtime>

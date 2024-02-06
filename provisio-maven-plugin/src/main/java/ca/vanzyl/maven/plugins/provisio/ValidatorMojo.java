@@ -25,7 +25,6 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -34,7 +33,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Mojo(name = "validateDependencies", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
+@Mojo(name = "validateDependencies", threadSafe = true)
 public class ValidatorMojo
         extends BaseMojo
 {
@@ -44,6 +43,7 @@ public class ValidatorMojo
     @Parameter(required = true, property = "pomFile", defaultValue = "${basedir}/pom.xml")
     private File pomFile;
 
+    @Override
     public void execute()
             throws MojoExecutionException, MojoFailureException
     {
