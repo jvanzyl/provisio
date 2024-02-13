@@ -27,7 +27,7 @@
 
   <groupId>ca.vanzyl</groupId>
   <artifactId>provisio</artifactId>
-  <version>1.0.21-SNAPSHOT</version>
+  <version>1.0.21</version>
   <packaging>pom</packaging>
   <name>Provisio</name>
 
@@ -55,7 +55,7 @@
     <connection>scm:git:git@github.com/takari/provisio.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/takari/provisio.git</developerConnection>
     <url>http://github.com/takari/provisio</url>
-    <tag>HEAD</tag>
+    <tag>provisio-1.0.21</tag>
   </scm>
 
   <dependencyManagement>
@@ -80,17 +80,17 @@
       <dependency>
         <groupId>ca.vanzyl</groupId>
         <artifactId>provisio-core</artifactId>
-        <version>1.0.21-SNAPSHOT</version>
+        <version>1.0.21</version>
       </dependency>
       <dependency>
         <groupId>ca.vanzyl</groupId>
         <artifactId>provisio-model</artifactId>
-        <version>1.0.21-SNAPSHOT</version>
+        <version>1.0.21</version>
       </dependency>
       <dependency>
         <groupId>ca.vanzyl</groupId>
         <artifactId>provisio-maven</artifactId>
-        <version>1.0.21-SNAPSHOT</version>
+        <version>1.0.21</version>
       </dependency>
       <dependency>
         <groupId>io.takari</groupId>
