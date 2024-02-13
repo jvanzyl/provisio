@@ -27,7 +27,7 @@
 
   <groupId>ca.vanzyl</groupId>
   <artifactId>provisio</artifactId>
-  <version>1.0.21</version>
+  <version>1.0.22-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Provisio</name>
 
@@ -80,17 +80,17 @@
       <dependency>
         <groupId>ca.vanzyl</groupId>
         <artifactId>provisio-core</artifactId>
-        <version>1.0.21</version>
+        <version>1.0.22-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>ca.vanzyl</groupId>
         <artifactId>provisio-model</artifactId>
-        <version>1.0.21</version>
+        <version>1.0.22-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>ca.vanzyl</groupId>
         <artifactId>provisio-maven</artifactId>
-        <version>1.0.21</version>
+        <version>1.0.22-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>io.takari</groupId>
