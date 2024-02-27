@@ -29,6 +29,7 @@
   <name>Provisio :: Maven Plugin</name>
   <properties>
     <incrementalbuild.version>1.0.1</incrementalbuild.version>
+    <pluginTesting.version>3.0.2</pluginTesting.version>
   </properties>
 
   <dependencies>
@@ -118,13 +119,13 @@
     <dependency>
       <groupId>io.takari.maven.plugins</groupId>
       <artifactId>takari-plugin-testing</artifactId>
-      <version>3.0.2</version>
+      <version>${pluginTesting.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.takari.maven.plugins</groupId>
       <artifactId>takari-plugin-integration-testing</artifactId>
-      <version>3.0.2</version>
+      <version>${pluginTesting.version}</version>
       <type>pom</type>
       <scope>test</scope>
     </dependency>

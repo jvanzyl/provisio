@@ -29,10 +29,6 @@
   <packaging>${lifecycle}</packaging>
   <name>Provisio :: Core</name>
 
-  <properties>
-    <trueZipVersion>7.5.1</trueZipVersion>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>javax.inject</groupId>
@@ -98,12 +94,6 @@
       <!-- Align with used maven -->
       <artifactId>maven-resolver-transport-file</artifactId>
       <version>${aetherVersion}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.takari.aether</groupId>
-      <artifactId>aether-connector-okhttp</artifactId>
-      <version>0.17.8</version>
       <scope>test</scope>
     </dependency>
     <dependency>
