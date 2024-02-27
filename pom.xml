@@ -54,10 +54,10 @@
     <surefire.mem>-Xmx256m</surefire.mem>
     <mavenVersion>3.9.6</mavenVersion>
     <takariArchiverVersion>0.1.29</takariArchiverVersion>
-    <aetherVersion>1.9.18</aetherVersion>
     <!-- Align with Aether version used in $mavenVersion -->
-    <sisuVersion>0.9.0.M2</sisuVersion>
+    <aetherVersion>1.9.18</aetherVersion>
     <!-- Align with Sisu version used in $mavenVersion -->
+    <sisuVersion>0.9.0.M2</sisuVersion>
     <takari.licenseHeader>license-header.txt</takari.licenseHeader>
   </properties>
 
