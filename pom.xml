@@ -53,7 +53,7 @@
     <surefire.runOrder>alphabetical</surefire.runOrder>
     <surefire.mem>-Xmx256m</surefire.mem>
     <mavenVersion>3.9.6</mavenVersion>
-    <takariArchiverVersion>0.1.29</takariArchiverVersion>
+    <takariArchiverVersion>0.1.30</takariArchiverVersion>
     <!-- Align with Aether version used in $mavenVersion -->
     <aetherVersion>1.9.18</aetherVersion>
     <!-- Align with Sisu version used in $mavenVersion -->
