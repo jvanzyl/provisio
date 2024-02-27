@@ -20,57 +20,46 @@ import io.takari.maven.testing.executor.MavenRuntime;
 import io.takari.maven.testing.executor.MavenRuntime.MavenRuntimeBuilder;
 import io.takari.maven.testing.executor.MavenVersions;
 import io.takari.maven.testing.executor.junit.MavenJUnitTestRunner;
+import java.io.File;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.File;
-
 @RunWith(MavenJUnitTestRunner.class)
 @MavenVersions({"3.6.3", "3.8.8", "3.9.6"})
 @SuppressWarnings({"JUnitTestNG", "PublicField"})
-public class ValidatorIntegrationTest
-{
+public class ValidatorIntegrationTest {
     @Rule
     public final TestResources resources = new TestResources();
 
     public final MavenRuntime maven;
 
-    public ValidatorIntegrationTest(MavenRuntimeBuilder mavenBuilder)
-            throws Exception
-    {
-        this.maven = mavenBuilder.withCliOptions("-B", "-U", "-Ddep.scala.version=2.13.6").build();
+    public ValidatorIntegrationTest(MavenRuntimeBuilder mavenBuilder) throws Exception {
+        this.maven = mavenBuilder
+                .withCliOptions("-B", "-U", "-Ddep.scala.version=2.13.6")
+                .build();
     }
 
     @Test
-    public void testIncomplete()
-            throws Exception
-    {
+    public void testIncomplete() throws Exception {
         File basedir = resources.getBasedir("basic");
 
         maven.forProject(basedir)
                 .execute("provisio:validateDependencies")
                 .assertLogText("[ERROR] Failed to execute goal ca.vanzyl.provisio.maven.plugins:provisio-maven-plugin:")
-                .assertLogText("validateDependencies (default-cli) on project basic: Missing dependencies: org.scala-lang:scala-library:jar:2.13.6 -> [Help 1]");
+                .assertLogText(
+                        "validateDependencies (default-cli) on project basic: Missing dependencies: org.scala-lang:scala-library:jar:2.13.6 -> [Help 1]");
     }
 
     @Test
-    public void testComplete()
-            throws Exception
-    {
+    public void testComplete() throws Exception {
         File basedir = resources.getBasedir("complete");
-        maven.forProject(basedir)
-                .execute("provisio:validateDependencies")
-                .assertErrorFreeLog();
+        maven.forProject(basedir).execute("provisio:validateDependencies").assertErrorFreeLog();
     }
 
     @Test
-    public void testCompleteWithPropertyOverride()
-            throws Exception
-    {
+    public void testCompleteWithPropertyOverride() throws Exception {
         File basedir = resources.getBasedir("property-override");
-        maven.forProject(basedir)
-                .execute("provisio:validateDependencies")
-                .assertErrorFreeLog();
+        maven.forProject(basedir).execute("provisio:validateDependencies").assertErrorFreeLog();
     }
 }

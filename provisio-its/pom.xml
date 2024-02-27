@@ -1,6 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright (C) 2015-2020 Jason van Zyl
+    Copyright (C) 2015-2024 Jason van Zyl
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -23,8 +24,8 @@
     <version>1.0.22-SNAPSHOT</version>
   </parent>
   <artifactId>provisio-its</artifactId>
-  <name>Provisio :: Integration Tests</name>
   <packaging>takari-jar</packaging>
+  <name>Provisio :: Integration Tests</name>
 
   <properties>
     <okhttpConnectorVersion>0.16.0</okhttpConnectorVersion>

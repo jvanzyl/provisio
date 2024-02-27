@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2015-2020 Jason van Zyl
+/*
+ * Copyright (C) 2015-2024 Jason van Zyl
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,15 @@
  */
 package ca.vanzyl.provisio.action.artifact.alter;
 
+import ca.vanzyl.provisio.model.ProvisioArtifact;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.vanzyl.provisio.model.ProvisioArtifact;
-
 public class Insert {
-  
-  private List<ProvisioArtifact> artifacts = new ArrayList<>();
-  
-  public List<ProvisioArtifact> getArtifacts() {
-    return artifacts;
-  }  
+
+    private List<ProvisioArtifact> artifacts = new ArrayList<>();
+
+    public List<ProvisioArtifact> getArtifacts() {
+        return artifacts;
+    }
 }

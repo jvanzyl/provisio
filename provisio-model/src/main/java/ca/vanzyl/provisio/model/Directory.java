@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2015-2020 Jason van Zyl
+/*
+ * Copyright (C) 2015-2024 Jason van Zyl
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,40 +20,38 @@ import java.util.List;
 
 public class Directory {
 
-  private String path;
-  private List<String> includes;
-  private List<String> excludes;
-  private boolean flatten;
+    private String path;
+    private List<String> includes;
+    private List<String> excludes;
+    private boolean flatten;
 
-  public String getPath() {
-    return path;
-  }
-
-  public void setPath(String path) {
-    this.path = path;
-  }
-
-  public List<String> getIncludes() {
-    if (includes == null) {
-      includes = new ArrayList<>();
+    public String getPath() {
+        return path;
     }
-    return includes;
-  }
 
-  public List<String> getExcludes() {
-    if (excludes == null) {
-      excludes = new ArrayList<>();
+    public void setPath(String path) {
+        this.path = path;
     }
-    return excludes;
-  }
 
-  public boolean isFlatten()
-  {
-    return flatten;
-  }
+    public List<String> getIncludes() {
+        if (includes == null) {
+            includes = new ArrayList<>();
+        }
+        return includes;
+    }
 
-  public void setFlatten(boolean flatten)
-  {
-    this.flatten = flatten;
-  }
+    public List<String> getExcludes() {
+        if (excludes == null) {
+            excludes = new ArrayList<>();
+        }
+        return excludes;
+    }
+
+    public boolean isFlatten() {
+        return flatten;
+    }
+
+    public void setFlatten(boolean flatten) {
+        this.flatten = flatten;
+    }
 }

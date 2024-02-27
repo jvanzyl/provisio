@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2015-2020 Jason van Zyl
+/*
+ * Copyright (C) 2015-2024 Jason van Zyl
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,29 +17,29 @@ package ca.vanzyl.provisio.model;
 
 public class Implicit {
 
-  private String name;
-  private Class<?> type;
-  private Class<?> itemType;
-  
-  public Implicit(String name, Class<?> type) {
-    this(name, type, null);
-  }
-  
-  public Implicit(String name, Class<?> type, Class<?> itemType) {
-    this.name = name;
-    this.type = type;
-    this.itemType = itemType;
-  }
+    private String name;
+    private Class<?> type;
+    private Class<?> itemType;
 
-  public String getName() {
-    return name;
-  }
+    public Implicit(String name, Class<?> type) {
+        this(name, type, null);
+    }
 
-  public Class<?> getType() {
-    return type;
-  }
-  
-  public Class<?> getItemType() {
-    return itemType;
-  }
+    public Implicit(String name, Class<?> type, Class<?> itemType) {
+        this.name = name;
+        this.type = type;
+        this.itemType = itemType;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Class<?> getType() {
+        return type;
+    }
+
+    public Class<?> getItemType() {
+        return itemType;
+    }
 }

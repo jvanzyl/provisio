@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2015-2020 Jason van Zyl
+/*
+ * Copyright (C) 2015-2024 Jason van Zyl
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,79 +15,79 @@
  */
 package ca.vanzyl.maven.plugins.provisio;
 
-import ca.vanzyl.provisio.model.ProvisioArchive;
-import java.io.File;
-
+import ca.vanzyl.provisio.MavenProvisioner;
 import ca.vanzyl.provisio.model.ArtifactSet;
+import ca.vanzyl.provisio.model.ProvisioArchive;
 import ca.vanzyl.provisio.model.ProvisioArtifact;
 import ca.vanzyl.provisio.model.ProvisioningRequest;
 import ca.vanzyl.provisio.model.ProvisioningResult;
 import ca.vanzyl.provisio.model.Runtime;
+import java.io.File;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
-import ca.vanzyl.provisio.MavenProvisioner;
-
 @Mojo(name = "provision", defaultPhase = LifecyclePhase.PACKAGE, threadSafe = true)
 public class ProvisioningMojo extends BaseMojo {
 
-  @Parameter(defaultValue = "false", property = "skipProvision")
-  private boolean skipProvision;
+    @Parameter(defaultValue = "false", property = "skipProvision")
+    private boolean skipProvision;
 
-  @Parameter(defaultValue = "${project.build.directory}/${project.artifactId}-${project.version}")
-  private File outputDirectory;
+    @Parameter(defaultValue = "${project.build.directory}/${project.artifactId}-${project.version}")
+    private File outputDirectory;
 
-  @Override
-  public void execute() throws MojoExecutionException {
-    if (skipProvision) {
-      getLog().info("Skipping provision");
-      return;
-    }
-    MavenProvisioner provisioner = new MavenProvisioner(repositorySystem, repositorySystemSession, project.getRemoteProjectRepositories());
-
-    for (Runtime runtime : provisio.findDescriptors(descriptorDirectory, project)) {
-      //
-      // Add the ArtifactSet reference for the runtime classpath
-      //
-      ArtifactSet runtimeArtifacts = getRuntimeClasspathAsArtifactSet();
-      ProvisioArtifact projectArtifact = projectArtifact();
-      if (projectArtifact != null) {
-        runtime.addArtifactReference("projectArtifact", projectArtifact);
-        runtimeArtifacts.addArtifact(projectArtifact);
-        //
-        // If this is not a provisio-based packaging type, but we have no way to know that really. The presto-plugin
-        // packaging type uses provisio but there is no way to inherit packaging types
-        //
-        if (!project.getPackaging().equals("jar")) {
-          projectHelper.attachArtifact(project, "jar", projectArtifact.getFile());
+    @Override
+    public void execute() throws MojoExecutionException {
+        if (skipProvision) {
+            getLog().info("Skipping provision");
+            return;
         }
-      }
-      runtime.addArtifactSetReference("runtime.classpath", runtimeArtifacts);
-      //
-      // Provision the runtime
-      //
-      ProvisioningRequest request = getRequest(runtime);
-      request.setOutputDirectory(outputDirectory);
+        MavenProvisioner provisioner =
+                new MavenProvisioner(repositorySystem, repositorySystemSession, project.getRemoteProjectRepositories());
 
-      ProvisioningResult result;
-      try {
-        result = provisioner.provision(request);
-      } catch (Exception e) {
-        throw new MojoExecutionException("Error provisioning assembly.", e);
-      }
+        for (Runtime runtime : provisio.findDescriptors(descriptorDirectory, project)) {
+            //
+            // Add the ArtifactSet reference for the runtime classpath
+            //
+            ArtifactSet runtimeArtifacts = getRuntimeClasspathAsArtifactSet();
+            ProvisioArtifact projectArtifact = projectArtifact();
+            if (projectArtifact != null) {
+                runtime.addArtifactReference("projectArtifact", projectArtifact);
+                runtimeArtifacts.addArtifact(projectArtifact);
+                //
+                // If this is not a provisio-based packaging type, but we have no way to know that really. The
+                // presto-plugin
+                // packaging type uses provisio but there is no way to inherit packaging types
+                //
+                if (!project.getPackaging().equals("jar")) {
+                    projectHelper.attachArtifact(project, "jar", projectArtifact.getFile());
+                }
+            }
+            runtime.addArtifactSetReference("runtime.classpath", runtimeArtifacts);
+            //
+            // Provision the runtime
+            //
+            ProvisioningRequest request = getRequest(runtime);
+            request.setOutputDirectory(outputDirectory);
 
-      if (result.getArchives() == null || result.getArchives().size() != 1) {
-        continue;
-      }
-      ProvisioArchive provisioArchive = result.getArchives().get(0);
-      if (project.getPackaging().equals("jar") || project.getPackaging().equals("takari-jar")) {
-        projectHelper.attachArtifact(project, provisioArchive.extension(), provisioArchive.file());
-        continue;
-      }
-      // We have something like provisio or presto-plugin
-      project.getArtifact().setFile(provisioArchive.file());
+            ProvisioningResult result;
+            try {
+                result = provisioner.provision(request);
+            } catch (Exception e) {
+                throw new MojoExecutionException("Error provisioning assembly.", e);
+            }
+
+            if (result.getArchives() == null || result.getArchives().size() != 1) {
+                continue;
+            }
+            ProvisioArchive provisioArchive = result.getArchives().get(0);
+            if (project.getPackaging().equals("jar") || project.getPackaging().equals("takari-jar")) {
+                projectHelper.attachArtifact(project, provisioArchive.extension(), provisioArchive.file());
+                continue;
+            }
+            // We have something like provisio or presto-plugin
+            project.getArtifact().setFile(provisioArchive.file());
+        }
     }
-  }
 }

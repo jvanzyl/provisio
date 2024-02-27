@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2015-2020 Jason van Zyl
+/*
+ * Copyright (C) 2015-2024 Jason van Zyl
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.util.Set;
 // This should become Runtime and Runtime -> RuntimeDescriptor where
 // The RuntimeDescriptor is used to materialized the Runtime
 //
-// Want to be able to produced a ResolvedRuntime after our provisioning 
+// Want to be able to produced a ResolvedRuntime after our provisioning
 // process so we know exactly what's in the runtime
 //
 // So we can move between instances of Runtimes which may be different versions
@@ -32,5 +32,5 @@ import java.util.Set;
 //
 public class ResolvedRuntime {
 
-  private Set<ResolvedRuntimeElement> elements;
+    private Set<ResolvedRuntimeElement> elements;
 }

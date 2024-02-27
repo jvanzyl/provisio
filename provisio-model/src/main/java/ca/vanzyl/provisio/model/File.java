@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2015-2020 Jason van Zyl
+/*
+ * Copyright (C) 2015-2024 Jason van Zyl
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,27 +17,27 @@ package ca.vanzyl.provisio.model;
 
 public class File {
 
-  private String path;
-  private String touch;
+    private String path;
+    private String touch;
 
-  public String getPath() {
-    return path;
-  }
+    public String getPath() {
+        return path;
+    }
 
-  public void setPath(String path) {
-    this.path = path;
-  }
+    public void setPath(String path) {
+        this.path = path;
+    }
 
-  public String getTouch() {
-    return touch;
-  }
+    public String getTouch() {
+        return touch;
+    }
 
-  public void setTouch(String touch) {
-    this.touch = touch;
-  }
+    public void setTouch(String touch) {
+        this.touch = touch;
+    }
 
-  @Override
-  public String toString() {
-    return "File [path=" + path + "]";
-  }
+    @Override
+    public String toString() {
+        return "File [path=" + path + "]";
+    }
 }

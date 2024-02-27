@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2015-2020 Jason van Zyl
+/*
+ * Copyright (C) 2015-2024 Jason van Zyl
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,35 +20,34 @@ import java.util.List;
 
 public class FileSet {
 
-  private String to;
-  private List<File> files;
-  private List<Directory> directories;
+    private String to;
+    private List<File> files;
+    private List<Directory> directories;
 
-  public String getDirectory() {
-    return to;
-  }
-
-  public void setDirectory(String to) {
-    this.to = to;
-  }
-
-  public List<File> getFiles() {
-    if (files == null) {
-      files = new ArrayList<>();
+    public String getDirectory() {
+        return to;
     }
-    return files;
-  }
 
-  public List<Directory> getDirectories() {
-    if (directories == null) {
-      directories = new ArrayList<>();
+    public void setDirectory(String to) {
+        this.to = to;
     }
-    return directories;
-  }
 
-  @Override
-  public String toString() {
-    return "FileSet [directory=" + to + ", files=" + files + ", directories=" + directories + "]";
-  }
+    public List<File> getFiles() {
+        if (files == null) {
+            files = new ArrayList<>();
+        }
+        return files;
+    }
 
+    public List<Directory> getDirectories() {
+        if (directories == null) {
+            directories = new ArrayList<>();
+        }
+        return directories;
+    }
+
+    @Override
+    public String toString() {
+        return "FileSet [directory=" + to + ", files=" + files + ", directories=" + directories + "]";
+    }
 }

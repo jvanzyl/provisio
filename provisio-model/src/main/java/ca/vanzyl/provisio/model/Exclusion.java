@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2015-2020 Jason van Zyl
+/*
+ * Copyright (C) 2015-2024 Jason van Zyl
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package ca.vanzyl.provisio.model;
 
 public class Exclusion {
 
-  String id;
+    String id;
 
-  public String getId() {
-    return id;
-  }  
+    public String getId() {
+        return id;
+    }
 }

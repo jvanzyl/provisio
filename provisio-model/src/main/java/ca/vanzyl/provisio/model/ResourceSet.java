@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2015-2020 Jason van Zyl
+/*
+ * Copyright (C) 2015-2024 Jason van Zyl
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ import java.util.List;
 
 public class ResourceSet {
 
-  private List<Resource> resources;
+    private List<Resource> resources;
 
-  public List<Resource> getResources() {
-    return resources;
-  }
+    public List<Resource> getResources() {
+        return resources;
+    }
 }

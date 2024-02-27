@@ -5,8 +5,8 @@ import ca.vanzyl.provisio.model.ProvisioningContext;
 
 public class Archive implements ProvisioningAction {
 
-  private String name;
+    private String name;
 
-  @Override
-  public void execute(ProvisioningContext context) throws Exception {}
+    @Override
+    public void execute(ProvisioningContext context) throws Exception {}
 }

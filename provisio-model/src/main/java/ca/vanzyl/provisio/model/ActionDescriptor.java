@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2015-2020 Jason van Zyl
+/*
+ * Copyright (C) 2015-2024 Jason van Zyl
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public interface ActionDescriptor {
-  String getName();
-  Class<?> getImplementation();
-  String[] attributes();
-  
-  default List<Alias> aliases() { 
-    return new ArrayList<>();
-  }
-  
-  default List<Implicit> implicits() { 
-    return new ArrayList<>();
-  }
-  
+    String getName();
+
+    Class<?> getImplementation();
+
+    String[] attributes();
+
+    default List<Alias> aliases() {
+        return new ArrayList<>();
+    }
+
+    default List<Implicit> implicits() {
+        return new ArrayList<>();
+    }
 }

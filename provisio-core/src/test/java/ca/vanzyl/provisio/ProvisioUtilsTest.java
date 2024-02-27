@@ -8,12 +8,11 @@ import org.junit.Test;
 
 public class ProvisioUtilsTest {
 
-  @Test
-  public void validateCoordinateToPath() {
+    @Test
+    public void validateCoordinateToPath() {
 
-    ProvisioArtifact artifact = new ProvisioArtifact("io.prestosql:presto-main:332");
-    String path = coordinateToPath(artifact);
-    assertEquals("presto-main-332.jar", path);
-  }
-
+        ProvisioArtifact artifact = new ProvisioArtifact("io.prestosql:presto-main:332");
+        String path = coordinateToPath(artifact);
+        assertEquals("presto-main-332.jar", path);
+    }
 }

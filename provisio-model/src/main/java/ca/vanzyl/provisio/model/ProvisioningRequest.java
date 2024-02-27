@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2015-2020 Jason van Zyl
+/*
+ * Copyright (C) 2015-2024 Jason van Zyl
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,103 +19,100 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 
 public class ProvisioningRequest {
 
-  private File outputDirectory;
-  private String localRepository;
-  private Runtime model;
-  private Map<String, String> versionMap;
-  private List<String> managedDependencies = Collections.emptyList();
-  private Map<String, String> variables;
-  //
-  private RepositorySystemSession repositorySystemSession;
-  private List<RemoteRepository> remoteRepositories;
+    private File outputDirectory;
+    private String localRepository;
+    private Runtime model;
+    private Map<String, String> versionMap;
+    private List<String> managedDependencies = Collections.emptyList();
+    private Map<String, String> variables;
+    //
+    private RepositorySystemSession repositorySystemSession;
+    private List<RemoteRepository> remoteRepositories;
 
-  public File getOutputDirectory() {
-    return outputDirectory;
-  }
-
-  public ProvisioningRequest setOutputDirectory(File outputDirectory) {
-    if (outputDirectory == null) {
-      this.outputDirectory = new File("").getAbsoluteFile();
-    } else {
-      this.outputDirectory = outputDirectory.getAbsoluteFile();
+    public File getOutputDirectory() {
+        return outputDirectory;
     }
-    return this;
-  }
 
-  public String getLocalRepository() {
-    return localRepository;
-  }
+    public ProvisioningRequest setOutputDirectory(File outputDirectory) {
+        if (outputDirectory == null) {
+            this.outputDirectory = new File("").getAbsoluteFile();
+        } else {
+            this.outputDirectory = outputDirectory.getAbsoluteFile();
+        }
+        return this;
+    }
 
-  public void setLocalRepository(String localRepository) {
-    this.localRepository = localRepository;
-  }
+    public String getLocalRepository() {
+        return localRepository;
+    }
 
-  public Runtime getRuntimeModel() {
-    return model;
-  }
+    public void setLocalRepository(String localRepository) {
+        this.localRepository = localRepository;
+    }
 
-  public ProvisioningRequest setRuntimeDescriptor(Runtime runtime) {
-    this.model = runtime;
-    return this;
-  }
+    public Runtime getRuntimeModel() {
+        return model;
+    }
 
-  //
-  // VersionMap
-  //
-  public Map<String, String> getVersionMap() {
-    return versionMap;
-  }
+    public ProvisioningRequest setRuntimeDescriptor(Runtime runtime) {
+        this.model = runtime;
+        return this;
+    }
 
-  public ProvisioningRequest setVersionMap(Map<String, String> versionMap) {
-    this.versionMap = versionMap;
-    return this;
-  }
+    //
+    // VersionMap
+    //
+    public Map<String, String> getVersionMap() {
+        return versionMap;
+    }
 
-  public void addVersionMap(Map<String, String> versionMap) {
-    this.versionMap = versionMap;
-  }
+    public ProvisioningRequest setVersionMap(Map<String, String> versionMap) {
+        this.versionMap = versionMap;
+        return this;
+    }
 
-  public List<String> getManagedDependencies() {
-    return managedDependencies;
-  }
+    public void addVersionMap(Map<String, String> versionMap) {
+        this.versionMap = versionMap;
+    }
 
-  public void setManagedDependencies(List<String> dependencyManagement) {
-    this.managedDependencies = dependencyManagement;
-  }
+    public List<String> getManagedDependencies() {
+        return managedDependencies;
+    }
 
-  public RepositorySystemSession getRepositorySystemSession() {
-    return repositorySystemSession;
-  }
+    public void setManagedDependencies(List<String> dependencyManagement) {
+        this.managedDependencies = dependencyManagement;
+    }
 
-  public void setRepositorySystemSession(RepositorySystemSession repositorySystemSession) {
-    this.repositorySystemSession = repositorySystemSession;
-  }
+    public RepositorySystemSession getRepositorySystemSession() {
+        return repositorySystemSession;
+    }
 
-  public List<RemoteRepository> getRemoteRepositories() {
-    return remoteRepositories;
-  }
+    public void setRepositorySystemSession(RepositorySystemSession repositorySystemSession) {
+        this.repositorySystemSession = repositorySystemSession;
+    }
 
-  public void setRemoteRepositories(List<RemoteRepository> remoteRepositories) {
-    this.remoteRepositories = remoteRepositories;
-  }
+    public List<RemoteRepository> getRemoteRepositories() {
+        return remoteRepositories;
+    }
 
-  public Runtime getRuntime() {
-    return model;
-  }
+    public void setRemoteRepositories(List<RemoteRepository> remoteRepositories) {
+        this.remoteRepositories = remoteRepositories;
+    }
 
-  public Map<String, String> getVariables() {
-    return variables;
-  }
+    public Runtime getRuntime() {
+        return model;
+    }
 
-  public void setVariables(Map<String, String> variables) {
-    this.variables = variables;
-  }
+    public Map<String, String> getVariables() {
+        return variables;
+    }
 
-
+    public void setVariables(Map<String, String> variables) {
+        this.variables = variables;
+    }
 }
