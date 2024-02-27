@@ -28,7 +28,7 @@
   <packaging>takari-maven-plugin</packaging>
   <name>Provisio :: Maven Plugin</name>
   <properties>
-    <incrementalbuild.version>0.7.0</incrementalbuild.version>
+    <incrementalbuild.version>1.0.1</incrementalbuild.version>
   </properties>
 
   <dependencies>
