@@ -39,6 +39,10 @@
       <artifactId>takari-archiver</artifactId>
     </dependency>
     <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+    </dependency>
+    <dependency>
       <groupId>ca.vanzyl</groupId>
       <artifactId>provisio-core</artifactId>
     </dependency>
