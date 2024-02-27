@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2015-2020 Jason van Zyl
+/*
+ * Copyright (C) 2015-2024 Jason van Zyl
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,17 @@ package ca.vanzyl.provisio;
 
 public class ProvisioningException extends RuntimeException {
 
-  private static final long serialVersionUID = -2662475912560280300L;
+    private static final long serialVersionUID = -2662475912560280300L;
 
-  public ProvisioningException(String message) {
-    super(message);
-  }
+    public ProvisioningException(String message) {
+        super(message);
+    }
 
-  public ProvisioningException(String message, Throwable cause) {
-    super(message, cause);
-  }
+    public ProvisioningException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-  public ProvisioningException(Throwable cause) {
-    super(cause);
-  }
-
+    public ProvisioningException(Throwable cause) {
+        super(cause);
+    }
 }

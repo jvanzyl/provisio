@@ -1,15 +1,14 @@
 package ca.vanzyl.provisio.model.action.alter;
 
+import ca.vanzyl.provisio.model.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.vanzyl.provisio.model.File;
-
 public class Delete {
 
-  private List<File> files = new ArrayList<>();
+    private List<File> files = new ArrayList<>();
 
-  public List<File> getFiles() {
-    return files;
-  }
+    public List<File> getFiles() {
+        return files;
+    }
 }

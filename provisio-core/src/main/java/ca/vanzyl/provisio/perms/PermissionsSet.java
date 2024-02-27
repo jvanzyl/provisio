@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2015-2020 Jason van Zyl
+/*
+ * Copyright (C) 2015-2024 Jason van Zyl
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,20 +21,19 @@ import java.util.Set;
 
 @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
 public final class PermissionsSet {
-  private final Set<PosixFilePermission> toAdd;
-  private final Set<PosixFilePermission> toRemove;
+    private final Set<PosixFilePermission> toAdd;
+    private final Set<PosixFilePermission> toRemove;
 
-  PermissionsSet(final Set<PosixFilePermission> toAdd,
-    final Set<PosixFilePermission> toRemove) {
-    this.toAdd = toAdd;
-    this.toRemove = toRemove;
-  }
+    PermissionsSet(final Set<PosixFilePermission> toAdd, final Set<PosixFilePermission> toRemove) {
+        this.toAdd = toAdd;
+        this.toRemove = toRemove;
+    }
 
-  public Set<PosixFilePermission> modify(final Set<PosixFilePermission> set) {
-    final Set<PosixFilePermission> ret = EnumSet.copyOf(set);
+    public Set<PosixFilePermission> modify(final Set<PosixFilePermission> set) {
+        final Set<PosixFilePermission> ret = EnumSet.copyOf(set);
 
-    ret.removeAll(toRemove);
-    ret.addAll(toAdd);
-    return ret;
-  }
+        ret.removeAll(toRemove);
+        ret.addAll(toAdd);
+        return ret;
+    }
 }

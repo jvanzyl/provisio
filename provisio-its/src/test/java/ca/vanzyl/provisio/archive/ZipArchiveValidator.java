@@ -6,7 +6,7 @@ import java.io.IOException;
 
 public class ZipArchiveValidator extends AbstractArchiveValidator {
 
-  public ZipArchiveValidator(File archive) throws IOException {
-    super(new ZipArchiveSource(archive));
-  }
+    public ZipArchiveValidator(File archive) throws IOException {
+        super(new ZipArchiveSource(archive));
+    }
 }

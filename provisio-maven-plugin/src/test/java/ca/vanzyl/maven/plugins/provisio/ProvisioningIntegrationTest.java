@@ -15,40 +15,34 @@
  */
 package ca.vanzyl.maven.plugins.provisio;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import io.takari.maven.testing.TestResources;
 import io.takari.maven.testing.executor.MavenRuntime;
 import io.takari.maven.testing.executor.MavenRuntime.MavenRuntimeBuilder;
 import io.takari.maven.testing.executor.MavenVersions;
 import io.takari.maven.testing.executor.junit.MavenJUnitTestRunner;
+import java.io.File;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.File;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 @RunWith(MavenJUnitTestRunner.class)
 @MavenVersions({"3.6.3", "3.8.8", "3.9.6"})
 @SuppressWarnings({"JUnitTestNG", "PublicField"})
-public class ProvisioningIntegrationTest
-{
+public class ProvisioningIntegrationTest {
     @Rule
     public final TestResources resources = new TestResources();
 
     public final MavenRuntime maven;
 
-    public ProvisioningIntegrationTest(MavenRuntimeBuilder mavenBuilder)
-            throws Exception
-    {
+    public ProvisioningIntegrationTest(MavenRuntimeBuilder mavenBuilder) throws Exception {
         this.maven = mavenBuilder.withCliOptions("-B", "-U").build();
     }
 
     @Test
-    public void testTransitiveWithLocalTestScope()
-            throws Exception
-    {
+    public void testTransitiveWithLocalTestScope() throws Exception {
         File basedir = resources.getBasedir("transitive-test");
         maven.forProject(basedir)
                 .withCliOption("-X")

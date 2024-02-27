@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2015-2020 Jason van Zyl
+/*
+ * Copyright (C) 2015-2024 Jason van Zyl
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,34 +15,32 @@
  */
 package ca.vanzyl.provisio.action.artifact.filter;
 
-import ca.vanzyl.provisio.model.io.InterpolatingInputStream;
+import static ca.vanzyl.provisio.ProvisioUtils.copy;
 
+import ca.vanzyl.provisio.archive.Selector;
+import ca.vanzyl.provisio.archive.UnarchivingEntryProcessor;
+import ca.vanzyl.provisio.model.io.InterpolatingInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
-import ca.vanzyl.provisio.archive.Selector;
-import ca.vanzyl.provisio.archive.UnarchivingEntryProcessor;
-
-import static ca.vanzyl.provisio.ProvisioUtils.copy;
-
 public class StandardFilteringProcessor implements UnarchivingEntryProcessor {
 
-  Selector selector;
-  Map<String, String> variables;
+    Selector selector;
+    Map<String, String> variables;
 
-  public StandardFilteringProcessor(Map<String, String> variables) {
-    this.variables = variables;
-  }
+    public StandardFilteringProcessor(Map<String, String> variables) {
+        this.variables = variables;
+    }
 
-  @Override
-  public String processName(String name) {
-    return name;
-  }
+    @Override
+    public String processName(String name) {
+        return name;
+    }
 
-  @Override
-  public void processStream(String entryName, InputStream inputStream, OutputStream outputStream) throws IOException {
-    copy(new InterpolatingInputStream(inputStream, variables), outputStream);
-  }
+    @Override
+    public void processStream(String entryName, InputStream inputStream, OutputStream outputStream) throws IOException {
+        copy(new InterpolatingInputStream(inputStream, variables), outputStream);
+    }
 }

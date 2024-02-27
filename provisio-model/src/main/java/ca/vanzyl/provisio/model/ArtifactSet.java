@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2015-2020 Jason van Zyl
+/*
+ * Copyright (C) 2015-2024 Jason van Zyl
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,138 +25,137 @@ import java.util.Set;
 
 public class ArtifactSet {
 
-  // parse time
-  private String directory;
-  private String reference;
-  private String from;
-  private String providedBom;
+    // parse time
+    private String directory;
+    private String reference;
+    private String from;
+    private String providedBom;
 
-  private List<ProvisioArtifact> artifacts = new ArrayList<>();
-  private List<Resource> resources = new ArrayList<>();
-  // children
-  private List<ArtifactSet> artifactSets = new ArrayList<>();
-  private List<Exclusion> exclusions;
+    private List<ProvisioArtifact> artifacts = new ArrayList<>();
+    private List<Resource> resources = new ArrayList<>();
+    // children
+    private List<ArtifactSet> artifactSets = new ArrayList<>();
+    private List<Exclusion> exclusions;
 
-  // runtime
-  private ArtifactSet parent;
-  private File outputDirectory;
-  private Map<String, ProvisioArtifact> artifactMap = new LinkedHashMap<>();
-  private Set<ProvisioArtifact> resolvedArtifacts = new HashSet<>();
+    // runtime
+    private ArtifactSet parent;
+    private File outputDirectory;
+    private Map<String, ProvisioArtifact> artifactMap = new LinkedHashMap<>();
+    private Set<ProvisioArtifact> resolvedArtifacts = new HashSet<>();
 
-  public String getDirectory() {
-    return directory;
-  }
-
-  public void setDirectory(String directory) {
-    this.directory = directory;
-  }
-
-  public String getReference() {
-    return reference;
-  }
-
-  public void setReference(String reference) {
-    this.reference = reference;
-  }
-
-  public String getFrom() {
-    return from;
-  }
-
-  public void setFrom(String from) {
-    this.from = from;
-  }
-
-  public String getProvidedBom()
-  {
-    return providedBom;
-  }
-
-  public void setProvidedBom(String providedBom)
-  {
-    this.providedBom = providedBom;
-  }
-
-  public void addArtifact(ProvisioArtifact artifact) {
-    artifacts.add(artifact);
-  }
-
-  public List<ProvisioArtifact> getArtifacts() {
-    return artifacts;
-  }
-
-  public void addResource(Resource resource) {
-    resources.add(resource);
-  }
-
-  public List<Resource> getResources() {
-    return resources;
-  }
-
-  public void addArtifactSet(ArtifactSet artifactSet) {
-    artifactSets.add(artifactSet);
-  }
-
-  public List<ArtifactSet> getArtifactSets() {
-    return artifactSets;
-  }
-
-  // runtime
-
-  public List<Exclusion> getExcludes() {
-    return exclusions;
-  }
-
-  public File getOutputDirectory() {
-    return outputDirectory;
-  }
-
-  public void setOutputDirectory(File outputDirectory) {
-    this.outputDirectory = outputDirectory;
-  }
-
-  // maybe we can do this in the model
-
-  public ArtifactSet getParent() {
-    return parent;
-  }
-
-  public void setParent(ArtifactSet parent) {
-    this.parent = parent;
-  }
-
-  public Set<ProvisioArtifact> getResolvedArtifacts() {
-    return resolvedArtifacts;
-  }
-
-  public void setResolvedArtifacts(Set<ProvisioArtifact> resolvedArtifacts) {
-    this.resolvedArtifacts = resolvedArtifacts;
-  }
-
-  public Map<String, ProvisioArtifact> getArtifactMap() {
-    if (artifacts != null) {
-      for (ProvisioArtifact artifact : artifacts) {
-        artifactMap.put(artifact.getCoordinate(), artifact);
-      }
+    public String getDirectory() {
+        return directory;
     }
-    return artifactMap;
-  }
 
-  @Override
-  public String toString() {
-    return "ArtifactSet [directory=" + directory + ", artifacts=" + artifacts + ", artifactSets=" + artifactSets + ", parent=" + parent + ", resolvedArtifacts=" + resolvedArtifacts + "]";
-  }
-
-  //
-  // In order to set the parent references we use this technique: http://xstream.codehaus.org/faq.html#Serialization_initialize_transient
-  //
-  private Object readResolve() {
-    if (artifactSets != null) {
-      for (ArtifactSet child : artifactSets) {
-        child.setParent(this);
-      }
+    public void setDirectory(String directory) {
+        this.directory = directory;
     }
-    return this;
-  }
 
+    public String getReference() {
+        return reference;
+    }
+
+    public void setReference(String reference) {
+        this.reference = reference;
+    }
+
+    public String getFrom() {
+        return from;
+    }
+
+    public void setFrom(String from) {
+        this.from = from;
+    }
+
+    public String getProvidedBom() {
+        return providedBom;
+    }
+
+    public void setProvidedBom(String providedBom) {
+        this.providedBom = providedBom;
+    }
+
+    public void addArtifact(ProvisioArtifact artifact) {
+        artifacts.add(artifact);
+    }
+
+    public List<ProvisioArtifact> getArtifacts() {
+        return artifacts;
+    }
+
+    public void addResource(Resource resource) {
+        resources.add(resource);
+    }
+
+    public List<Resource> getResources() {
+        return resources;
+    }
+
+    public void addArtifactSet(ArtifactSet artifactSet) {
+        artifactSets.add(artifactSet);
+    }
+
+    public List<ArtifactSet> getArtifactSets() {
+        return artifactSets;
+    }
+
+    // runtime
+
+    public List<Exclusion> getExcludes() {
+        return exclusions;
+    }
+
+    public File getOutputDirectory() {
+        return outputDirectory;
+    }
+
+    public void setOutputDirectory(File outputDirectory) {
+        this.outputDirectory = outputDirectory;
+    }
+
+    // maybe we can do this in the model
+
+    public ArtifactSet getParent() {
+        return parent;
+    }
+
+    public void setParent(ArtifactSet parent) {
+        this.parent = parent;
+    }
+
+    public Set<ProvisioArtifact> getResolvedArtifacts() {
+        return resolvedArtifacts;
+    }
+
+    public void setResolvedArtifacts(Set<ProvisioArtifact> resolvedArtifacts) {
+        this.resolvedArtifacts = resolvedArtifacts;
+    }
+
+    public Map<String, ProvisioArtifact> getArtifactMap() {
+        if (artifacts != null) {
+            for (ProvisioArtifact artifact : artifacts) {
+                artifactMap.put(artifact.getCoordinate(), artifact);
+            }
+        }
+        return artifactMap;
+    }
+
+    @Override
+    public String toString() {
+        return "ArtifactSet [directory=" + directory + ", artifacts=" + artifacts + ", artifactSets=" + artifactSets
+                + ", parent=" + parent + ", resolvedArtifacts=" + resolvedArtifacts + "]";
+    }
+
+    //
+    // In order to set the parent references we use this technique:
+    // http://xstream.codehaus.org/faq.html#Serialization_initialize_transient
+    //
+    private Object readResolve() {
+        if (artifactSets != null) {
+            for (ArtifactSet child : artifactSets) {
+                child.setParent(this);
+            }
+        }
+        return this;
+    }
 }

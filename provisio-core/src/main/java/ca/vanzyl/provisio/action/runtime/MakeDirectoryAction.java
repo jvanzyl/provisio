@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2015-2020 Jason van Zyl
+/*
+ * Copyright (C) 2015-2024 Jason van Zyl
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,38 +28,37 @@
  */
 package ca.vanzyl.provisio.action.runtime;
 
-import java.io.File;
-
 import ca.vanzyl.provisio.model.ProvisioningAction;
 import ca.vanzyl.provisio.model.ProvisioningContext;
+import java.io.File;
 
 public class MakeDirectoryAction implements ProvisioningAction {
 
-  private File runtimeDirectory;
-  private String name;
+    private File runtimeDirectory;
+    private String name;
 
-  public void execute(ProvisioningContext context) {
-    File directoryToMake = new File(runtimeDirectory, name);
-    if (!directoryToMake.exists()) {
-      if (!directoryToMake.mkdirs()) {
-        throw new RuntimeException(String.format("Unable to create the directory %s", directoryToMake));
-      }
+    public void execute(ProvisioningContext context) {
+        File directoryToMake = new File(runtimeDirectory, name);
+        if (!directoryToMake.exists()) {
+            if (!directoryToMake.mkdirs()) {
+                throw new RuntimeException(String.format("Unable to create the directory %s", directoryToMake));
+            }
+        }
     }
-  }
 
-  public File getRuntimeDirectory() {
-    return runtimeDirectory;
-  }
+    public File getRuntimeDirectory() {
+        return runtimeDirectory;
+    }
 
-  public void setRuntimeDirectory(File runtimeDirectory) {
-    this.runtimeDirectory = runtimeDirectory;
-  }
+    public void setRuntimeDirectory(File runtimeDirectory) {
+        this.runtimeDirectory = runtimeDirectory;
+    }
 
-  public String getName() {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public void setName(String name) {
-    this.name = name;
-  }
+    public void setName(String name) {
+        this.name = name;
+    }
 }

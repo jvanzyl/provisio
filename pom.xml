@@ -1,6 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright (C) 2015-2020 Jason van Zyl
+    Copyright (C) 2015-2024 Jason van Zyl
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -22,7 +23,7 @@
   <parent>
     <groupId>io.takari</groupId>
     <artifactId>takari</artifactId>
-    <version>51</version>
+    <version>53</version>
   </parent>
 
   <groupId>ca.vanzyl</groupId>
@@ -39,6 +40,13 @@
     <module>provisio-its</module>
   </modules>
 
+  <scm>
+    <connection>scm:git:git@github.com/takari/provisio.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/takari/provisio.git</developerConnection>
+    <tag>provisio-1.0.21</tag>
+    <url>http://github.com/takari/provisio</url>
+  </scm>
+
   <properties>
     <lifecycle>takari-jar</lifecycle>
     <surefire.redirectTestOutputToFile>true</surefire.redirectTestOutputToFile>
@@ -46,17 +54,12 @@
     <surefire.mem>-Xmx256m</surefire.mem>
     <mavenVersion>3.9.6</mavenVersion>
     <takariArchiverVersion>0.1.29</takariArchiverVersion>
-    <aetherVersion>1.9.18</aetherVersion> <!-- Align with Aether version used in $mavenVersion -->
-    <sisuVersion>0.9.0.M2</sisuVersion> <!-- Align with Sisu version used in $mavenVersion -->
+    <!-- Align with Aether version used in $mavenVersion -->
+    <aetherVersion>1.9.18</aetherVersion>
+    <!-- Align with Sisu version used in $mavenVersion -->
+    <sisuVersion>0.9.0.M2</sisuVersion>
     <takari.licenseHeader>license-header.txt</takari.licenseHeader>
   </properties>
-
-  <scm>
-    <connection>scm:git:git@github.com/takari/provisio.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/takari/provisio.git</developerConnection>
-    <url>http://github.com/takari/provisio</url>
-    <tag>provisio-1.0.21</tag>
-  </scm>
 
   <dependencyManagement>
     <dependencies>
@@ -129,8 +132,8 @@
         <directory>src/main/resources</directory>
       </resource>
       <resource>
-        <directory>src/main/resources-filtered</directory>
         <filtering>true</filtering>
+        <directory>src/main/resources-filtered</directory>
       </resource>
     </resources>
     <plugins>
@@ -140,10 +143,10 @@
         <executions>
           <execution>
             <id>enforce-banned-dependencies</id>
-            <phase>test</phase>
             <goals>
               <goal>enforce</goal>
             </goals>
+            <phase>test</phase>
             <configuration>
               <rules>
                 <bannedDependencies>

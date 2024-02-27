@@ -15,11 +15,19 @@
  */
 package ca.vanzyl.maven.plugins.provisio;
 
+import static org.junit.Assert.assertArrayEquals;
+
 import io.takari.maven.testing.TestResources;
 import io.takari.maven.testing.executor.MavenRuntime;
 import io.takari.maven.testing.executor.MavenRuntime.MavenRuntimeBuilder;
 import io.takari.maven.testing.executor.MavenVersions;
 import io.takari.maven.testing.executor.junit.MavenJUnitTestRunner;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
@@ -31,68 +39,48 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.junit.Assert.assertArrayEquals;
-
 @RunWith(MavenJUnitTestRunner.class)
 @MavenVersions({"3.6.3", "3.8.8", "3.9.6"})
 @SuppressWarnings({"JUnitTestNG", "PublicField"})
-public class GeneratorIntegrationTest
-{
+public class GeneratorIntegrationTest {
     @Rule
     public final TestResources resources = new TestResources();
 
     public final MavenRuntime maven;
 
-    public GeneratorIntegrationTest(MavenRuntimeBuilder mavenBuilder)
-            throws Exception
-    {
-        this.maven = mavenBuilder.withCliOptions("-B", "-U", "-Ddep.scala.version=2.13.6").build();
+    public GeneratorIntegrationTest(MavenRuntimeBuilder mavenBuilder) throws Exception {
+        this.maven = mavenBuilder
+                .withCliOptions("-B", "-U", "-Ddep.scala.version=2.13.6")
+                .build();
     }
 
     @Test
-    public void testBasic()
-            throws Exception
-    {
+    public void testBasic() throws Exception {
         testGenerator("basic");
     }
 
     @Test
-    public void testComplete()
-            throws Exception
-    {
+    public void testComplete() throws Exception {
         testGenerator("complete");
     }
 
     @Test
-    public void testConflict()
-            throws Exception
-    {
+    public void testConflict() throws Exception {
         File basedir = resources.getBasedir("conflict");
         maven.forProject(basedir)
                 .withCliOption("-DdependencyExtendedPomLocation=generated.xml")
                 .execute("provisio:generateDependencies")
                 .assertLogText("[ERROR] Failed to execute goal ca.vanzyl.provisio.maven.plugins:provisio-maven-plugin:")
-                .assertLogText("generateDependencies (default-cli) on project conflict: Found different versions of the same dependency: org.scala-lang:scala-library:jar:2.13.5, org.scala-lang:scala-library:jar:2.13.6 -> [Help 1]");
-
+                .assertLogText(
+                        "generateDependencies (default-cli) on project conflict: Found different versions of the same dependency: org.scala-lang:scala-library:jar:2.13.5, org.scala-lang:scala-library:jar:2.13.6 -> [Help 1]");
     }
 
     @Test
-    public void testPropertyOverride()
-            throws Exception
-    {
+    public void testPropertyOverride() throws Exception {
         testGenerator("property-override");
     }
 
-    protected void testGenerator(String projectId)
-            throws Exception
-    {
+    protected void testGenerator(String projectId) throws Exception {
         File basedir = resources.getBasedir(projectId);
         maven.forProject(basedir)
                 .withCliOption("-DdependencyExtendedPomLocation=generated.xml")
@@ -102,52 +90,39 @@ public class GeneratorIntegrationTest
         Model model = readModel(new File(basedir, "generated.xml"));
         List<String> dependencies = flattenDependencies(model.getDependencies());
 
-        String[] expected = {
-                "org.scala-lang:scala-library:jar:2.13.6:runtime",
-                "io.trino:trino-spi:jar:356:provided"};
+        String[] expected = {"org.scala-lang:scala-library:jar:2.13.6:runtime", "io.trino:trino-spi:jar:356:provided"};
         assertArrayEquals(expected, dependencies.toArray());
     }
 
-
-    private Model readModel(File pomFile)
-            throws MojoExecutionException
-    {
+    private Model readModel(File pomFile) throws MojoExecutionException {
         Reader reader = null;
         try {
             reader = ReaderFactory.newXmlReader(pomFile);
             final Model model = new MavenXpp3Reader().read(reader);
             reader.close();
             return model;
-        }
-        catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             return null;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new MojoExecutionException("Error reading POM " + pomFile, e);
-        }
-        catch (XmlPullParserException e) {
+        } catch (XmlPullParserException e) {
             throw new MojoExecutionException("Error parsing POM " + pomFile, e);
-        }
-        finally {
+        } finally {
             IOUtil.close(reader);
         }
     }
 
-    private List<String> flattenDependencies(List<Dependency> dependencies)
-    {
-        return dependencies
-                .stream()
-                .map(d -> d.getGroupId() +
-                        ":" + d.getArtifactId() +
-                        prefixed(d.getType(), ":jar") +
-                        prefixed(d.getClassifier(), "") +
-                        ":" + d.getVersion() +
-                        prefixed(d.getScope(), ":runtime"))
+    private List<String> flattenDependencies(List<Dependency> dependencies) {
+        return dependencies.stream()
+                .map(d -> d.getGroupId() + ":"
+                        + d.getArtifactId() + prefixed(d.getType(), ":jar")
+                        + prefixed(d.getClassifier(), "")
+                        + ":"
+                        + d.getVersion() + prefixed(d.getScope(), ":runtime"))
                 .collect(Collectors.toList());
     }
 
-    private String prefixed(String value, String defaultValue)
-    {
+    private String prefixed(String value, String defaultValue) {
         if (value == null) {
             return defaultValue;
         }

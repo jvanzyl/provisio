@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2015-2020 Jason van Zyl
+/*
+ * Copyright (C) 2015-2024 Jason van Zyl
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
  */
 package ca.vanzyl.provisio.action.artifact.filter;
 
+import ca.vanzyl.provisio.archive.UnarchivingEntryProcessor;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,27 +27,25 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Map;
 
-import ca.vanzyl.provisio.archive.UnarchivingEntryProcessor;
-
 public class MustacheFilteringProcessor implements UnarchivingEntryProcessor {
 
-  private Map<String, String> variables;
-  
-  public MustacheFilteringProcessor(Map<String, String> variables) {
-    this.variables = variables;
-  }
+    private Map<String, String> variables;
 
-  @Override
-  public String processName(String name) {
-    return name;
-  }
+    public MustacheFilteringProcessor(Map<String, String> variables) {
+        this.variables = variables;
+    }
 
-  @Override
-  public void processStream(String entryName, InputStream inputStream, OutputStream outputStream) throws IOException {
-    Writer writer = new OutputStreamWriter(outputStream);
-    MustacheFactory mf = new DefaultMustacheFactory();
-    Mustache mustache = mf.compile(new InputStreamReader(inputStream), "provisio");
-    mustache.execute(writer, variables);
-    writer.flush();    
-  }
+    @Override
+    public String processName(String name) {
+        return name;
+    }
+
+    @Override
+    public void processStream(String entryName, InputStream inputStream, OutputStream outputStream) throws IOException {
+        Writer writer = new OutputStreamWriter(outputStream);
+        MustacheFactory mf = new DefaultMustacheFactory();
+        Mustache mustache = mf.compile(new InputStreamReader(inputStream), "provisio");
+        mustache.execute(writer, variables);
+        writer.flush();
+    }
 }

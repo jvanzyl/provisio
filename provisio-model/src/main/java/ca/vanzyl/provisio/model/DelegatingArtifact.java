@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2015-2020 Jason van Zyl
+/*
+ * Copyright (C) 2015-2024 Jason van Zyl
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package ca.vanzyl.provisio.model;
 
 import java.io.File;
 import java.util.Map;
-
 import org.eclipse.aether.artifact.AbstractArtifact;
 import org.eclipse.aether.artifact.Artifact;
 
@@ -27,114 +26,113 @@ import org.eclipse.aether.artifact.Artifact;
  */
 public abstract class DelegatingArtifact extends AbstractArtifact {
 
-  private final Artifact delegate;
+    private final Artifact delegate;
 
-  /**
-   * Creates a new artifact instance that delegates to the specified artifact.
-   * 
-   * @param delegate The artifact to delegate to, must not be {@code null}.
-   */
-  protected DelegatingArtifact(Artifact delegate) {
-    if (delegate == null) {
-      throw new IllegalArgumentException("delegate artifact not specified");
-    }
-    this.delegate = delegate;
-  }
-
-  /**
-   * Creates a new artifact instance that delegates to the specified artifact. Subclasses should use this hook to
-   * instantiate themselves, taking along any data from the current instance that was added.
-   * 
-   * @param delegate The artifact to delegate to, must not be {@code null}.
-   * @return The new delegating artifact, never {@code null}.
-   */
-  protected abstract DelegatingArtifact newInstance(Artifact delegate);
-
-  public String getGroupId() {
-    return delegate.getGroupId();
-  }
-
-  public String getArtifactId() {
-    return delegate.getArtifactId();
-  }
-
-  public String getVersion() {
-    return delegate.getVersion();
-  }
-
-  public Artifact setVersion(String version) {
-    Artifact artifact = delegate.setVersion(version);
-    if (artifact != delegate) {
-      return newInstance(artifact);
-    }
-    return this;
-  }
-
-  public String getBaseVersion() {
-    return delegate.getBaseVersion();
-  }
-
-  public boolean isSnapshot() {
-    return delegate.isSnapshot();
-  }
-
-  public String getClassifier() {
-    return delegate.getClassifier();
-  }
-
-  public String getExtension() {
-    return delegate.getExtension();
-  }
-
-  public File getFile() {
-    return delegate.getFile();
-  }
-
-  public Artifact setFile(File file) {
-    Artifact artifact = delegate.setFile(file);
-    if (artifact != delegate) {
-      return newInstance(artifact);
-    }
-    return this;
-  }
-
-  public String getProperty(String key, String defaultValue) {
-    return delegate.getProperty(key, defaultValue);
-  }
-
-  public Map<String, String> getProperties() {
-    return delegate.getProperties();
-  }
-
-  public Artifact setProperties(Map<String, String> properties) {
-    Artifact artifact = delegate.setProperties(properties);
-    if (artifact != delegate) {
-      return newInstance(artifact);
-    }
-    return this;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (obj == this) {
-      return true;
+    /**
+     * Creates a new artifact instance that delegates to the specified artifact.
+     *
+     * @param delegate The artifact to delegate to, must not be {@code null}.
+     */
+    protected DelegatingArtifact(Artifact delegate) {
+        if (delegate == null) {
+            throw new IllegalArgumentException("delegate artifact not specified");
+        }
+        this.delegate = delegate;
     }
 
-    if (obj instanceof DelegatingArtifact) {
-      return delegate.equals(((DelegatingArtifact) obj).delegate);
+    /**
+     * Creates a new artifact instance that delegates to the specified artifact. Subclasses should use this hook to
+     * instantiate themselves, taking along any data from the current instance that was added.
+     *
+     * @param delegate The artifact to delegate to, must not be {@code null}.
+     * @return The new delegating artifact, never {@code null}.
+     */
+    protected abstract DelegatingArtifact newInstance(Artifact delegate);
+
+    public String getGroupId() {
+        return delegate.getGroupId();
     }
 
-    return delegate.equals(obj);
-  }
+    public String getArtifactId() {
+        return delegate.getArtifactId();
+    }
 
-  @Override
-  public int hashCode() {
-    return delegate.hashCode();
-  }
+    public String getVersion() {
+        return delegate.getVersion();
+    }
 
-  @Override
-  public String toString() {
-    return delegate.toString();
-  }
+    public Artifact setVersion(String version) {
+        Artifact artifact = delegate.setVersion(version);
+        if (artifact != delegate) {
+            return newInstance(artifact);
+        }
+        return this;
+    }
 
+    public String getBaseVersion() {
+        return delegate.getBaseVersion();
+    }
+
+    public boolean isSnapshot() {
+        return delegate.isSnapshot();
+    }
+
+    public String getClassifier() {
+        return delegate.getClassifier();
+    }
+
+    public String getExtension() {
+        return delegate.getExtension();
+    }
+
+    public File getFile() {
+        return delegate.getFile();
+    }
+
+    public Artifact setFile(File file) {
+        Artifact artifact = delegate.setFile(file);
+        if (artifact != delegate) {
+            return newInstance(artifact);
+        }
+        return this;
+    }
+
+    public String getProperty(String key, String defaultValue) {
+        return delegate.getProperty(key, defaultValue);
+    }
+
+    public Map<String, String> getProperties() {
+        return delegate.getProperties();
+    }
+
+    public Artifact setProperties(Map<String, String> properties) {
+        Artifact artifact = delegate.setProperties(properties);
+        if (artifact != delegate) {
+            return newInstance(artifact);
+        }
+        return this;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+
+        if (obj instanceof DelegatingArtifact) {
+            return delegate.equals(((DelegatingArtifact) obj).delegate);
+        }
+
+        return delegate.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return delegate.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return delegate.toString();
+    }
 }

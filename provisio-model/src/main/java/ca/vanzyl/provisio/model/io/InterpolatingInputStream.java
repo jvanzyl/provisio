@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2015-2020 Jason van Zyl
+/*
+ * Copyright (C) 2015-2024 Jason van Zyl
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,19 @@ package ca.vanzyl.provisio.model.io;
 
 import java.io.InputStream;
 import java.util.Map;
-
 import org.codehaus.swizzle.stream.DelimitedTokenReplacementInputStream;
 import org.codehaus.swizzle.stream.StringTokenHandler;
 
 public class InterpolatingInputStream extends DelimitedTokenReplacementInputStream {
-  public InterpolatingInputStream(final InputStream in, final Map<String, String> variables) {
-    super(in, "${", "}", new StringTokenHandler() {
-      public String handleToken(String token) {
-        Object object = variables.get(token);
-        if (object != null) {
-          return object.toString();
-        }
-        return "${" + token + "}";
-      }
-    });
-  }
+    public InterpolatingInputStream(final InputStream in, final Map<String, String> variables) {
+        super(in, "${", "}", new StringTokenHandler() {
+            public String handleToken(String token) {
+                Object object = variables.get(token);
+                if (object != null) {
+                    return object.toString();
+                }
+                return "${" + token + "}";
+            }
+        });
+    }
 }

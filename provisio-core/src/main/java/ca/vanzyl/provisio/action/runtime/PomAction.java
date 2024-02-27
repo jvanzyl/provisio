@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2015-2020 Jason van Zyl
+/*
+ * Copyright (C) 2015-2024 Jason van Zyl
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,11 +30,9 @@ package ca.vanzyl.provisio.action.runtime;
 
 import ca.vanzyl.provisio.model.ProvisioningAction;
 import ca.vanzyl.provisio.model.ProvisioningContext;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-
 import org.apache.maven.model.Dependency;
 import org.codehaus.plexus.util.FileUtils;
 
@@ -47,24 +45,23 @@ import org.codehaus.plexus.util.FileUtils;
  */
 public class PomAction implements ProvisioningAction {
 
-  private String name;
-  private String includes;
-  private String excludes;
-  private File runtimeDirectory;
+    private String name;
+    private String includes;
+    private String excludes;
+    private File runtimeDirectory;
 
-  public void execute(ProvisioningContext context) {
-    try {
-      List<String> files = FileUtils.getFileNames(runtimeDirectory, includes, excludes, true);
-      for (String file : files) {
-        System.out.println(file);
-      }
-    } catch (IOException e) {
+    public void execute(ProvisioningContext context) {
+        try {
+            List<String> files = FileUtils.getFileNames(runtimeDirectory, includes, excludes, true);
+            for (String file : files) {
+                System.out.println(file);
+            }
+        } catch (IOException e) {
+        }
     }
-  }
-  
-  private Dependency findDependencyFromFile(File file) {
-    Dependency d = new Dependency();
-    return d;
-  }
-  
+
+    private Dependency findDependencyFromFile(File file) {
+        Dependency d = new Dependency();
+        return d;
+    }
 }
