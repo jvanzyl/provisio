@@ -97,7 +97,8 @@ public class AlterAction implements ProvisioningAction {
             // Set all the files readable so we can repack them
             setFilesReadable(unpackDirectory);
             // Pack the archive back up
-            Archiver archiver = Archiver.builder().useRoot(false).build();
+            Archiver archiver =
+                    Archiver.builder().normalize(true).useRoot(false).build();
             String artifactName = artifact.getName() != null ? artifact.getName() : coordinateToPath(artifact);
             File alteredArtifact = new File(outputDirectory, artifactName);
             archiver.archive(alteredArtifact, unpackDirectory);
