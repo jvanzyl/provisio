@@ -55,6 +55,7 @@ public class ArchiveAction implements ProvisioningAction {
         }
         Archiver archiver = builder.posixLongFileMode(true)
                 .useRoot(useRoot)
+                .normalize(true)
                 .hardLinkIncludes(split(hardLinkIncludes))
                 .hardLinkExcludes(split(hardLinkExcludes))
                 .build();
