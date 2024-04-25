@@ -15,6 +15,7 @@
  */
 package ca.vanzyl.provisio;
 
+import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
 import ca.vanzyl.provisio.action.artifact.WriteToDiskAction;
@@ -371,7 +372,7 @@ public class MavenProvisioner {
                         artifact.getExtension(), artifact.getExtension(), "", "unknown", false, true);
             }
             if (type != null) {
-                artifact.setProperties(type.getProperties());
+                artifact = artifact.setProperties(type.getProperties());
             }
             Dependency dependency = new Dependency(artifact, "runtime");
             //
@@ -449,20 +450,36 @@ public class MavenProvisioner {
             throw new ProvisioningException(e.getMessage(), e);
         }
 
-        Map<String, ProvisioArtifact> artifactMapKeyedByGa = new HashMap<String, ProvisioArtifact>();
+        Map<String, ProvisioArtifact> artifactMapKeyedByGa =
+                new HashMap<>(artifacts.stream().collect(toMap(this::artifactKey, a -> a)));
         Set<ProvisioArtifact> resolvedArtifacts = new HashSet<>();
         for (Artifact a : resultArtifacts) {
-            String ga = a.getGroupId() + ":" + a.getArtifactId();
+            String key = artifactKey(a);
             if (a instanceof ProvisioArtifact) {
-                artifactMapKeyedByGa.put(ga, (ProvisioArtifact) a);
+                artifactMapKeyedByGa.put(key, (ProvisioArtifact) a);
                 resolvedArtifacts.add((ProvisioArtifact) a);
             } else {
-                artifactMapKeyedByGa.put(ga, new ProvisioArtifact(a));
-                resolvedArtifacts.add(new ProvisioArtifact(a));
+                ProvisioArtifact provisioArtifact = artifactMapKeyedByGa.get(key);
+                if (provisioArtifact == null) {
+                    ProvisioArtifact resolvedArtifact = new ProvisioArtifact(a);
+                    artifactMapKeyedByGa.put(key, resolvedArtifact);
+                    resolvedArtifacts.add(resolvedArtifact);
+                } else {
+                    ProvisioArtifact resolvedArtifact = provisioArtifact.setFile(a.getFile());
+                    artifactMapKeyedByGa.put(key, resolvedArtifact);
+                    resolvedArtifacts.add(resolvedArtifact);
+                }
             }
         }
 
         return resolvedArtifacts;
+    }
+
+    /**
+     * Internal keying of artifacts.
+     */
+    private String artifactKey(Artifact artifact) {
+        return artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getClassifier();
     }
 
     private List<Artifact> resolveArtifacts(DependencyRequest request) throws DependencyResolutionException {
@@ -486,7 +503,7 @@ public class MavenProvisioner {
             result.getRoot().accept(new DependencyGraphDumper(logger::debug));
         }
 
-        List<Artifact> artifacts = new ArrayList<Artifact>();
+        List<Artifact> artifacts = new ArrayList<>();
         for (ArtifactResult ar : result.getArtifactResults()) {
             artifacts.add(ar.getArtifact());
         }
@@ -572,7 +589,6 @@ public class MavenProvisioner {
         String includesString = null;
         if (includes != null && !includes.isEmpty()) {
             includesString = String.join(",", includes);
-            ;
         }
         String excludesString = null;
         if (excludes != null && !excludes.isEmpty()) {

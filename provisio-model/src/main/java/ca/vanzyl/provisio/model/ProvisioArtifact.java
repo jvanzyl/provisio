@@ -16,9 +16,11 @@
 package ca.vanzyl.provisio.model;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.eclipse.aether.artifact.AbstractArtifact;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
@@ -47,16 +49,31 @@ public class ProvisioArtifact extends AbstractArtifact {
         this.name = name;
     }
 
+    public ProvisioArtifact(Artifact a) {
+        this.delegate = a;
+    }
+
+    private ProvisioArtifact(
+            String name,
+            List<ProvisioningAction> actions,
+            Artifact delegate,
+            String coordinate,
+            List<String> exclusions,
+            String reference) {
+        this.name = name;
+        this.actions = actions;
+        this.delegate = delegate;
+        this.coordinate = coordinate;
+        this.exclusions = exclusions;
+        this.reference = reference;
+    }
+
     public String getName() {
         return name;
     }
 
     public String getReference() {
         return reference;
-    }
-
-    public ProvisioArtifact(Artifact a) {
-        this.delegate = a;
     }
 
     public String getCoordinate() {
@@ -78,7 +95,7 @@ public class ProvisioArtifact extends AbstractArtifact {
                 .append(getArtifactId())
                 .append(":")
                 .append(getExtension());
-        if (getClassifier() != null && getClassifier().isEmpty() == false) {
+        if (getClassifier() != null && !getClassifier().isEmpty()) {
             sb.append(":").append(getClassifier());
         }
         return sb.toString();
@@ -115,9 +132,12 @@ public class ProvisioArtifact extends AbstractArtifact {
     }
 
     @Override
-    public Artifact setVersion(String version) {
-        delegate = delegate.setVersion(version);
-        return this;
+    public ProvisioArtifact setVersion(String version) {
+        Artifact newArtifact = delegate.setVersion(version);
+        if (this.delegate == newArtifact) {
+            return this;
+        }
+        return new ProvisioArtifact(name, actions, newArtifact, coordinate, exclusions, reference);
     }
 
     @Override
@@ -146,9 +166,25 @@ public class ProvisioArtifact extends AbstractArtifact {
     }
 
     @Override
-    public Artifact setFile(File file) {
-        delegate = delegate.setFile(file);
-        return this;
+    public ProvisioArtifact setFile(File file) {
+        Artifact newArtifact = delegate.setFile(file);
+        if (this.delegate == newArtifact) {
+            return this;
+        }
+        return new ProvisioArtifact(name, actions, newArtifact, coordinate, exclusions, reference);
+    }
+
+    public Path getPath() {
+        File file = getFile();
+        return file != null ? file.toPath() : null;
+    }
+
+    public Artifact setPath(Path path) {
+        Path current = getPath();
+        if (Objects.equals(current, path)) {
+            return this;
+        }
+        return setFile(path != null ? path.toFile() : null);
     }
 
     @Override
@@ -162,9 +198,12 @@ public class ProvisioArtifact extends AbstractArtifact {
     }
 
     @Override
-    public Artifact setProperties(Map<String, String> properties) {
-        delegate = delegate.setProperties(properties);
-        return this;
+    public ProvisioArtifact setProperties(Map<String, String> properties) {
+        Artifact newArtifact = delegate.setProperties(properties);
+        if (this.delegate == newArtifact) {
+            return this;
+        }
+        return new ProvisioArtifact(name, actions, newArtifact, coordinate, exclusions, reference);
     }
 
     @Override
