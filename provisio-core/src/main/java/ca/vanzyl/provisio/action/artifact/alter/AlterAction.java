@@ -33,6 +33,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
+import java.util.Set;
 import javax.inject.Named;
 import org.codehaus.plexus.util.FileUtils;
 import org.slf4j.Logger;
@@ -72,8 +73,8 @@ public class AlterAction implements ProvisioningAction {
             if (inserts != null) {
                 for (Insert insert : inserts) {
                     for (ProvisioArtifact insertArtifact : insert.getArtifacts()) {
-                        provisioner.resolveArtifact(context, insertArtifact);
-                        File source = insertArtifact.getFile();
+                        Set<ProvisioArtifact> resolved = provisioner.resolveArtifact(context, insertArtifact);
+                        File source = resolved.iterator().next().getFile();
                         File target = new File(unpackDirectory, insertArtifact.getName());
                         Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     }

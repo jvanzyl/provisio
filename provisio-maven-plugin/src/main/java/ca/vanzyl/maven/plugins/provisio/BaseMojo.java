@@ -94,8 +94,8 @@ public abstract class BaseMojo extends AbstractMojo {
                 && projectArtifact.getFile().getName().endsWith(".jar")
                 && projectArtifact.getFile().exists()) {
             jarArtifact = new ProvisioArtifact(
-                    project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion());
-            jarArtifact.setFile(projectArtifact.getFile());
+                            project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion())
+                    .setFile(projectArtifact.getFile());
         }
         return jarArtifact;
     }
