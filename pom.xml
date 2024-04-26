@@ -38,6 +38,7 @@
     <module>provisio-maven-plugin</module>
     <module>provisio-model</module>
     <module>provisio-its</module>
+    <module>reshaper</module>
   </modules>
 
   <scm>
