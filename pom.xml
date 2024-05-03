@@ -23,7 +23,7 @@
   <parent>
     <groupId>io.takari</groupId>
     <artifactId>takari</artifactId>
-    <version>53</version>
+    <version>54</version>
   </parent>
 
   <groupId>ca.vanzyl</groupId>
@@ -53,7 +53,7 @@
     <surefire.runOrder>alphabetical</surefire.runOrder>
     <surefire.mem>-Xmx256m</surefire.mem>
     <mavenVersion>3.9.6</mavenVersion>
-    <takariArchiverVersion>0.1.30</takariArchiverVersion>
+    <takariArchiverVersion>0.1.31</takariArchiverVersion>
     <!-- Align with Aether version used in $mavenVersion -->
     <aetherVersion>1.9.19</aetherVersion>
     <!-- Align with Sisu version used in $mavenVersion -->
