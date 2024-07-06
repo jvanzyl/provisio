@@ -57,7 +57,7 @@
     <!-- Align with Aether version used in $mavenVersion -->
     <aetherVersion>1.9.21</aetherVersion>
     <!-- Align with Sisu version used in $mavenVersion -->
-    <sisuVersion>0.9.0.M2</sisuVersion>
+    <sisuVersion>0.9.0.M3</sisuVersion>
     <takari.licenseHeader>license-header.txt</takari.licenseHeader>
   </properties>
 
