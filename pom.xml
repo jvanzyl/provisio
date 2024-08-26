@@ -23,7 +23,7 @@
   <parent>
     <groupId>io.takari</groupId>
     <artifactId>takari</artifactId>
-    <version>55</version>
+    <version>56</version>
   </parent>
 
   <groupId>ca.vanzyl</groupId>
