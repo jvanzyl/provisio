@@ -16,6 +16,7 @@
 package ca.vanzyl.provisio;
 
 import static java.util.Objects.requireNonNull;
+import static org.apache.commons.lang3.StringUtils.abbreviateMiddle;
 
 import ca.vanzyl.provisio.model.ProvisioArtifact;
 import java.io.IOException;
@@ -23,6 +24,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class ProvisioUtils {
+    private static final int MAXIMUM_FILENAME_LENGTH = 64;
+    private static final String GROUP_ARTIFACT_SEPARATOR = "_";
+    private static final String ELLIPSIS = "...";
 
     public static String coordinateToPath(ProvisioArtifact a) {
 
@@ -53,5 +57,18 @@ public class ProvisioUtils {
             to.write(buf, 0, r);
             total += (long) r;
         }
+    }
+
+    public static String targetArtifactFileName(ProvisioArtifact artifact, String name) {
+        if (artifact.getName() == null && name == null) {
+            throw new IllegalArgumentException("Artifact name and file name are both null");
+        }
+
+        String filenameSuffix = (artifact.getName() != null ? artifact.getName() : name);
+        int remaining = MAXIMUM_FILENAME_LENGTH - filenameSuffix.length() - GROUP_ARTIFACT_SEPARATOR.length();
+        if (remaining <= 0) {
+            return abbreviateMiddle(filenameSuffix, ELLIPSIS, MAXIMUM_FILENAME_LENGTH);
+        }
+        return abbreviateMiddle(artifact.getGroupId(), ELLIPSIS, remaining) + GROUP_ARTIFACT_SEPARATOR + filenameSuffix;
     }
 }

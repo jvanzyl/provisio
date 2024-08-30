@@ -93,9 +93,9 @@ public class ProvisioTest {
         String name = "it-0006";
         deleteOutputDirectory(name);
         ProvisioningResult result = provision(name);
-        assertFileExists(result, "lib/maven-core-3.3.9.jar");
-        assertFileDoesntExists(result, "lib/plexus-utils-3.0.22.jar");
-        assertFileDoesntExists(result, "lib/maven-model-3.3.9.jar");
+        assertFileExists(result, "lib/org.apache.maven_maven-core-3.3.9.jar");
+        assertFileDoesntExists(result, "lib/org.codehaus.plexus_plexus-utils-3.0.22.jar");
+        assertFileDoesntExists(result, "lib/org.apache.maven_maven-model-3.3.9.jar");
     }
 
     @Test
@@ -103,13 +103,13 @@ public class ProvisioTest {
         String name = "it-0007";
         deleteOutputDirectory(name);
         ProvisioningResult result = provision(name);
-        assertFileExists(result, "lib/modello-core-1.8.3.jar");
-        assertFileExists(result, "lib/maven-core-3.3.9.jar");
+        assertFileExists(result, "lib/org.codehaus.modello_modello-core-1.8.3.jar");
+        assertFileExists(result, "lib/org.apache.maven_maven-core-3.3.9.jar");
         // excluded from maven
-        assertFileDoesntExists(result, "lib/plexus-utils-3.0.22.jar");
-        assertFileDoesntExists(result, "lib/maven-model-3.3.9.jar");
+        assertFileDoesntExists(result, "lib/org.codehaus.plexus_plexus-utils-3.0.22.jar");
+        assertFileDoesntExists(result, "lib/org.apache.maven_maven-model-3.3.9.jar");
         // excluded from modello
-        assertFileDoesntExists(result, "lib/plexus-utils-3.0.13.jar");
+        assertFileDoesntExists(result, "lib/org.codehaus.plexus_plexus-utils-3.0.13.jar");
     }
 
     @Test
