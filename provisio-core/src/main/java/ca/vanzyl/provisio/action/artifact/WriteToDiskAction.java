@@ -15,6 +15,7 @@
  */
 package ca.vanzyl.provisio.action.artifact;
 
+import static ca.vanzyl.provisio.ProvisioUtils.targetArtifactFileName;
 import static java.util.Objects.requireNonNull;
 
 import ca.vanzyl.provisio.ProvisioningException;
@@ -29,7 +30,6 @@ import javax.inject.Named;
 
 @Named("write")
 public class WriteToDiskAction implements ProvisioningAction {
-
     private ProvisioArtifact artifact;
     private File outputDirectory;
 
@@ -43,8 +43,7 @@ public class WriteToDiskAction implements ProvisioningAction {
     public void execute(ProvisioningContext context) {
         File file = artifact.getFile();
         if (file != null) {
-            String targetName = artifact.getName() != null ? artifact.getName() : file.getName();
-            copy(file, new File(outputDirectory, targetName));
+            copy(file, new File(outputDirectory, targetArtifactFileName(artifact, file.getName())));
         }
     }
 

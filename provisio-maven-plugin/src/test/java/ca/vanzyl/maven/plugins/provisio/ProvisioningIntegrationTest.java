@@ -50,9 +50,26 @@ public class ProvisioningIntegrationTest {
                 .assertErrorFreeLog();
 
         File libdir = new File(basedir, "target/test-1.0/lib");
-        assertTrue("guice exists", new File(libdir, "guice-7.0.0.jar").isFile());
-        assertTrue("guava exists", new File(libdir, "guava-31.0.1-jre.jar").isFile());
-        assertFalse("slf4j-api not exists", new File(libdir, "slf4j-api-2.0.11.jar").isFile());
-        assertTrue("slf4j-simple exists", new File(libdir, "slf4j-simple-2.0.11.jar").isFile());
+        assertTrue("guice exists", new File(libdir, "com.google.inject_guice-7.0.0.jar").isFile());
+        assertTrue("guava exists", new File(libdir, "com.google.guava_guava-31.0.1-jre.jar").isFile());
+        assertFalse("slf4j-api not exists", new File(libdir, "org.slf4j_slf4j-api-2.0.11.jar").isFile());
+        assertTrue("slf4j-simple exists", new File(libdir, "org.slf4j_slf4j-simple-2.0.11.jar").isFile());
+    }
+
+    @Test
+    public void testConflictingArtifacts() throws Exception {
+        File basedir = resources.getBasedir("conflicting-filenames");
+        maven.forProject(basedir)
+                .withCliOption("-X")
+                .execute("provisio:provision")
+                .assertErrorFreeLog();
+
+        File libdir = new File(basedir, "target/test-1.0/lib");
+        assertTrue(
+                "io.opentelemetry:opentelemetry-semconv exists",
+                new File(libdir, "io.opentelemetry_opentelemetry-semconv-1.27.0-alpha.jar").isFile());
+        assertTrue(
+                "io.opentelemetry.semconv:opentelemetry-semconv exists too",
+                new File(libdir, "io.opentelemetry.semconv_opentelemetry-semconv-1.27.0-alpha.jar").isFile());
     }
 }
