@@ -18,6 +18,7 @@ package ca.vanzyl.provisio.action.artifact;
 import static ca.vanzyl.provisio.ProvisioUtils.targetArtifactFileName;
 import static java.util.Objects.requireNonNull;
 
+import ca.vanzyl.provisio.ProvisioVariables;
 import ca.vanzyl.provisio.ProvisioningException;
 import ca.vanzyl.provisio.model.ProvisioArtifact;
 import ca.vanzyl.provisio.model.ProvisioningAction;
@@ -27,11 +28,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import javax.inject.Named;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Named("write")
 public class WriteToDiskAction implements ProvisioningAction {
-    private ProvisioArtifact artifact;
-    private File outputDirectory;
+    private static Logger logger = LoggerFactory.getLogger(WriteToDiskAction.class);
+
+    private final ProvisioArtifact artifact;
+    private final File outputDirectory;
 
     public WriteToDiskAction(ProvisioArtifact artifact, File outputDirectory) {
         requireNonNull(outputDirectory, "outputDirectory cannot be null.");
@@ -41,20 +46,33 @@ public class WriteToDiskAction implements ProvisioningAction {
 
     @Override
     public void execute(ProvisioningContext context) {
-        File file = artifact.getFile();
-        if (file != null) {
-            copy(file, new File(outputDirectory, targetArtifactFileName(artifact, file.getName())));
+        if (artifact.getFile() != null) {
+            write(
+                    context,
+                    artifact,
+                    targetArtifactFileName(context, artifact, artifact.getFile().getName()));
         }
     }
 
-    public void copy(File source, File target) {
+    private void write(ProvisioningContext context, ProvisioArtifact source, String targetPath) {
+        File target = new File(outputDirectory, targetPath);
         try {
-            if (!target.getParentFile().exists()) {
-                target.getParentFile().mkdirs();
+            Files.createDirectories(target.getParentFile().toPath());
+            if (ProvisioVariables.allowTargetOverwrite(context)) {
+                if (Files.isRegularFile(target.toPath())) {
+                    logger.warn("Conflict: artifact {} overwrote existing file {}", artifact, targetPath);
+                }
+                Files.copy(artifact.getFile().toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            } else {
+                if (Files.isRegularFile(target.toPath())) {
+                    throw new ProvisioningException(
+                            "Conflict: artifact " + artifact + " would overwrite existing file: " + targetPath);
+                }
+                logger.debug("Copying {} -> {}", artifact, targetPath);
+                Files.copy(artifact.getFile().toPath(), target.toPath());
             }
-            Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            throw new ProvisioningException("Error copying " + source + " to " + target, e);
+            throw new ProvisioningException("Error copying " + source + " to " + targetPath, e);
         }
     }
 }

@@ -29,7 +29,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(MavenJUnitTestRunner.class)
-@MavenVersions({"3.6.3", "3.8.8", "3.9.6"})
+@MavenVersions({"3.6.3", "3.8.8", "3.9.9"})
 @SuppressWarnings({"JUnitTestNG", "PublicField"})
 public class ProvisioningIntegrationTest {
     @Rule
@@ -50,15 +50,25 @@ public class ProvisioningIntegrationTest {
                 .assertErrorFreeLog();
 
         File libdir = new File(basedir, "target/test-1.0/lib");
-        assertTrue("guice exists", new File(libdir, "com.google.inject_guice-7.0.0.jar").isFile());
-        assertTrue("guava exists", new File(libdir, "com.google.guava_guava-31.0.1-jre.jar").isFile());
-        assertFalse("slf4j-api not exists", new File(libdir, "org.slf4j_slf4j-api-2.0.11.jar").isFile());
-        assertTrue("slf4j-simple exists", new File(libdir, "org.slf4j_slf4j-simple-2.0.11.jar").isFile());
+        assertTrue("guice exists", new File(libdir, "guice-7.0.0.jar").isFile());
+        assertTrue("guava exists", new File(libdir, "guava-31.0.1-jre.jar").isFile());
+        assertFalse("slf4j-api not exists", new File(libdir, "slf4j-api-2.0.11.jar").isFile());
+        assertTrue("slf4j-simple exists", new File(libdir, "slf4j-simple-2.0.11.jar").isFile());
     }
 
     @Test
     public void testConflictingArtifacts() throws Exception {
         File basedir = resources.getBasedir("conflicting-filenames");
+        maven.forProject(basedir)
+                .withCliOption("-X")
+                .execute("provisio:provision")
+                .assertLogText("Conflict:")
+                .assertLogText("would overwrite existing file");
+    }
+
+    @Test
+    public void testConflictingArtifactsGA() throws Exception {
+        File basedir = resources.getBasedir("conflicting-filenames-ga");
         maven.forProject(basedir)
                 .withCliOption("-X")
                 .execute("provisio:provision")
