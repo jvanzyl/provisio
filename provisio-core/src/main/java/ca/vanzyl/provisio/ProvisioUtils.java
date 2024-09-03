@@ -16,22 +16,20 @@
 package ca.vanzyl.provisio;
 
 import static java.util.Objects.requireNonNull;
-import static org.apache.commons.lang3.StringUtils.abbreviateMiddle;
 
 import ca.vanzyl.provisio.model.ProvisioArtifact;
+import ca.vanzyl.provisio.model.ProvisioningContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 public class ProvisioUtils {
-    private static final int MAXIMUM_FILENAME_LENGTH = 64;
-    private static final String GROUP_ARTIFACT_SEPARATOR = "_";
     private static final String ELLIPSIS = "...";
 
     public static String coordinateToPath(ProvisioArtifact a) {
 
-        StringBuffer path =
-                new StringBuffer().append(a.getArtifactId()).append("-").append(a.getVersion());
+        StringBuilder path =
+                new StringBuilder().append(a.getArtifactId()).append("-").append(a.getVersion());
 
         if (a.getClassifier() != null && !a.getClassifier().isEmpty()) {
             path.append("-").append(a.getClassifier());
@@ -59,16 +57,50 @@ public class ProvisioUtils {
         }
     }
 
-    public static String targetArtifactFileName(ProvisioArtifact artifact, String name) {
-        if (artifact.getName() == null && name == null) {
+    public static String targetArtifactFileName(
+            ProvisioningContext context, ProvisioArtifact artifact, String artifactResolvedFilename) {
+        if (artifact.getName() == null && artifactResolvedFilename == null) {
             throw new IllegalArgumentException("Artifact name and file name are both null");
         }
-
-        String filenameSuffix = (artifact.getName() != null ? artifact.getName() : name);
-        int remaining = MAXIMUM_FILENAME_LENGTH - filenameSuffix.length() - GROUP_ARTIFACT_SEPARATOR.length();
-        if (remaining <= 0) {
-            return abbreviateMiddle(filenameSuffix, ELLIPSIS, MAXIMUM_FILENAME_LENGTH);
+        if (artifact.getName() != null) {
+            return artifact.getName();
         }
-        return abbreviateMiddle(artifact.getGroupId(), ELLIPSIS, remaining) + GROUP_ARTIFACT_SEPARATOR + filenameSuffix;
+
+        ProvisioVariables.FallBackTargetFileNameMode mode = ProvisioVariables.fallbackTargetFileNameMode(context);
+        switch (mode) {
+            case ARTIFACT_FILE_NAME:
+                return artifactResolvedFilename;
+            case GA:
+                int maxFileNameLength = ProvisioVariables.gaMaxFileNameLength(context);
+                String gaSeparator = ProvisioVariables.gaSeparator(context);
+                int remaining = maxFileNameLength - artifactResolvedFilename.length() - gaSeparator.length();
+                if (remaining <= 0) {
+                    return abbreviateMiddle(artifactResolvedFilename, ELLIPSIS, maxFileNameLength);
+                }
+                return abbreviateMiddle(artifact.getGroupId(), ELLIPSIS, remaining)
+                        + gaSeparator
+                        + artifactResolvedFilename;
+            default:
+                throw new IllegalStateException("Unknown mode for fallback target file name: " + mode);
+        }
+    }
+
+    /**
+     * Copied from <a href="https://github.com/apache/commons-lang/blob/29ccc7665f3bc5d84155a3092ab2209a053324e6/src/main/java/org/apache/commons/lang3/StringUtils.java#L405">StringUtils.java</a>
+     */
+    private static String abbreviateMiddle(String str, String middle, int length) {
+        if (str != null
+                && !str.trim().isEmpty()
+                && middle != null
+                && !middle.trim().isEmpty()
+                && length < str.length()
+                && length >= middle.length() + 2) {
+            int targetSting = length - middle.length();
+            int startOffset = targetSting / 2 + targetSting % 2;
+            int endOffset = str.length() - targetSting / 2;
+            return str.substring(0, startOffset) + middle + str.substring(endOffset);
+        } else {
+            return str;
+        }
     }
 }

@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import ca.vanzyl.provisio.Actions;
 import ca.vanzyl.provisio.MavenProvisioner;
+import ca.vanzyl.provisio.ProvisioVariables;
 import ca.vanzyl.provisio.archive.ArchiveValidator;
 import ca.vanzyl.provisio.archive.ZipArchiveValidator;
 import ca.vanzyl.provisio.maven.ForkedMavenInvoker;
@@ -40,11 +41,24 @@ public class ProvisioTest {
         localRepository = new File(basedir, "target/localRepository");
     }
 
-    private ProvisioningResult provision(String name) throws Exception {
-        return provision(name, new String[] {});
+    private Map<String, String> enableGA() {
+        HashMap<String, String> map = new HashMap<>();
+        map.put(
+                ProvisioVariables.FALLBACK_TARGET_FILE_NAME_MODE,
+                ProvisioVariables.FallBackTargetFileNameMode.GA.name());
+        return map;
     }
 
-    private ProvisioningResult provision(String name, String... remoteRepositories) throws Exception {
+    private ProvisioningResult provision(String name) throws Exception {
+        return provision(name, null);
+    }
+
+    private ProvisioningResult provision(String name, Map<String, String> variables) throws Exception {
+        return provision(name, variables, new String[] {});
+    }
+
+    private ProvisioningResult provision(String name, Map<String, String> variables, String... remoteRepositories)
+            throws Exception {
         File localRepository = new File(basedir, "target/localRepository");
         resolutionSystem = new ResolutionSystem(localRepository);
         if (remoteRepositories.length > 0) {
@@ -58,7 +72,7 @@ public class ProvisioTest {
                 resolutionSystem.repositorySystem(),
                 resolutionSystem.repositorySystemSession(),
                 resolutionSystem.remoteRepositories());
-        return provisioner.provision(provisioningRequest(name));
+        return provisioner.provision(provisioningRequest(name, variables));
     }
 
     @Test
@@ -92,7 +106,7 @@ public class ProvisioTest {
     public void validateArtifactWithExclude() throws Exception {
         String name = "it-0006";
         deleteOutputDirectory(name);
-        ProvisioningResult result = provision(name);
+        ProvisioningResult result = provision(name, enableGA());
         assertFileExists(result, "lib/org.apache.maven_maven-core-3.3.9.jar");
         assertFileDoesntExists(result, "lib/org.codehaus.plexus_plexus-utils-3.0.22.jar");
         assertFileDoesntExists(result, "lib/org.apache.maven_maven-model-3.3.9.jar");
@@ -102,7 +116,7 @@ public class ProvisioTest {
     public void validateArtifactSetWithExclude() throws Exception {
         String name = "it-0007";
         deleteOutputDirectory(name);
-        ProvisioningResult result = provision(name);
+        ProvisioningResult result = provision(name, enableGA());
         assertFileExists(result, "lib/org.codehaus.modello_modello-core-1.8.3.jar");
         assertFileExists(result, "lib/org.apache.maven_maven-core-3.3.9.jar");
         // excluded from maven
@@ -147,7 +161,7 @@ public class ProvisioTest {
 
     // Helpers
 
-    protected ProvisioningRequest provisioningRequest(String name) throws Exception {
+    protected ProvisioningRequest provisioningRequest(String name, Map<String, String> variables) throws Exception {
         File projectBasedir = runtimeProject(name);
         // Check for prereq projects to run
         runMavenPrereqs(name);
@@ -155,10 +169,15 @@ public class ProvisioTest {
         File outputDirectory = outputDirectory(name);
         ProvisioningRequest request = new ProvisioningRequest();
         request.setOutputDirectory(outputDirectory);
-        request.setRuntimeDescriptor(parseDescriptor(descriptor));
+        Runtime runtime = parseDescriptor(descriptor);
+        if (variables != null) {
+            runtime.setVariables(variables);
+        }
+        request.setRuntimeDescriptor(runtime);
         // If there is a provisio.properties file for inserting values use it
         File propertiesFile = new File(projectBasedir, "provisio.properties");
-        Map<String, String> provisioProperties = new HashMap<>();
+        Map<String, String> provisioProperties =
+                new HashMap<>(runtime.getVariables() != null ? runtime.getVariables() : new HashMap<>());
         if (propertiesFile.exists()) {
             Properties properties = new Properties();
             try (InputStream is = new FileInputStream(propertiesFile)) {
