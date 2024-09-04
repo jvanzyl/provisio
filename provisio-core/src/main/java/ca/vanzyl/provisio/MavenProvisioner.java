@@ -34,6 +34,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -82,6 +84,7 @@ public class MavenProvisioner {
     }
 
     public ProvisioningResult provision(ProvisioningRequest request) throws Exception {
+        Instant now = Instant.now();
         ProvisioningResult result = new ProvisioningResult(request);
         ProvisioningContext context = new ProvisioningContext(request, result);
 
@@ -90,7 +93,8 @@ public class MavenProvisioner {
         processFileSets(context);
         processRuntimeActions(context);
         logger.info(
-                "Provisioning done... (total of {} files processed, {} archives produced)",
+                "Provisioning done in {} sec (total of {} files processed, {} archives produced)",
+                Duration.between(now, Instant.now()).toSeconds(),
                 context.laidDownFiles(),
                 result.getArchives() != null ? result.getArchives().size() : 0);
 
