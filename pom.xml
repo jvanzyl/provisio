@@ -53,7 +53,7 @@
     <surefire.runOrder>alphabetical</surefire.runOrder>
     <surefire.mem>-Xmx256m</surefire.mem>
     <mavenVersion>3.9.9</mavenVersion>
-    <takariArchiverVersion>1.0.0</takariArchiverVersion>
+    <takariArchiverVersion>1.0.1</takariArchiverVersion>
     <!-- Align with Aether version used in $mavenVersion -->
     <aetherVersion>1.9.22</aetherVersion>
     <!-- Align with Sisu version used in $mavenVersion -->
@@ -73,6 +73,16 @@
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>2.16.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-utils</artifactId>
+        <version>4.0.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-xml</artifactId>
+        <version>3.0.1</version>
       </dependency>
 
       <dependency>

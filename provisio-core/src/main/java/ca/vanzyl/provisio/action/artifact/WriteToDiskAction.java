@@ -36,7 +36,6 @@ import org.slf4j.LoggerFactory;
 @Named("write")
 public class WriteToDiskAction implements ProvisioningAction {
     private static final Logger logger = LoggerFactory.getLogger(WriteToDiskAction.class);
-    private static final int BUFFER_SIZE = 32 * 1024;
 
     private final ProvisioArtifact artifact;
     private final File outputDirectory;
@@ -69,9 +68,9 @@ public class WriteToDiskAction implements ProvisioningAction {
                             "Conflict: artifact " + artifact + " would overwrite existing file: " + targetPath);
                 }
             }
-            try (CachingOutputStream outputStream = new CachingOutputStream(target.toPath(), BUFFER_SIZE);
+            try (CachingOutputStream outputStream = new CachingOutputStream(target.toPath());
                     BufferedInputStream inputStream =
-                            new BufferedInputStream(new FileInputStream(artifact.getFile()), BUFFER_SIZE)) {
+                            new BufferedInputStream(new FileInputStream(artifact.getFile()))) {
                 inputStream.transferTo(outputStream);
                 outputStream.close();
                 if (outputStream.isModified()) {
