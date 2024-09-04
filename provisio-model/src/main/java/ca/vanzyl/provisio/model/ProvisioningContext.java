@@ -15,16 +15,22 @@
  */
 package ca.vanzyl.provisio.model;
 
+import static java.util.Objects.requireNonNull;
+
+import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Map;
 
 public class ProvisioningContext {
 
     private final ProvisioningRequest request;
     private final ProvisioningResult result;
+    private final HashSet<Path> laidDownFiles;
 
     public ProvisioningContext(ProvisioningRequest request, ProvisioningResult result) {
         this.request = request;
         this.result = result;
+        this.laidDownFiles = new HashSet<>();
     }
 
     public ProvisioningRequest getRequest() {
@@ -33,6 +39,15 @@ public class ProvisioningContext {
 
     public ProvisioningResult getResult() {
         return result;
+    }
+
+    public boolean layDownFile(Path path) {
+        requireNonNull(path);
+        return laidDownFiles.add(path);
+    }
+
+    public int laidDownFiles() {
+        return laidDownFiles.size();
     }
 
     public Map<String, String> getVariables() {

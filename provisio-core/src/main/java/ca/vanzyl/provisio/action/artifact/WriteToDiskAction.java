@@ -57,10 +57,9 @@ public class WriteToDiskAction implements ProvisioningAction {
     }
 
     private void write(ProvisioningContext context, ProvisioArtifact source, String targetPath) {
-        File target = new File(outputDirectory, targetPath);
+        File target = new File(outputDirectory, targetPath).getAbsoluteFile();
         try {
-            Files.createDirectories(target.getParentFile().toPath());
-            if (Files.exists(target.toPath())) {
+            if (!context.layDownFile(target.toPath())) {
                 if (ProvisioVariables.allowTargetOverwrite(context)) {
                     logger.warn("Conflict: artifact {} overwrites existing file {}", artifact, targetPath);
                 } else {
@@ -68,6 +67,7 @@ public class WriteToDiskAction implements ProvisioningAction {
                             "Conflict: artifact " + artifact + " would overwrite existing file: " + targetPath);
                 }
             }
+            Files.createDirectories(target.getParentFile().toPath());
             try (CachingOutputStream outputStream = new CachingOutputStream(target.toPath());
                     BufferedInputStream inputStream =
                             new BufferedInputStream(new FileInputStream(artifact.getFile()))) {

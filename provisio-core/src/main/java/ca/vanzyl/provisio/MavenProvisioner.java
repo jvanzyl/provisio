@@ -89,6 +89,10 @@ public class MavenProvisioner {
         processResourceSets(context);
         processFileSets(context);
         processRuntimeActions(context);
+        logger.info(
+                "Provisioning done... (total of {} files processed, {} archives produced)",
+                context.laidDownFiles(),
+                result.getArchives() != null ? result.getArchives().size() : 0);
 
         return result;
     }
