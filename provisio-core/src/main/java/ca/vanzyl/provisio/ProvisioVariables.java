@@ -67,8 +67,6 @@ public final class ProvisioVariables {
      */
     public static final String GA_MAX_FILE_NAME_LENGTH = VARIABLE_PREFIX + "maxFileNameLength";
 
-    //
-
     public static boolean allowTargetOverwrite(ProvisioningContext context) {
         return Boolean.parseBoolean(
                 context.getVariables().getOrDefault(ALLOW_TARGET_OVERWRITE, Boolean.FALSE.toString()));
