@@ -46,6 +46,11 @@ public class ProvisioningContext {
         return laidDownFiles.add(path);
     }
 
+    public boolean deleteLaidDownFile(Path path) {
+        requireNonNull(path);
+        return laidDownFiles.remove(path);
+    }
+
     public int laidDownFiles() {
         return laidDownFiles.size();
     }
