@@ -58,6 +58,10 @@ public class WriteToDiskAction implements ProvisioningAction {
 
     private void write(ProvisioningContext context, ProvisioArtifact source, String targetPath) {
         File target = new File(outputDirectory, targetPath).getAbsoluteFile();
+        if (!target.toPath().startsWith(outputDirectory.toPath())) {
+            throw new IllegalArgumentException(
+                    "Bad mapping of artifact " + source + "; would escape output directory: " + target);
+        }
         try {
             if (!context.layDownFile(target.toPath())) {
                 if (ProvisioVariables.allowTargetOverwrite(context)) {
