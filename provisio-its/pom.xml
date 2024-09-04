@@ -102,16 +102,20 @@
       <artifactId>maven-resolver-supplier</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-utils</artifactId>
-    </dependency>
-    <dependency>
       <groupId>io.takari</groupId>
       <artifactId>takari-archiver</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-compress</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-xml</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
