@@ -18,6 +18,8 @@ package ca.vanzyl.provisio.action.artifact.alter;
 import static ca.vanzyl.provisio.ProvisioUtils.coordinateToPath;
 
 import ca.vanzyl.provisio.MavenProvisioner;
+import ca.vanzyl.provisio.ProvisioVariables;
+import ca.vanzyl.provisio.ProvisioningException;
 import ca.vanzyl.provisio.archive.Archiver;
 import ca.vanzyl.provisio.archive.UnArchiver;
 import ca.vanzyl.provisio.model.ProvisioArtifact;
@@ -76,6 +78,21 @@ public class AlterAction implements ProvisioningAction {
                         Set<ProvisioArtifact> resolved = provisioner.resolveArtifact(context, insertArtifact);
                         File source = resolved.iterator().next().getFile();
                         File target = new File(unpackDirectory, insertArtifact.getName());
+                        if (!target.toPath().startsWith(outputDirectory.toPath())) {
+                            throw new IllegalArgumentException("Bad mapping of insert " + insertArtifact.getName()
+                                    + "; would escape output directory: " + outputDirectory);
+                        }
+                        if (!context.layDownFile(target.toPath())) {
+                            if (ProvisioVariables.allowTargetOverwrite(context)) {
+                                logger.warn(
+                                        "Conflict: insert {} overwrites existing file {}",
+                                        insertArtifact.getName(),
+                                        target);
+                            } else {
+                                throw new ProvisioningException("Conflict: insert " + insertArtifact.getName()
+                                        + " would overwrite existing file: " + target);
+                            }
+                        }
                         Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     }
                 }
@@ -86,11 +103,16 @@ public class AlterAction implements ProvisioningAction {
                     for (ca.vanzyl.provisio.model.File fileModel : delete.getFiles()) {
                         logger.info("Deleting file {} from {}", fileModel.getPath(), artifact);
                         File target = new File(unpackDirectory, fileModel.getPath());
+                        if (!target.toPath().startsWith(outputDirectory.toPath())) {
+                            throw new IllegalArgumentException("Bad mapping of delete " + fileModel.getPath()
+                                    + "; would escape output directory: " + outputDirectory);
+                        }
                         if (!target.exists()) {
                             throw new RuntimeException(
                                     "The file specified to delete does not exist: " + fileModel.getPath());
                         }
                         FileUtils.forceDelete(target);
+                        context.deleteLaidDownFile(target.toPath());
                     }
                 }
             }

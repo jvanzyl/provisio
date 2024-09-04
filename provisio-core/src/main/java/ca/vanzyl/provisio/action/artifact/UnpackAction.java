@@ -17,6 +17,7 @@ package ca.vanzyl.provisio.action.artifact;
 
 import ca.vanzyl.provisio.action.artifact.filter.MustacheFilteringProcessor;
 import ca.vanzyl.provisio.action.artifact.filter.StandardFilteringProcessor;
+import ca.vanzyl.provisio.action.artifact.filter.StatProcessor;
 import ca.vanzyl.provisio.archive.UnArchiver;
 import ca.vanzyl.provisio.model.ProvisioArtifact;
 import ca.vanzyl.provisio.model.ProvisioningAction;
@@ -61,11 +62,28 @@ public class UnpackAction implements ProvisioningAction {
                     .build();
 
             if (filter) {
-                unarchiver.unarchive(archive, outputDirectory, new StandardFilteringProcessor(context.getVariables()));
+                unarchiver.unarchive(
+                        archive,
+                        outputDirectory,
+                        new StatProcessor(
+                                context,
+                                archive.toPath(),
+                                outputDirectory.toPath(),
+                                new StandardFilteringProcessor(context.getVariables())));
             } else if (mustache) {
-                unarchiver.unarchive(archive, outputDirectory, new MustacheFilteringProcessor(context.getVariables()));
+                unarchiver.unarchive(
+                        archive,
+                        outputDirectory,
+                        new StatProcessor(
+                                context,
+                                archive.toPath(),
+                                outputDirectory.toPath(),
+                                new MustacheFilteringProcessor(context.getVariables())));
             } else {
-                unarchiver.unarchive(archive, outputDirectory);
+                unarchiver.unarchive(
+                        archive,
+                        outputDirectory,
+                        new StatProcessor(context, archive.toPath(), outputDirectory.toPath(), null));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
