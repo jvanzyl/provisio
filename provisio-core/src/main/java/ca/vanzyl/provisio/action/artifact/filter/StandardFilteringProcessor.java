@@ -15,19 +15,15 @@
  */
 package ca.vanzyl.provisio.action.artifact.filter;
 
-import static ca.vanzyl.provisio.ProvisioUtils.copy;
-
-import ca.vanzyl.provisio.archive.Selector;
-import ca.vanzyl.provisio.archive.UnarchivingEntryProcessor;
+import ca.vanzyl.provisio.archive.UnarchivingEnhancedEntryProcessor;
 import ca.vanzyl.provisio.model.io.InterpolatingInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
-public class StandardFilteringProcessor implements UnarchivingEntryProcessor {
+public class StandardFilteringProcessor implements UnarchivingEnhancedEntryProcessor {
 
-    Selector selector;
     Map<String, String> variables;
 
     public StandardFilteringProcessor(Map<String, String> variables) {
@@ -35,12 +31,7 @@ public class StandardFilteringProcessor implements UnarchivingEntryProcessor {
     }
 
     @Override
-    public String processName(String name) {
-        return name;
-    }
-
-    @Override
     public void processStream(String entryName, InputStream inputStream, OutputStream outputStream) throws IOException {
-        copy(new InterpolatingInputStream(inputStream, variables), outputStream);
+        new InterpolatingInputStream(inputStream, variables).transferTo(outputStream);
     }
 }

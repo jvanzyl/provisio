@@ -15,12 +15,11 @@
  */
 package ca.vanzyl.provisio;
 
-import static ca.vanzyl.provisio.ProvisioUtils.copy;
-
 import ca.vanzyl.provisio.archive.UnArchiver;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
+import com.squareup.okhttp.ResponseBody;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -78,8 +77,9 @@ public abstract class SimpleProvisioner {
         if (!response.isSuccessful()) {
             throw new IOException("Unexpected code " + response);
         }
-        try (OutputStream os = new FileOutputStream(file)) {
-            copy(response.body().byteStream(), os);
+        try (OutputStream os = new FileOutputStream(file);
+                ResponseBody body = response.body()) {
+            body.byteStream().transferTo(os);
         }
         return file;
     }
