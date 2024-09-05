@@ -24,6 +24,7 @@ import ca.vanzyl.provisio.model.ProvisioningContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,12 +80,15 @@ public class StatProcessor implements UnarchivingEnhancedEntryProcessor {
             throw new IllegalArgumentException("Bad mapping of archive " + archive + " entry " + entryName
                     + "; would escape output directory: " + outputDirectory);
         }
-        if (!context.layDownFile(target)) {
-            if (ProvisioVariables.allowTargetOverwrite(context)) {
-                logger.warn("Conflict: archive {} entry {} overwrites existing file {}", archive, entryName, target);
-            } else {
-                throw new ProvisioningException("Conflict: archive " + archive + " entry " + entryName
-                        + " would overwrite existing file: " + target);
+        // do NOT track directories, they MAY repeat in case of "flatten"l track everything else: files, symlinks, hardlinks
+        if (!Files.isDirectory(target)) {
+            if (!context.layDownFile(target)) {
+                if (ProvisioVariables.allowTargetOverwrite(context)) {
+                    logger.warn("Conflict: archive {} entry {} overwrites existing file {}", archive, entryName, target);
+                } else {
+                    throw new ProvisioningException("Conflict: archive " + archive + " entry " + entryName
+                            + " would overwrite existing file: " + target);
+                }
             }
         }
     }
