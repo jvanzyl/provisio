@@ -80,11 +80,13 @@ public class StatProcessor implements UnarchivingEnhancedEntryProcessor {
             throw new IllegalArgumentException("Bad mapping of archive " + archive + " entry " + entryName
                     + "; would escape output directory: " + outputDirectory);
         }
-        // do NOT track directories, they MAY repeat in case of "flatten"l track everything else: files, symlinks, hardlinks
+        // do NOT track directories, they MAY repeat in case of "flatten"l track everything else: files, symlinks,
+        // hardlinks
         if (!Files.isDirectory(target)) {
             if (!context.layDownFile(target)) {
                 if (ProvisioVariables.allowTargetOverwrite(context)) {
-                    logger.warn("Conflict: archive {} entry {} overwrites existing file {}", archive, entryName, target);
+                    logger.warn(
+                            "Conflict: archive {} entry {} overwrites existing file {}", archive, entryName, target);
                 } else {
                     throw new ProvisioningException("Conflict: archive " + archive + " entry " + entryName
                             + " would overwrite existing file: " + target);
