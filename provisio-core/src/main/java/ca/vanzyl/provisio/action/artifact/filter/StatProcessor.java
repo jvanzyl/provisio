@@ -19,7 +19,7 @@ import static java.util.Objects.requireNonNull;
 
 import ca.vanzyl.provisio.ProvisioVariables;
 import ca.vanzyl.provisio.ProvisioningException;
-import ca.vanzyl.provisio.archive.UnarchivingEntryProcessor;
+import ca.vanzyl.provisio.archive.UnarchivingEnhancedEntryProcessor;
 import ca.vanzyl.provisio.model.ProvisioningContext;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,15 +28,18 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class StatProcessor implements UnarchivingEntryProcessor {
+public class StatProcessor implements UnarchivingEnhancedEntryProcessor {
     private static final Logger logger = LoggerFactory.getLogger(StatProcessor.class);
     private final ProvisioningContext context;
     private final Path archive;
     private final Path outputDirectory;
-    private final UnarchivingEntryProcessor delegate;
+    private final UnarchivingEnhancedEntryProcessor delegate;
 
     public StatProcessor(
-            ProvisioningContext context, Path archive, Path outputDirectory, UnarchivingEntryProcessor delegate) {
+            ProvisioningContext context,
+            Path archive,
+            Path outputDirectory,
+            UnarchivingEnhancedEntryProcessor delegate) {
         this.context = requireNonNull(context);
         this.archive = requireNonNull(archive);
         this.outputDirectory = requireNonNull(outputDirectory);
@@ -44,23 +47,19 @@ public class StatProcessor implements UnarchivingEntryProcessor {
     }
 
     @Override
-    public String processName(String name) {
+    public String targetName(String name) {
         String result = name;
         if (delegate != null) {
-            result = delegate.processName(name);
+            result = delegate.targetName(name);
         }
-        Path targetPath = outputDirectory.resolve(name).toAbsolutePath();
-        if (!targetPath.startsWith(outputDirectory)) {
-            throw new IllegalArgumentException("Bad mapping of archive " + archive + " entry " + name
-                    + "; would escape output directory: " + outputDirectory);
-        }
-        if (!context.layDownFile(targetPath)) {
-            if (ProvisioVariables.allowTargetOverwrite(context)) {
-                logger.warn("Conflict: archive {} entry {} overwrites existing file {}", archive, name, targetPath);
-            } else {
-                throw new ProvisioningException("Conflict: archive " + archive + " entry " + name
-                        + " would overwrite existing file: " + targetPath);
-            }
+        return result;
+    }
+
+    @Override
+    public String sourceName(String name) {
+        String result = name;
+        if (delegate != null) {
+            result = delegate.sourceName(name);
         }
         return result;
     }
@@ -71,6 +70,22 @@ public class StatProcessor implements UnarchivingEntryProcessor {
             delegate.processStream(entryName, inputStream, outputStream);
         } else {
             inputStream.transferTo(outputStream);
+        }
+    }
+
+    @Override
+    public void processed(String entryName, Path target) {
+        if (!target.startsWith(outputDirectory)) {
+            throw new IllegalArgumentException("Bad mapping of archive " + archive + " entry " + entryName
+                    + "; would escape output directory: " + outputDirectory);
+        }
+        if (!context.layDownFile(target)) {
+            if (ProvisioVariables.allowTargetOverwrite(context)) {
+                logger.warn("Conflict: archive {} entry {} overwrites existing file {}", archive, entryName, target);
+            } else {
+                throw new ProvisioningException("Conflict: archive " + archive + " entry " + entryName
+                        + " would overwrite existing file: " + target);
+            }
         }
     }
 }

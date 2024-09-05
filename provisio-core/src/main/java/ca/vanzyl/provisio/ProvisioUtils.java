@@ -15,13 +15,8 @@
  */
 package ca.vanzyl.provisio;
 
-import static java.util.Objects.requireNonNull;
-
 import ca.vanzyl.provisio.model.ProvisioArtifact;
 import ca.vanzyl.provisio.model.ProvisioningContext;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 public class ProvisioUtils {
     private static final String ELLIPSIS = "...";
@@ -38,23 +33,6 @@ public class ProvisioUtils {
         path.append(".").append(a.getExtension());
 
         return path.toString();
-    }
-
-    public static long copy(InputStream from, OutputStream to) throws IOException {
-        requireNonNull(from);
-        requireNonNull(to);
-        byte[] buf = new byte[4096];
-        long total = 0L;
-
-        while (true) {
-            int r = from.read(buf);
-            if (r == -1) {
-                return total;
-            }
-
-            to.write(buf, 0, r);
-            total += (long) r;
-        }
     }
 
     public static String targetArtifactFileName(

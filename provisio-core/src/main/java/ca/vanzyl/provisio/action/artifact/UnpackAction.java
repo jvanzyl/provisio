@@ -24,6 +24,7 @@ import ca.vanzyl.provisio.model.ProvisioningAction;
 import ca.vanzyl.provisio.model.ProvisioningContext;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import javax.inject.Named;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -51,7 +52,7 @@ public class UnpackAction implements ProvisioningAction {
         if (!outputDirectory.exists()) {
             outputDirectory.mkdirs();
         }
-        File archive = artifact.getFile();
+        Path archive = artifact.getFile().toPath();
         try {
             UnArchiver unarchiver = UnArchiver.builder()
                     .includes(split(includes))
@@ -64,26 +65,26 @@ public class UnpackAction implements ProvisioningAction {
             if (filter) {
                 unarchiver.unarchive(
                         archive,
-                        outputDirectory,
+                        outputDirectory.toPath(),
                         new StatProcessor(
                                 context,
-                                archive.toPath(),
+                                archive,
                                 outputDirectory.toPath(),
                                 new StandardFilteringProcessor(context.getVariables())));
             } else if (mustache) {
                 unarchiver.unarchive(
                         archive,
-                        outputDirectory,
+                        outputDirectory.toPath(),
                         new StatProcessor(
                                 context,
-                                archive.toPath(),
+                                archive,
                                 outputDirectory.toPath(),
                                 new MustacheFilteringProcessor(context.getVariables())));
             } else {
                 unarchiver.unarchive(
                         archive,
-                        outputDirectory,
-                        new StatProcessor(context, archive.toPath(), outputDirectory.toPath(), null));
+                        outputDirectory.toPath(),
+                        new StatProcessor(context, archive, outputDirectory.toPath(), null));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
