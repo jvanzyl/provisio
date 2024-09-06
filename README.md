@@ -21,7 +21,7 @@ Provisio was originally created for the [Presto](https://prestosql.io/) project 
 
 To use Provisio declare its use in your project's `pom.xml` and be sure to set the packaging to `provisio` and enable the plugin as an extension. Provisio implements a Maven `LifecycleParticipant` that inspects all the artifacts used in your runtime descriptor and will order your build accordingly. You might notice below the conspicuous lack of a dependencies section: you do not need to include a dependency in your `pom.xml` for an artifact produced in the current build to have it be included in your runtime. Provisio will find all the artifact references in your runtime descriptor, determine the correct build ordering, and instruct Maven to make the necessary changes.
 
-```
+```xml
 <project>
   <groupId>ca.vanzyl.ollie</groupId>
   <artifacId>ollie-server</artifacId>
@@ -46,7 +46,7 @@ To use Provisio declare its use in your project's `pom.xml` and be sure to set t
 
 Below we are constructing a runtime that has some legal notices, a launcher, some libraries, and plugins. To reiterate you do not need to specify any of the artifact dependencies in your `pom.xml`. Provisio will see that you have `ca.vanzyl.ollie:plugin-one:${project.version}` in the descriptor and knows this artifact is present in your multi-module build. Provisio will make sure Maven builds `ca.vanzyl.ollie:plugin-one:${project.version}` first so that it can be packaged as part of this runtime build.
 
-```
+```xml
 <runtime>
   <!-- Provisio determines what archive type it's dealing with by the extension tar.gz here -->
   <archive name="${project.artifactId}-${project.version}.tar.gz" />
@@ -100,7 +100,7 @@ What follows are various techniques and capabilities for building runtimes. Prov
 <a name="feature1"></a>
 ## Hardlinking in TAR archives
 
-```
+```xml
 <runtime>
 
   <!-- Produce the archive of this runtime with duplicate JARS hardlinked -->
@@ -120,7 +120,7 @@ What follows are various techniques and capabilities for building runtimes. Prov
 <a name="feature2"></a>
 ## Excluding artifacts while resolving a specific artifact
 
-```
+```xml
 <runtime>
   <artifactSet to="/lib">
     <artifact id="org.apache.maven:maven-core:3.3.9">
@@ -134,7 +134,7 @@ What follows are various techniques and capabilities for building runtimes. Prov
 <a name="feature3"></a>
 ## Globally excluding artifacts while transitively resolving artifacts
 
-```
+```xml
 <runtime>
   <artifactSet to="/lib">
     <exclusion id="org.codehaus.plexus:plexus-utils"/>
@@ -148,7 +148,7 @@ What follows are various techniques and capabilities for building runtimes. Prov
 <a name="feature4"></a>
 ## Filtering resources while unpacking archives
 
-```
+```xml
 <runtime>
   <artifactSet to="/">
     <artifact id="ca.vanzyl:archive-with-resources-to-filter:1.0.0">
@@ -162,7 +162,7 @@ What follows are various techniques and capabilities for building runtimes. Prov
 ## Mustache filtering resources while unpacking archives
 
 
-```
+```xml
 <runtime>
   <artifactSet to="/">
     <artifact id="ca.vanzyl:archive-with-mustache-templates:1.0.0">
@@ -175,7 +175,7 @@ What follows are various techniques and capabilities for building runtimes. Prov
 <a name="feature6"></a>
 ## Deleting an artifact out of an archive on the fly
 
-```
+```xml
 <runtime>
   <artifactSet to="/lib">
     <artifact id="org.eclipse.hudson:hudson-war:war:3.3.3" as="hudson-war-3.3.3.jar">
@@ -192,7 +192,7 @@ What follows are various techniques and capabilities for building runtimes. Prov
 <a name="feature7"></a>
 ## Inserting artifacts into archives on the fly
 
-```
+```xml
 <runtime>
   <artifactSet to="/lib">
     <artifact id="org.eclipse.hudson:hudson-war:war:3.3.3" as="hudson-war-3.3.3.jar">
@@ -211,7 +211,7 @@ What follows are various techniques and capabilities for building runtimes. Prov
 <a name="feature8"></a>
 ## Standard addition of files to a runtime
 
-```
+```xml
 <runtime>
   <fileSet to="/">
     <directory path="${basedir}">
@@ -232,7 +232,7 @@ What follows are various techniques and capabilities for building runtimes. Prov
 <a name="feature9"></a>
 ## Automatic exclusions in parent/child artifactSet relationships
 
-```
+```xml
 <runtime>    
   <!--
    | Logback classic >> Logback core >> SLF4J API so we expect the following
