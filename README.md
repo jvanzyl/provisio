@@ -1,5 +1,9 @@
 # Provisio
 
+[![Maven Central](https://img.shields.io/maven-central/v/ca.vanzyl.provisio.maven.plugins/provisio-maven-plugin.svg?label=Maven%20Central)](https://search.maven.org/artifact/ca.vanzyl.provisio.maven.plugins/provisio-maven-plugin)
+[![Verify](https://github.com/jvanzyl/provisio/actions/workflows/ci.yml/badge.svg)](https://github.com/jvanzyl/provisio/workflows/ci.yml)
+[![Reproducible Builds](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jvm-repo-rebuild/reproducible-central/master/content/ca/jvanzyl/provisio/maven/plugins/provisio-maven-plugin/badge.json)](https://github.com/jvm-repo-rebuild/reproducible-central/blob/master/content/ca/jvanzyl/provisio/maven/plugins/provisio-maven-plugin/README.md)
+
 A Maven-based provisioning mechanism and replacement for the maven-assembly-plugin.
 
 - [Support for building runtimes, like the maven-assembly-plugin, that are aware of their dependencies in a multi-module build](#feature0)
