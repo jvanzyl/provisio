@@ -52,11 +52,11 @@ public class RuntimeReader {
     private final Map<String, String> versionMap;
 
     public RuntimeReader() {
-        this(Collections.<ActionDescriptor>emptyList(), Collections.<String, String>emptyMap());
+        this(Collections.emptyList(), Collections.emptyMap());
     }
 
     public RuntimeReader(List<ActionDescriptor> actions) {
-        this(actions, Collections.<String, String>emptyMap());
+        this(actions, Collections.emptyMap());
     }
 
     public RuntimeReader(List<ActionDescriptor> actions, Map<String, String> versionMap) {
@@ -152,10 +152,7 @@ public class RuntimeReader {
 
         @Override
         public boolean canConvert(Class type) {
-            if (Runtime.class.isAssignableFrom(type)) {
-                return true;
-            }
-            return false;
+            return Runtime.class.isAssignableFrom(type);
         }
 
         @Override
@@ -195,10 +192,7 @@ public class RuntimeReader {
 
         @Override
         public boolean canConvert(Class type) {
-            if (ProvisioArtifact.class.isAssignableFrom(type)) {
-                return true;
-            }
-            return false;
+            return ProvisioArtifact.class.isAssignableFrom(type);
         }
 
         @Override

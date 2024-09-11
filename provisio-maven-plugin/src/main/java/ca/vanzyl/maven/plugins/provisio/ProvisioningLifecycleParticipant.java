@@ -33,8 +33,6 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 @Named("ProvisioningLifecycleParticipant")
 public class ProvisioningLifecycleParticipant extends AbstractMavenLifecycleParticipant {
 
-    static final String PROVISIO_RUNTIMES = "__@provisioRuntimes";
-    static final String PROVISIO_PARTICIPANT = "__@provisioParticipant";
     private static final String DEFAULT_DESCRIPTOR_DIRECTORY = "src/main/provisio";
     private static final String DESCRIPTOR_DIRECTORY_CONFIG_ELEMENT = "descriptorDirectory";
 

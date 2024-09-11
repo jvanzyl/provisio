@@ -16,8 +16,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +29,7 @@ public class RuntimeReaderTest {
     @Test
     public void validateRuntimeReader() throws IOException {
         RuntimeReader reader = new RuntimeReader(actionDescriptors());
-        Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/assembly.xml")));
+        Runtime runtime = reader.read(new FileInputStream("src/test/runtimes/assembly.xml"));
         List<ArtifactSet> artifactSets = runtime.getArtifactSets();
         assertEquals(9, artifactSets.size());
         assertEquals("bin", artifactSets.get(0).getDirectory());
@@ -53,8 +51,7 @@ public class RuntimeReaderTest {
         variables.put("airshipVersion", "0.92");
         variables.put("prestoVersion", "0.74");
         RuntimeReader reader = new RuntimeReader(actionDescriptors());
-        Runtime runtime =
-                reader.read(new FileInputStream(new File("src/test/runtimes/assembly-with-variables.xml")), variables);
+        Runtime runtime = reader.read(new FileInputStream("src/test/runtimes/assembly-with-variables.xml"), variables);
         List<ArtifactSet> artifactSets = runtime.getArtifactSets();
         assertEquals(9, artifactSets.size());
         assertEquals("bin", artifactSets.get(0).getDirectory());
@@ -78,8 +75,7 @@ public class RuntimeReaderTest {
         variables.put("airshipVersion", "0.92");
         variables.put("prestoVersion", "0.74");
         RuntimeReader reader = new RuntimeReader(actionDescriptors());
-        Runtime runtime =
-                reader.read(new FileInputStream(new File("src/test/runtimes/assembly-with-variables.xml")), variables);
+        Runtime runtime = reader.read(new FileInputStream("src/test/runtimes/assembly-with-variables.xml"), variables);
         List<ArtifactSet> artifactSets = runtime.getArtifactSets();
         assertEquals(9, artifactSets.size());
         assertEquals("bin", artifactSets.get(0).getDirectory());
@@ -115,8 +111,7 @@ public class RuntimeReaderTest {
         versionMap.put("com.facebook.presto:presto-cassandra:zip", "0.74");
         versionMap.put("com.facebook.presto:presto-example-http:zip", "0.74");
         RuntimeReader reader = new RuntimeReader(actionDescriptors(), versionMap);
-        Runtime runtime =
-                reader.read(new FileInputStream(new File("src/test/runtimes/assembly-no-versions.xml")), variables);
+        Runtime runtime = reader.read(new FileInputStream("src/test/runtimes/assembly-no-versions.xml"), variables);
         List<ArtifactSet> artifactSets = runtime.getArtifactSets();
         assertEquals(9, artifactSets.size());
         assertEquals("bin", artifactSets.get(0).getDirectory());
@@ -142,8 +137,8 @@ public class RuntimeReaderTest {
         variables.put("airshipVersion", "0.92");
         variables.put("prestoVersion", "0.74");
         RuntimeReader reader = new RuntimeReader(actionDescriptors());
-        Runtime runtime = reader.read(
-                new FileInputStream(new File("src/test/runtimes/assembly-with-runtime-actions.xml")), variables);
+        Runtime runtime =
+                reader.read(new FileInputStream("src/test/runtimes/assembly-with-runtime-actions.xml"), variables);
         List<ArtifactSet> artifactSets = runtime.getArtifactSets();
         assertEquals(9, artifactSets.size());
         assertEquals("bin", artifactSets.get(0).getDirectory());
@@ -168,8 +163,7 @@ public class RuntimeReaderTest {
     @Test
     public void validateRuntimeUsingResourceSets() throws IOException {
         RuntimeReader reader = new RuntimeReader(actionDescriptors());
-        Runtime runtime =
-                reader.read(new FileInputStream(new File("src/test/runtimes/assembly-with-resourcesets.xml")));
+        Runtime runtime = reader.read(new FileInputStream("src/test/runtimes/assembly-with-resourcesets.xml"));
         ResourceSet resourceSet = runtime.getResourceSets().get(0);
         assertEquals(1, resourceSet.getResources().size());
         assertEquals(
@@ -184,7 +178,7 @@ public class RuntimeReaderTest {
     @Test
     public void validateRuntimeUsingFileSetsWithFlattenedDirectories() throws IOException {
         RuntimeReader reader = new RuntimeReader(actionDescriptors());
-        Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/assembly-with-flatten.xml")));
+        Runtime runtime = reader.read(new FileInputStream("src/test/runtimes/assembly-with-flatten.xml"));
         List<FileSet> fileSets = runtime.getFileSets();
         FileSet conf = fileSets.get(0);
         assertEquals("concord", conf.getDirectory());
@@ -197,7 +191,7 @@ public class RuntimeReaderTest {
     @Test
     public void validateRuntimeUsingFileSet() throws IOException {
         RuntimeReader reader = new RuntimeReader(actionDescriptors());
-        Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/assembly-with-filesets.xml")));
+        Runtime runtime = reader.read(new FileInputStream("src/test/runtimes/assembly-with-filesets.xml"));
         List<FileSet> fileSets = runtime.getFileSets();
         FileSet bin = fileSets.get(0);
         assertEquals("bin", bin.getDirectory());
@@ -213,7 +207,7 @@ public class RuntimeReaderTest {
     @Test
     public void validateRuntimeUsingReferences() throws IOException {
         RuntimeReader reader = new RuntimeReader(actionDescriptors());
-        Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/assembly-with-refs.xml")));
+        Runtime runtime = reader.read(new FileInputStream("src/test/runtimes/assembly-with-refs.xml"));
         List<ArtifactSet> artifactSets = runtime.getArtifactSets();
         assertEquals(1, artifactSets.size());
         ArtifactSet artifactSet = artifactSets.get(0);
@@ -231,8 +225,8 @@ public class RuntimeReaderTest {
         variables.put("mavenVersion", "3.2.3");
         variables.put("tdmVersion", "3.2.1");
         RuntimeReader reader = new RuntimeReader(actionDescriptors());
-        Runtime runtime = reader.read(
-                new FileInputStream(new File("src/test/runtimes/assembly-with-child-artifactsets.xml")), variables);
+        Runtime runtime =
+                reader.read(new FileInputStream("src/test/runtimes/assembly-with-child-artifactsets.xml"), variables);
         List<ArtifactSet> artifactSets = runtime.getArtifactSets();
         assertEquals(4, artifactSets.size());
         ArtifactSet artifactSet = artifactSets.get(0);
@@ -264,8 +258,8 @@ public class RuntimeReaderTest {
         variables.put("mavenVersion", "3.2.3");
         variables.put("tdmVersion", "3.2.1");
         RuntimeReader reader = new RuntimeReader(actionDescriptors());
-        Runtime runtime = reader.read(
-                new FileInputStream(new File("src/test/runtimes/runtime-with-artifact-ref.xml")), variables);
+        Runtime runtime =
+                reader.read(new FileInputStream("src/test/runtimes/runtime-with-artifact-ref.xml"), variables);
         List<ArtifactSet> artifactSets = runtime.getArtifactSets();
         assertEquals(1, artifactSets.size());
         ArtifactSet artifactSet = artifactSets.get(0);
@@ -373,14 +367,13 @@ public class RuntimeReaderTest {
         invalidActionException.expect(ConversionException.class);
         invalidActionException.expectMessage("The element 'invalid' is invalid inside the <runtime/> context.");
         RuntimeReader reader = new RuntimeReader(actionDescriptors());
-        Runtime runtime =
-                reader.read(new FileInputStream(new File("src/test/runtimes/runtime-with-invalid-action.xml")));
+        Runtime runtime = reader.read(new FileInputStream("src/test/runtimes/runtime-with-invalid-action.xml"));
     }
 
     @Test
     public void validateRuntimeWithArtifactSetProvidedBom() throws IOException {
         RuntimeReader reader = new RuntimeReader(actionDescriptors());
-        Runtime runtime = reader.read(new FileInputStream(new File("src/test/runtimes/concord-plugin.xml")));
+        Runtime runtime = reader.read(new FileInputStream("src/test/runtimes/concord-plugin.xml"));
         ArtifactSet artifactSet = runtime.getArtifactSets().get(0);
         assertEquals("com.walmartlabs.concord:concord-targetplatform:pom:1.44.0", artifactSet.getProvidedBom());
     }
@@ -394,8 +387,8 @@ public class RuntimeReaderTest {
         invalidArtifactActionException.expectMessage(
                 "The element 'invalid' is invalid inside the <artifact/> context.");
         RuntimeReader reader = new RuntimeReader(actionDescriptors());
-        Runtime runtime = reader.read(
-                new FileInputStream(new File("src/test/runtimes/runtime-with-invalid-artifact-action.xml")));
+        Runtime runtime =
+                reader.read(new FileInputStream("src/test/runtimes/runtime-with-invalid-artifact-action.xml"));
     }
 
     private Runtime runtime(String name) throws IOException {
@@ -466,15 +459,16 @@ public class RuntimeReaderTest {
 
             @Override
             public List<Alias> aliases() {
-                return Collections.unmodifiableList(
-                        Arrays.asList(new Alias("insert", Insert.class), new Alias("delete", Delete.class)));
+                return List.of(new Alias("insert", Insert.class), new Alias("delete", Delete.class));
             }
 
             @Override
             public List<Implicit> implicits() {
-                return Collections.unmodifiableList(Arrays.asList(
-                        new Implicit("inserts", Alter.class, Insert.class), new Implicit("artifacts", Insert.class),
-                        new Implicit("deletes", Alter.class, Delete.class), new Implicit("files", Delete.class)));
+                return List.of(
+                        new Implicit("inserts", Alter.class, Insert.class),
+                        new Implicit("artifacts", Insert.class),
+                        new Implicit("deletes", Alter.class, Delete.class),
+                        new Implicit("files", Delete.class));
             }
         });
         return actionDescriptors;

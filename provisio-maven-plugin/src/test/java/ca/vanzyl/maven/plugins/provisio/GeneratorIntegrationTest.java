@@ -25,15 +25,14 @@ import io.takari.maven.testing.executor.junit.MavenJUnitTestRunner;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Reader;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.ReaderFactory;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -95,20 +94,14 @@ public class GeneratorIntegrationTest {
     }
 
     private Model readModel(File pomFile) throws MojoExecutionException {
-        Reader reader = null;
-        try {
-            reader = ReaderFactory.newXmlReader(pomFile);
-            final Model model = new MavenXpp3Reader().read(reader);
-            reader.close();
-            return model;
+        try (InputStream input = Files.newInputStream(pomFile.toPath())) {
+            return new MavenXpp3Reader().read(input);
         } catch (FileNotFoundException e) {
             return null;
         } catch (IOException e) {
             throw new MojoExecutionException("Error reading POM " + pomFile, e);
         } catch (XmlPullParserException e) {
             throw new MojoExecutionException("Error parsing POM " + pomFile, e);
-        } finally {
-            IOUtil.close(reader);
         }
     }
 

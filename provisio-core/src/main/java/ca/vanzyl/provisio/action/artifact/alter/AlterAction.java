@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
 @Named("insert")
 public class AlterAction implements ProvisioningAction {
 
-    private static Logger logger = LoggerFactory.getLogger(AlterAction.class);
+    private static final Logger logger = LoggerFactory.getLogger(AlterAction.class);
 
     private List<Insert> inserts;
     private List<Delete> deletes;

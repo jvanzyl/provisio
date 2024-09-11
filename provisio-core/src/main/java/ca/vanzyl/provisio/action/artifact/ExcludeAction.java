@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.stream.Stream;
 import javax.inject.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,9 +86,8 @@ public class ExcludeAction implements ProvisioningAction {
     }
 
     public void deletePath(Path pathToBeDeleted) throws IOException {
-        Files.walk(pathToBeDeleted)
-                .sorted(Comparator.reverseOrder())
-                .map(Path::toFile)
-                .forEach(File::delete);
+        try (Stream<Path> stream = Files.walk(pathToBeDeleted)) {
+            stream.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+        }
     }
 }

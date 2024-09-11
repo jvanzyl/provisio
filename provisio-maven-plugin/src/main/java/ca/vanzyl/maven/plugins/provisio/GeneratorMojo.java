@@ -21,7 +21,7 @@ import ca.vanzyl.provisio.model.ProvisioningRequest;
 import ca.vanzyl.provisio.model.Runtime;
 import java.io.File;
 import java.io.IOException;
-import java.io.Writer;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +33,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.codehaus.plexus.util.WriterFactory;
 
 @Mojo(name = "generateDependencies", defaultPhase = LifecyclePhase.GENERATE_RESOURCES, threadSafe = true)
 public class GeneratorMojo extends BaseMojo {
@@ -80,8 +79,8 @@ public class GeneratorMojo extends BaseMojo {
             throw new MojoExecutionException(
                     "Error creating parent directories for the POM file: " + e.getMessage(), e);
         }
-        try (Writer writer = WriterFactory.newXmlWriter(dependencyExtendedPomLocation)) {
-            new MavenXpp3Writer().write(writer, model);
+        try (OutputStream output = Files.newOutputStream(dependencyExtendedPomLocation.toPath())) {
+            new MavenXpp3Writer().write(output, model);
         } catch (IOException e) {
             throw new MojoExecutionException("Error writing POM file: " + e.getMessage(), e);
         }

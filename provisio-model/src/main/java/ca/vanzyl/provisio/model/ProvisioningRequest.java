@@ -19,6 +19,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 
@@ -39,11 +40,8 @@ public class ProvisioningRequest {
     }
 
     public ProvisioningRequest setOutputDirectory(File outputDirectory) {
-        if (outputDirectory == null) {
-            this.outputDirectory = new File("").getAbsoluteFile();
-        } else {
-            this.outputDirectory = outputDirectory.getAbsoluteFile();
-        }
+        this.outputDirectory = Objects.requireNonNullElseGet(outputDirectory, () -> new File(""))
+                .getAbsoluteFile();
         return this;
     }
 
