@@ -24,8 +24,7 @@ public class Lookup {
 
     public void setObjectProperty(Object o, String propertyName, Object value) {
         Class<?> c = o.getClass();
-        String methodSuffix =
-                Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1, propertyName.length());
+        String methodSuffix = Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
         String methodName = "set" + methodSuffix;
         if (value == null) {
             return;

@@ -26,19 +26,19 @@ public class Runtime {
 
     private String id;
     // Runtime level actions
-    private List<ProvisioningAction> actions;
+    private final List<ProvisioningAction> actions;
     // ArtifactSets
-    private List<ArtifactSet> artifactSets;
+    private final List<ArtifactSet> artifactSets;
     // ArtifactSet references
-    private Map<String, ArtifactSet> artifactSetReferences;
+    private final Map<String, ArtifactSet> artifactSetReferences;
     // Artifact references
-    private Map<String, ProvisioArtifact> artifactReferences;
+    private final Map<String, ProvisioArtifact> artifactReferences;
     // ResourceSets
-    private List<ResourceSet> resourceSets;
+    private final List<ResourceSet> resourceSets;
     // Variables
     Map<String, String> variables;
     // FileSets
-    private List<FileSet> fileSets;
+    private final List<FileSet> fileSets;
 
     public Runtime() {
         this.actions = new ArrayList<>();

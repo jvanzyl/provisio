@@ -21,7 +21,7 @@ import java.util.List;
 
 public class Insert {
 
-    private List<ProvisioArtifact> artifacts = new ArrayList<>();
+    private final List<ProvisioArtifact> artifacts = new ArrayList<>();
 
     public List<ProvisioArtifact> getArtifacts() {
         return artifacts;

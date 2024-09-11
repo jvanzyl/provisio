@@ -21,7 +21,7 @@ import java.util.List;
 
 public class Delete {
 
-    private List<File> files = new ArrayList<>();
+    private final List<File> files = new ArrayList<>();
 
     public List<File> getFiles() {
         return files;

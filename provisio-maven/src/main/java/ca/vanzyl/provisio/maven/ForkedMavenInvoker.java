@@ -107,7 +107,7 @@ public class ForkedMavenInvoker implements MavenInvoker {
         return result;
     }
 
-    private class MavenStreamConsumer implements StreamConsumer {
+    private static class MavenStreamConsumer implements StreamConsumer {
 
         private final PrintWriter pw;
 

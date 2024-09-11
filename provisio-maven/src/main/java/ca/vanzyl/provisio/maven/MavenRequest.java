@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
 public class MavenRequest {
@@ -42,7 +43,7 @@ public class MavenRequest {
         }
         pomFile = new File("pom.xml");
         String mlr = System.getProperty("maven.repo.local", "");
-        if (mlr.length() > 0) {
+        if (!mlr.isEmpty()) {
             localRepo = new File(mlr).getAbsoluteFile();
         }
     }
@@ -52,11 +53,7 @@ public class MavenRequest {
     }
 
     public MavenRequest setWorkDir(File workDir) {
-        if (workDir == null) {
-            this.workDir = new File("").getAbsoluteFile();
-        } else {
-            this.workDir = workDir;
-        }
+        this.workDir = Objects.requireNonNullElseGet(workDir, () -> new File("").getAbsoluteFile());
         return this;
     }
 

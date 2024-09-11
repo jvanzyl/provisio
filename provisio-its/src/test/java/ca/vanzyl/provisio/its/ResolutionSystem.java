@@ -9,6 +9,7 @@ import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.ArtifactType;
+import org.eclipse.aether.internal.impl.DefaultLocalPathComposer;
 import org.eclipse.aether.internal.impl.SimpleLocalRepositoryManagerFactory;
 import org.eclipse.aether.repository.Authentication;
 import org.eclipse.aether.repository.LocalRepository;
@@ -66,8 +67,8 @@ public class ResolutionSystem {
         LocalRepository localRepo = new LocalRepository(localRepository);
         // We are not concerned with checking the _remote.repositories files
         try {
-            session.setLocalRepositoryManager(
-                    new SimpleLocalRepositoryManagerFactory().newInstance(session, localRepo));
+            session.setLocalRepositoryManager(new SimpleLocalRepositoryManagerFactory(new DefaultLocalPathComposer())
+                    .newInstance(session, localRepo));
         } catch (NoLocalRepositoryManagerException e) {
             // This should never happen
         }
@@ -80,7 +81,7 @@ public class ResolutionSystem {
 
     // We're no looking to watch any output here but if we do, in fact, need to watch anything
     // we can make simple changes to these no-op implementations
-    public class QuietRepositoryListener extends AbstractRepositoryListener {}
+    public static class QuietRepositoryListener extends AbstractRepositoryListener {}
 
-    public class QuietTransferListener extends AbstractTransferListener {}
+    public static class QuietTransferListener extends AbstractTransferListener {}
 }

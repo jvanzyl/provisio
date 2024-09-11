@@ -100,7 +100,7 @@ public abstract class SimpleProvisioner {
     }
 
     protected String get(String value, String defaultValue) {
-        return (value == null || value.length() <= 0) ? defaultValue : value;
+        return (value == null || value.isEmpty()) ? defaultValue : value;
     }
 
     protected String repositoryPathOf(
@@ -108,9 +108,9 @@ public abstract class SimpleProvisioner {
         //
         // <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>
         //
-        // groupId/artifactId/version/artifactId-version[-classlifier].extension
+        // groupId/artifactId/version/artifactId-version[-classifier].extension
         //
-        StringBuffer path = new StringBuffer()
+        StringBuilder path = new StringBuilder()
                 .append(groupId.replace('.', '/'))
                 .append('/')
                 .append(artifactId)
@@ -122,10 +122,10 @@ public abstract class SimpleProvisioner {
                 .append(version);
 
         //
-        // Aether's default classifier is "jar" so the only time we want to write out the classifer
+        // Aether's default classifier is "jar" so the only time we want to write out the classifier
         // is when there is a value that is not "jar".
         //
-        if (classifier != null && classifier.isEmpty() == false && classifier.equals("jar") == false) {
+        if (classifier != null && !classifier.isEmpty() && !classifier.equals("jar")) {
             path.append("-").append(classifier);
         }
         path.append('.').append(extension);

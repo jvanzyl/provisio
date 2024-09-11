@@ -17,9 +17,9 @@ package ca.vanzyl.provisio.model;
 
 public class Implicit {
 
-    private String name;
-    private Class<?> type;
-    private Class<?> itemType;
+    private final String name;
+    private final Class<?> type;
+    private final Class<?> itemType;
 
     public Implicit(String name, Class<?> type) {
         this(name, type, null);

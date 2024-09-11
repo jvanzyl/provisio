@@ -24,7 +24,7 @@ import javax.inject.Named;
 public class MavenInstallationProvisioner extends SimpleProvisioner {
 
     public File provision(String mavenVersion, File installDirectory) throws IOException {
-        if (mavenVersion == null || mavenVersion.length() <= 0) {
+        if (mavenVersion == null || mavenVersion.isEmpty()) {
             throw new IllegalArgumentException("Maven version not specified");
         }
 

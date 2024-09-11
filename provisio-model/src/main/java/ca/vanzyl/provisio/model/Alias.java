@@ -17,8 +17,8 @@ package ca.vanzyl.provisio.model;
 
 public class Alias {
 
-    private String name;
-    private Class<?> type;
+    private final String name;
+    private final Class<?> type;
 
     public Alias(String name, Class<?> type) {
         this.name = name;

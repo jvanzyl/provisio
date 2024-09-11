@@ -89,7 +89,7 @@ public class ProvisioArtifact extends AbstractArtifact {
     }
 
     public String toVersionlessCoordinate() {
-        StringBuffer sb = new StringBuffer()
+        StringBuilder sb = new StringBuilder()
                 .append(getGroupId())
                 .append(":")
                 .append(getArtifactId())

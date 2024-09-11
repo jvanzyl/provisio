@@ -29,7 +29,7 @@ import java.util.Map;
 
 public class MustacheFilteringProcessor implements UnarchivingEnhancedEntryProcessor {
 
-    private Map<String, String> variables;
+    private final Map<String, String> variables;
 
     public MustacheFilteringProcessor(Map<String, String> variables) {
         this.variables = variables;

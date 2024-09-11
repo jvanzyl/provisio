@@ -31,16 +31,16 @@ public class ArtifactSet {
     private String from;
     private String providedBom;
 
-    private List<ProvisioArtifact> artifacts = new ArrayList<>();
-    private List<Resource> resources = new ArrayList<>();
+    private final List<ProvisioArtifact> artifacts = new ArrayList<>();
+    private final List<Resource> resources = new ArrayList<>();
     // children
-    private List<ArtifactSet> artifactSets = new ArrayList<>();
+    private final List<ArtifactSet> artifactSets = new ArrayList<>();
     private List<Exclusion> exclusions;
 
     // runtime
     private ArtifactSet parent;
     private File outputDirectory;
-    private Map<String, ProvisioArtifact> artifactMap = new LinkedHashMap<>();
+    private final Map<String, ProvisioArtifact> artifactMap = new LinkedHashMap<>();
     private Set<ProvisioArtifact> resolvedArtifacts = new HashSet<>();
 
     public String getDirectory() {
