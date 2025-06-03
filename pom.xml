@@ -23,7 +23,7 @@
   <parent>
     <groupId>io.takari</groupId>
     <artifactId>takari</artifactId>
-    <version>63</version>
+    <version>70</version>
   </parent>
 
   <groupId>ca.vanzyl</groupId>
@@ -51,6 +51,8 @@
     <lifecycle>takari-jar</lifecycle>
     <surefire.redirectTestOutputToFile>true</surefire.redirectTestOutputToFile>
     <surefire.runOrder>alphabetical</surefire.runOrder>
+    <!-- temporary disable modernizer until we can fix all issues -->
+    <modernizer.skip>true</modernizer.skip>
     <surefire.mem>-Xmx256m</surefire.mem>
     <mavenVersion>3.9.9</mavenVersion>
     <takariArchiverVersion>1.0.3</takariArchiverVersion>
