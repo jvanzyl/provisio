@@ -52,7 +52,7 @@
     <surefire.redirectTestOutputToFile>true</surefire.redirectTestOutputToFile>
     <surefire.runOrder>alphabetical</surefire.runOrder>
     <surefire.mem>-Xmx256m</surefire.mem>
-    <mavenVersion>3.9.9</mavenVersion>
+    <mavenVersion>3.9.12</mavenVersion>
     <takariArchiverVersion>1.0.4</takariArchiverVersion>
     <!-- Align with Aether version used in $mavenVersion -->
     <aetherVersion>1.9.24</aetherVersion>
