@@ -25,14 +25,15 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.HashMap;
 import java.util.Map;
 
 public class MustacheFilteringProcessor implements UnarchivingEnhancedEntryProcessor {
 
-    private final Map<String, String> variables;
+    private final Map<String, Object> variables;
 
     public MustacheFilteringProcessor(Map<String, String> variables) {
-        this.variables = variables;
+        this.variables = mustacheVariables(variables);
     }
 
     @Override
@@ -42,5 +43,20 @@ public class MustacheFilteringProcessor implements UnarchivingEnhancedEntryProce
         Mustache mustache = mf.compile(new InputStreamReader(inputStream), "provisio");
         mustache.execute(writer, variables);
         writer.flush();
+    }
+
+    private Map<String, Object> mustacheVariables(Map<String, String> variables) {
+        Map<String, Object> mustacheVariables = new HashMap<>();
+        for (Map.Entry<String, String> entry : variables.entrySet()) {
+            String value = entry.getValue();
+            if ("true".equalsIgnoreCase(value)) {
+                mustacheVariables.put(entry.getKey(), Boolean.TRUE);
+            } else if ("false".equalsIgnoreCase(value)) {
+                mustacheVariables.put(entry.getKey(), Boolean.FALSE);
+            } else {
+                mustacheVariables.put(entry.getKey(), value);
+            }
+        }
+        return mustacheVariables;
     }
 }

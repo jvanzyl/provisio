@@ -152,6 +152,73 @@ public class ProvisioTest {
     }
 
     @Test
+    public void validateUnpackWithMustacheConditionalEnabled() throws Exception {
+        // A {{#datadog}} section renders when the datadog variable is present and non-empty.
+        String name = "it-0022";
+        deleteOutputDirectory(name);
+        Map<String, String> variables = new HashMap<>();
+        variables.put("datadog", "true");
+        variables.put("ddAgentPath", "/opt/datadog/dd-java-agent.jar");
+        variables.put("ddService", "server");
+        ProvisioningResult result = provision(name, variables);
+        assertFileExists(result, "etc/jvm.config");
+        String config = FileUtils.fileRead(file(result.getOutputDirectory(), "etc/jvm.config"));
+        assertTrue("base JVM options are always present", config.contains("-Xmx16G"));
+        assertTrue(
+                "datadog javaagent is rendered with a raw (unescaped) path",
+                config.contains("-javaagent:/opt/datadog/dd-java-agent.jar"));
+        assertTrue("datadog service property is rendered", config.contains("-Ddd.service=server"));
+    }
+
+    @Test
+    public void validateUnpackWithMustacheConditionalDisabled() throws Exception {
+        // Omitting the datadog variable leaves the {{#datadog}} section unrendered.
+        String name = "it-0022";
+        deleteOutputDirectory(name);
+        ProvisioningResult result = provision(name);
+        assertFileExists(result, "etc/jvm.config");
+        String config = FileUtils.fileRead(file(result.getOutputDirectory(), "etc/jvm.config"));
+        assertTrue("base JVM options are always present", config.contains("-Xmx16G"));
+        assertFalse(
+                "datadog javaagent must not be rendered when the variable is absent", config.contains("-javaagent"));
+        assertFalse("datadog service property must not be rendered", config.contains("-Ddd.service"));
+    }
+
+    @Test
+    public void validateDirectoryMustacheRuntimeConfig() throws Exception {
+        String name = "it-0023";
+        deleteOutputDirectory(name);
+        ProvisioningResult result = provision(name);
+        assertFileExists(result, "etc/config.properties");
+        assertFileExists(result, "etc/annotations.properties");
+        assertFileExists(result, "etc/jvm.config");
+        String properties = FileUtils.fileRead(file(result.getOutputDirectory(), "etc/config.properties"));
+        assertTrue(properties.contains("http-server.http.port=8080"));
+        assertTrue(properties.contains("node.environment=development"));
+        String annotations = FileUtils.fileRead(file(result.getOutputDirectory(), "etc/annotations.properties"));
+        assertTrue(annotations.contains("service_name=${ENV:SERVICE_NAME}"));
+        String config = FileUtils.fileRead(file(result.getOutputDirectory(), "etc/jvm.config"));
+        assertTrue(config.contains("-XX:MaxRAMPercentage=80"));
+        assertFalse(config.contains("-javaagent"));
+
+        deleteOutputDirectory(name);
+        Map<String, String> variables = new HashMap<>();
+        variables.put("datadog", "false");
+        result = provision(name, variables);
+        config = FileUtils.fileRead(file(result.getOutputDirectory(), "etc/jvm.config"));
+        assertTrue(config.contains("-XX:MaxRAMPercentage=80"));
+        assertFalse(config.contains("-javaagent"));
+
+        deleteOutputDirectory(name);
+        variables.put("datadog", "true");
+        result = provision(name, variables);
+        config = FileUtils.fileRead(file(result.getOutputDirectory(), "etc/jvm.config"));
+        assertTrue(config.contains("-XX:MaxRAMPercentage=80"));
+        assertTrue(config.contains("-javaagent:/opt/lib/dd-java-agent.jar"));
+        assertTrue(config.contains("-Ddd.service.name=server"));
+    }
+
+    @Test
     public void validateMakeDirectoryAction() throws Exception {
         String name = "it-0021";
         deleteOutputDirectory(name);

@@ -19,6 +19,9 @@ import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
 import ca.vanzyl.provisio.action.artifact.WriteToDiskAction;
+import ca.vanzyl.provisio.action.artifact.filter.MustacheFilteringProcessor;
+import ca.vanzyl.provisio.action.artifact.filter.StandardFilteringProcessor;
+import ca.vanzyl.provisio.archive.UnarchivingEnhancedEntryProcessor;
 import ca.vanzyl.provisio.model.ArtifactSet;
 import ca.vanzyl.provisio.model.Directory;
 import ca.vanzyl.provisio.model.FileSet;
@@ -31,9 +34,12 @@ import ca.vanzyl.provisio.model.Resource;
 import ca.vanzyl.provisio.model.ResourceSet;
 import ca.vanzyl.provisio.model.Runtime;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.PosixFilePermission;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -583,13 +589,14 @@ public class MavenProvisioner {
                 for (Directory directory : fileSet.getDirectories()) {
                     File sourceDirectory = new File(directory.getPath());
                     File targetDirectory = new File(context.getRequest().getOutputDirectory(), fileSet.getDirectory());
-                    copyDirectoryStructure(sourceDirectory, targetDirectory, directory);
+                    copyDirectoryStructure(sourceDirectory, targetDirectory, directory, context);
                 }
             }
         }
     }
 
-    private void copyDirectoryStructure(File sourceDirectory, File targetDirectory, Directory directory)
+    private void copyDirectoryStructure(
+            File sourceDirectory, File targetDirectory, Directory directory, ProvisioningContext context)
             throws IOException {
         List<String> includes = directory.getIncludes();
         List<String> excludes = directory.getExcludes();
@@ -607,14 +614,14 @@ public class MavenProvisioner {
             List<File> paths = FileUtils.getFiles(sourceDirectory, includesString, excludesString);
             for (File source : paths) {
                 File target = new File(targetDirectory, source.getName());
-                copy(source, target);
+                copy(source, target, directory, context);
             }
         } else {
             List<String> relativePaths = FileUtils.getFileNames(sourceDirectory, includesString, excludesString, false);
             for (String relativePath : relativePaths) {
                 File source = new File(sourceDirectory, relativePath);
                 File target = new File(targetDirectory, relativePath);
-                copy(source, target);
+                copy(source, target, directory, context);
             }
         }
     }
@@ -628,6 +635,43 @@ public class MavenProvisioner {
                 target.toPath(),
                 StandardCopyOption.COPY_ATTRIBUTES,
                 StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    private void copy(File source, File target, Directory directory, ProvisioningContext context) throws IOException {
+        copy(source, target, directory.isFiltering(), directory.isMustache(), context);
+    }
+
+    private void copy(File source, File target, boolean filtering, boolean mustache, ProvisioningContext context)
+            throws IOException {
+        if (filtering && mustache) {
+            throw new RuntimeException("Only one of filtering or mustache can be enabled for " + source);
+        }
+        if (filtering) {
+            copy(source, target, new StandardFilteringProcessor(context.getVariables()));
+            return;
+        }
+        if (mustache) {
+            copy(source, target, new MustacheFilteringProcessor(context.getVariables()));
+            return;
+        }
+        copy(source, target);
+    }
+
+    private void copy(File source, File target, UnarchivingEnhancedEntryProcessor processor) throws IOException {
+        if (!target.getParentFile().exists()) {
+            target.getParentFile().mkdirs();
+        }
+        try (FileInputStream input = new FileInputStream(source);
+                FileOutputStream output = new FileOutputStream(target)) {
+            processor.processStream(source.getName(), input, output);
+        }
+        target.setLastModified(source.lastModified());
+        try {
+            Set<PosixFilePermission> permissions = Files.getPosixFilePermissions(source.toPath());
+            Files.setPosixFilePermissions(target.toPath(), permissions);
+        } catch (UnsupportedOperationException ignored) {
+            // Not all filesystems expose POSIX permissions.
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

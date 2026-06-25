@@ -1,0 +1,7 @@
+<runtime>
+  <artifactSet to="etc">
+    <artifact id="io.takari.provisio.its:it-0022:0.0.1-SNAPSHOT">
+      <unpack mustache="true" includes="jvm.config" />
+    </artifact>
+  </artifactSet>
+</runtime>

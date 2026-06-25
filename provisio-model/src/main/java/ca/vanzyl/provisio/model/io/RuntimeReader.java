@@ -110,6 +110,8 @@ public class RuntimeReader {
         xstream.addImplicitCollection(Directory.class, "includes", "include", String.class);
         xstream.addImplicitCollection(Directory.class, "excludes", "exclude", String.class);
         xstream.useAttributeFor(Directory.class, "flatten");
+        xstream.useAttributeFor(Directory.class, "filtering");
+        xstream.useAttributeFor(Directory.class, "mustache");
 
         xstream.registerConverter(new RuntimeConverter());
         xstream.registerConverter(new ArtifactConverter());

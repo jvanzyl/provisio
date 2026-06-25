@@ -24,6 +24,8 @@ public class Directory {
     private List<String> includes;
     private List<String> excludes;
     private boolean flatten;
+    private boolean filtering;
+    private boolean mustache;
 
     public String getPath() {
         return path;
@@ -53,5 +55,21 @@ public class Directory {
 
     public void setFlatten(boolean flatten) {
         this.flatten = flatten;
+    }
+
+    public boolean isFiltering() {
+        return filtering;
+    }
+
+    public void setFiltering(boolean filtering) {
+        this.filtering = filtering;
+    }
+
+    public boolean isMustache() {
+        return mustache;
+    }
+
+    public void setMustache(boolean mustache) {
+        this.mustache = mustache;
     }
 }

@@ -2,8 +2,11 @@
   <fileSet to="/etc">
     <file path="${basedir}/src/main/etc/jvm.config"/>
     <file path="${basedir}/src/main/etc/config.properties"/>
-    <directory path="${basedir}/src/main/etc">
+    <directory path="${basedir}/src/main/etc" filtering="true">
       <include>**/*.properties</include>
+    </directory>
+    <directory path="${basedir}/src/main/etc" mustache="true">
+      <include>jvm.config</include>
     </directory>
   </fileSet>
 </runtime>
