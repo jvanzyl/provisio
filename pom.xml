@@ -110,17 +110,17 @@
       <dependency>
         <groupId>ca.vanzyl</groupId>
         <artifactId>provisio-core</artifactId>
-        <version>1.1.2-SNAPSHOT</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>ca.vanzyl</groupId>
         <artifactId>provisio-model</artifactId>
-        <version>1.1.2-SNAPSHOT</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>ca.vanzyl</groupId>
         <artifactId>provisio-maven</artifactId>
-        <version>1.1.2-SNAPSHOT</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>io.takari</groupId>

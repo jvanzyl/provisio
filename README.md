@@ -229,6 +229,12 @@ What follows are various techniques and capabilities for building runtimes. Prov
     <directory path="${basedir}/src/main/etc">
       <include>**/*.properties</include>
     </directory>
+    <directory path="${basedir}/src/main/etc" filtering="true">
+      <include>runtime.properties</include>
+    </directory>
+    <directory path="${basedir}/src/main/etc" mustache="true">
+      <include>jvm.config</include>
+    </directory>
   </fileSet>
 </runtime>
 ```

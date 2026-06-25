@@ -1,0 +1,9 @@
+fileSets:
+  - to: etc
+    directories:
+      - path: ${basedir}/src/main/resources
+        mustache: true
+        includes:
+          - config.properties
+          - annotations.properties
+          - jvm.config

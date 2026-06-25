@@ -281,8 +281,12 @@ public class RuntimeReaderTest {
                 "${basedir}/src/main/etc/config.properties",
                 fileSet.getFiles().get(1).getPath());
         assertEquals("${basedir}/src/main/etc", fileSet.getDirectories().get(0).getPath());
+        assertTrue(fileSet.getDirectories().get(0).isFiltering());
         assertEquals(
                 "**/*.properties", fileSet.getDirectories().get(0).getIncludes().get(0));
+        assertEquals("${basedir}/src/main/etc", fileSet.getDirectories().get(1).getPath());
+        assertTrue(fileSet.getDirectories().get(1).isMustache());
+        assertEquals("jvm.config", fileSet.getDirectories().get(1).getIncludes().get(0));
     }
 
     @Test
