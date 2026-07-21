@@ -8,6 +8,7 @@ A Maven-based provisioning mechanism and replacement for the maven-assembly-plug
 
 - [Support for building runtimes, like the maven-assembly-plugin, that are aware of their dependencies in a multi-module build](#feature0)
 - [Support for hardlinking in TAR archives with corresponding support for dereferencing hardlinks when unpacking archives](#feature1)
+- [Archive-only streaming assemblies](docs/streaming-assemblies.md)
 - [Support for excluding artifacts while resolving a specific artifact](#feature2)
 - [Support for globally excluding artifacts while transitively resolving artifacts](#feature3)
 - [Support for filtering resources while unpacking archives](#feature4)
@@ -108,7 +109,10 @@ What follows are various techniques and capabilities for building runtimes. Prov
 <runtime>
 
   <!-- Produce the archive of this runtime with duplicate JARS hardlinked -->
-  <archive name="presto-server-${project.version}.tar.gz" hardLinkIncludes="**/*.jar" />
+  <archive
+    name="presto-server-${project.version}.tar.gz"
+    streaming="true"
+    hardLinkIncludes="**/*.jar" />
 
   <!-- Dereference hardlinks in tar.gz and exclude a directory on the fly -->
   <artifactSet to="/">
@@ -120,6 +124,11 @@ What follows are various techniques and capabilities for building runtimes. Prov
 </runtime>
 
 ```
+
+Setting `streaming="true"` assembles an eligible archive directly from its
+inputs without first creating the exploded runtime tree. See
+[Streaming assemblies](docs/streaming-assemblies.md) for supported inputs,
+staged fallbacks, reproducibility, and the CRC32 identity tradeoff.
 
 <a name="feature2"></a>
 ## Excluding artifacts while resolving a specific artifact
