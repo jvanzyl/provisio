@@ -30,7 +30,7 @@ public class ProvisioningRequest {
     private Runtime model;
     private Map<String, String> versionMap;
     private List<String> managedDependencies = Collections.emptyList();
-    private Map<String, String> variables;
+    private Map<String, String> variables = Collections.emptyMap();
     //
     private RepositorySystemSession repositorySystemSession;
     private List<RemoteRepository> remoteRepositories;
@@ -111,6 +111,6 @@ public class ProvisioningRequest {
     }
 
     public void setVariables(Map<String, String> variables) {
-        this.variables = variables;
+        this.variables = variables != null ? variables : Collections.emptyMap();
     }
 }

@@ -42,13 +42,15 @@ public class ProvisioningContext {
     }
 
     public boolean layDownFile(Path path) {
-        requireNonNull(path);
-        return laidDownFiles.add(path);
+        return laidDownFiles.add(normalize(path));
     }
 
     public boolean deleteLaidDownFile(Path path) {
-        requireNonNull(path);
-        return laidDownFiles.remove(path);
+        return laidDownFiles.remove(normalize(path));
+    }
+
+    public boolean isLaidDownFile(Path path) {
+        return laidDownFiles.contains(normalize(path));
     }
 
     public int laidDownFiles() {
@@ -57,5 +59,9 @@ public class ProvisioningContext {
 
     public Map<String, String> getVariables() {
         return request.getVariables();
+    }
+
+    private Path normalize(Path path) {
+        return requireNonNull(path).normalize().toAbsolutePath();
     }
 }

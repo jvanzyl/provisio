@@ -70,6 +70,7 @@ public class UnpackAction implements ProvisioningAction {
                                 context,
                                 archive,
                                 outputDirectory.toPath(),
+                                flatten,
                                 new StandardFilteringProcessor(context.getVariables())));
             } else if (mustache) {
                 unarchiver.unarchive(
@@ -79,12 +80,13 @@ public class UnpackAction implements ProvisioningAction {
                                 context,
                                 archive,
                                 outputDirectory.toPath(),
+                                flatten,
                                 new MustacheFilteringProcessor(context.getVariables())));
             } else {
                 unarchiver.unarchive(
                         archive,
                         outputDirectory.toPath(),
-                        new StatProcessor(context, archive, outputDirectory.toPath(), null));
+                        new StatProcessor(context, archive, outputDirectory.toPath(), flatten, null));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

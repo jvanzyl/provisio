@@ -32,9 +32,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
@@ -106,6 +108,31 @@ public class ArchiveActionTest {
 
         assertFalse(Files.exists(runtime.getParent().resolve("runtime.unsupported")));
         assertNull(result.getArchives());
+    }
+
+    @Test
+    public void failedArchivePreservesExistingOutputAndRemovesPartialFile() throws Exception {
+        org.junit.Assume.assumeFalse(java.io.File.pathSeparatorChar == ';');
+        Path runtime = temporary.newFolder("partial-runtime").toPath();
+        write(runtime, "a-first.txt", "first");
+        Path unreadable = runtime.resolve("z-unreadable");
+        Files.createFile(unreadable);
+        Files.setPosixFilePermissions(unreadable, Collections.emptySet());
+        Path archive = runtime.getParent().resolve("runtime.tar.gz");
+        Files.write(archive, "existing".getBytes(StandardCharsets.UTF_8));
+        ProvisioningRequest request = request(runtime);
+        ProvisioningResult result = new ProvisioningResult(request);
+
+        assertThrows(RuntimeException.class, () -> action(
+                        runtime, archive.getFileName().toString())
+                .execute(new ProvisioningContext(request, result)));
+
+        assertEquals("existing", Files.readString(archive));
+        assertNull(result.getArchives());
+        try (Stream<Path> siblings = Files.list(archive.getParent())) {
+            assertFalse(
+                    siblings.anyMatch(path -> path.getFileName().toString().startsWith(".provisio-runtime.tar.gz-")));
+        }
     }
 
     private ArchiveAction action(Path runtime, String name) {

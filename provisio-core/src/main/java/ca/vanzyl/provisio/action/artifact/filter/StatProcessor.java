@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,13 +35,19 @@ public class StatProcessor implements UnarchivingEntryProcessor {
     private final ProvisioningContext context;
     private final Path archive;
     private final Path outputDirectory;
+    private final boolean flatten;
     private final UnarchivingEntryProcessor delegate;
 
     public StatProcessor(
-            ProvisioningContext context, Path archive, Path outputDirectory, UnarchivingEntryProcessor delegate) {
+            ProvisioningContext context,
+            Path archive,
+            Path outputDirectory,
+            boolean flatten,
+            UnarchivingEntryProcessor delegate) {
         this.context = requireNonNull(context);
         this.archive = requireNonNull(archive);
-        this.outputDirectory = requireNonNull(outputDirectory);
+        this.outputDirectory = requireNonNull(outputDirectory).normalize().toAbsolutePath();
+        this.flatten = flatten;
         this.delegate = delegate;
     }
 
@@ -49,6 +56,19 @@ public class StatProcessor implements UnarchivingEntryProcessor {
         String result = name;
         if (delegate != null) {
             result = delegate.targetName(name);
+        }
+        Path relative = Paths.get(result);
+        if (flatten) {
+            relative = relative.getFileName();
+        }
+        Path target = outputDirectory.resolve(relative).normalize().toAbsolutePath();
+        if (!target.startsWith(outputDirectory)) {
+            throw new IllegalArgumentException("Bad mapping of archive " + archive + " entry " + name
+                    + "; would escape output directory: " + outputDirectory);
+        }
+        if (context.isLaidDownFile(target) && !ProvisioVariables.allowTargetOverwrite(context)) {
+            throw new ProvisioningException(
+                    "Conflict: archive " + archive + " entry " + name + " would overwrite existing file: " + target);
         }
         return result;
     }
