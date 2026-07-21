@@ -11,11 +11,19 @@ Enable direct assembly on the runtime archive action:
 <archive
   name="distribution.tar.gz"
   streaming="true"
+  gzipCompressionLevel="6"
   hardLinkIncludes="**/*.jar" />
 ```
 
 `streaming` defaults to `false`, which retains the historical staged assembly
-behavior. When direct assembly is eligible, Provisio creates
+behavior. For `tar.gz` output, `gzipCompressionLevel` optionally selects the
+DEFLATE level from `-1` through `9`, and `gzipCompressionThreads` optionally
+selects the bounded compression-worker count from `1` through `256`. Omitting
+either attribute retains the Archiver default. A fixed setting remains
+reproducible; changing the level intentionally changes the compressed bytes and
+should be evaluated against both build time and archive size.
+
+When direct assembly is eligible, Provisio creates
 `distribution.tar.gz` but does not create the configured exploded runtime
 directory. The resulting archive is still registered as the provisioning
 result.

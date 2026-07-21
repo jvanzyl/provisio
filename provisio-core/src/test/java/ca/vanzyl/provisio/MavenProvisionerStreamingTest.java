@@ -429,13 +429,17 @@ public class MavenProvisionerStreamingTest {
         Path notice = write(workspace.resolve("NOTICE"), "notice");
         Path output = workspace.resolve("target/files-runtime");
         String descriptor = "<runtime>"
-                + "<archive name=\"files-runtime.tar.gz\" streaming=\"true\"/>"
+                + "<archive name=\"files-runtime.tar.gz\" streaming=\"true\" gzipCompressionLevel=\"6\""
+                + " gzipCompressionThreads=\"3\"/>"
                 + "<resourceSet><resource name=\"" + notice + "\"/></resourceSet>"
                 + "<fileSet to=\"etc\"><file path=\"" + loose + "\"/>"
                 + "<directory path=\"" + directory + "\"><include>**/*.properties</include></directory>"
                 + "</fileSet></runtime>";
         Runtime runtime = readRuntime(descriptor);
-        assertTrue(((ArchiveAction) runtime.getActions().get(0)).isStreaming());
+        ArchiveAction archiveAction = (ArchiveAction) runtime.getActions().get(0);
+        assertTrue(archiveAction.isStreaming());
+        assertEquals(Integer.valueOf(6), archiveAction.getGzipCompressionLevel());
+        assertEquals(Integer.valueOf(3), archiveAction.getGzipCompressionThreads());
         ProvisioningRequest request =
                 new ProvisioningRequest().setRuntimeDescriptor(runtime).setOutputDirectory(output.toFile());
 

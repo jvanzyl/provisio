@@ -51,6 +51,8 @@ public class ArchiveAction implements ProvisioningAction {
     private String hardLinkIncludes;
     private String hardLinkExcludes;
     private boolean streaming;
+    private Integer gzipCompressionLevel;
+    private Integer gzipCompressionThreads;
     // Historic behavior is to useRoot=true because this is the default for the Takari Archiver, but we
     // want to allow setting useRoot=false to eliminate the initial leading directory entry.
     private boolean useRoot = true;
@@ -72,6 +74,12 @@ public class ArchiveAction implements ProvisioningAction {
         ArchiverBuilder builder = Archiver.builder();
         if (executable != null) {
             builder.executable(StringUtils.split(executable, ","));
+        }
+        if (gzipCompressionLevel != null) {
+            builder.gzipCompressionLevel(gzipCompressionLevel);
+        }
+        if (gzipCompressionThreads != null) {
+            builder.gzipCompressionThreads(gzipCompressionThreads);
         }
         Archiver archiver = builder.reproducibility(ReproducibilityPolicy.NORMALIZED)
                 .entryOrder(EntryOrder.SOURCE)
@@ -154,6 +162,22 @@ public class ArchiveAction implements ProvisioningAction {
 
     public void setStreaming(boolean streaming) {
         this.streaming = streaming;
+    }
+
+    public Integer getGzipCompressionLevel() {
+        return gzipCompressionLevel;
+    }
+
+    public void setGzipCompressionLevel(Integer gzipCompressionLevel) {
+        this.gzipCompressionLevel = gzipCompressionLevel;
+    }
+
+    public Integer getGzipCompressionThreads() {
+        return gzipCompressionThreads;
+    }
+
+    public void setGzipCompressionThreads(Integer gzipCompressionThreads) {
+        this.gzipCompressionThreads = gzipCompressionThreads;
     }
 
     public void setHardLinkIncludes(String hardLinkIncludes) {

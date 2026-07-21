@@ -84,7 +84,14 @@ public class Actions {
             @Override
             public String[] attributes() {
                 return new String[] {
-                    "name", "executable", "hardLinkIncludes", "hardLinkExcludes", "useRoot", "streaming"
+                    "name",
+                    "executable",
+                    "hardLinkIncludes",
+                    "hardLinkExcludes",
+                    "useRoot",
+                    "streaming",
+                    "gzipCompressionLevel",
+                    "gzipCompressionThreads"
                 };
             }
         });
