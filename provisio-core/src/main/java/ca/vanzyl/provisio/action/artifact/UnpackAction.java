@@ -18,6 +18,8 @@ package ca.vanzyl.provisio.action.artifact;
 import ca.vanzyl.provisio.action.artifact.filter.MustacheFilteringProcessor;
 import ca.vanzyl.provisio.action.artifact.filter.StandardFilteringProcessor;
 import ca.vanzyl.provisio.action.artifact.filter.StatProcessor;
+import ca.vanzyl.provisio.archive.SourceSpec;
+import ca.vanzyl.provisio.archive.Sources;
 import ca.vanzyl.provisio.archive.UnArchiver;
 import ca.vanzyl.provisio.model.ProvisioArtifact;
 import ca.vanzyl.provisio.model.ProvisioningAction;
@@ -170,5 +172,24 @@ public class UnpackAction implements ProvisioningAction {
 
     public void setMustache(boolean mustache) {
         this.mustache = mustache;
+    }
+
+    public boolean supportsStreaming() {
+        return !filter && !mustache && !dereferenceHardlinks;
+    }
+
+    public SourceSpec streamingSource(Path archive, String destinationPrefix) {
+        if (!supportsStreaming()) {
+            throw new IllegalStateException("Filtering and hard-link dereferencing require staged extraction");
+        }
+        SourceSpec.Builder source = SourceSpec.builder(Sources.archive(archive))
+                .includes(split(includes))
+                .excludes(split(excludes))
+                .useRoot(useRoot)
+                .flatten(flatten);
+        if (destinationPrefix != null && !destinationPrefix.isEmpty()) {
+            source.destinationPrefix(destinationPrefix);
+        }
+        return source.build();
     }
 }

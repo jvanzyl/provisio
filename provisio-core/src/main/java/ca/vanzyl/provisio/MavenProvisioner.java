@@ -21,6 +21,7 @@ import static java.util.stream.Collectors.toSet;
 import ca.vanzyl.provisio.action.artifact.WriteToDiskAction;
 import ca.vanzyl.provisio.action.artifact.filter.MustacheFilteringProcessor;
 import ca.vanzyl.provisio.action.artifact.filter.StandardFilteringProcessor;
+import ca.vanzyl.provisio.action.runtime.ArchiveAction;
 import ca.vanzyl.provisio.archive.UnarchivingEntryProcessor;
 import ca.vanzyl.provisio.model.ArtifactSet;
 import ca.vanzyl.provisio.model.Directory;
@@ -94,17 +95,55 @@ public class MavenProvisioner {
         ProvisioningResult result = new ProvisioningResult(request);
         ProvisioningContext context = new ProvisioningContext(request, result);
 
+        ArchiveAction streamingArchive = streamingArchive(context);
+        if (streamingArchive != null && ArchiveAssemblyPlan.isStructurallyEligible(context, streamingArchive)) {
+            resolveArtifactSetsForStreaming(context);
+            ArchiveAssemblyPlan plan = ArchiveAssemblyPlan.create(context, streamingArchive);
+            if (plan != null) {
+                configureArtifactSetAction(streamingArchive, request.getOutputDirectory());
+                streamingArchive.execute(context, plan.sources());
+                logCompletion(now, context, result);
+                return result;
+            }
+        }
+
         processArtifactSets(context);
         processResourceSets(context);
         processFileSets(context);
         processRuntimeActions(context);
-        logger.info(
-                "Provisioning done in {} sec (total of {} files processed, {} archives produced)",
-                Duration.between(now, Instant.now()).toSeconds(),
-                context.laidDownFiles(),
-                result.getArchives() != null ? result.getArchives().size() : 0);
+        logCompletion(now, context, result);
 
         return result;
+    }
+
+    private void logCompletion(Instant start, ProvisioningContext context, ProvisioningResult result) {
+        logger.info(
+                "Provisioning done in {} sec (total of {} files processed, {} archives produced)",
+                Duration.between(start, Instant.now()).toSeconds(),
+                context.laidDownFiles(),
+                result.getArchives() != null ? result.getArchives().size() : 0);
+    }
+
+    private ArchiveAction streamingArchive(ProvisioningContext context) {
+        for (ProvisioningAction action : context.getRequest().getRuntime().getActions()) {
+            if (action instanceof ArchiveAction && ((ArchiveAction) action).isStreaming()) {
+                return (ArchiveAction) action;
+            }
+        }
+        return null;
+    }
+
+    private void resolveArtifactSetsForStreaming(ProvisioningContext context) {
+        for (ArtifactSet artifactSet : context.getRequest().getRuntimeModel().getArtifactSets()) {
+            resolveArtifactSetForStreaming(context, artifactSet);
+        }
+    }
+
+    private void resolveArtifactSetForStreaming(ProvisioningContext context, ArtifactSet artifactSet) {
+        resolveArtifactSet(context, artifactSet);
+        for (ArtifactSet child : artifactSet.getArtifactSets()) {
+            resolveArtifactSetForStreaming(context, child);
+        }
     }
 
     public Set<ProvisioArtifact> resolveArtifacts(ProvisioningRequest request) {

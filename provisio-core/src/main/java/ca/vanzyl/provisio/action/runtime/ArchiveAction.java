@@ -50,6 +50,7 @@ public class ArchiveAction implements ProvisioningAction {
     private File runtimeDirectory;
     private String hardLinkIncludes;
     private String hardLinkExcludes;
+    private boolean streaming;
     // Historic behavior is to useRoot=true because this is the default for the Takari Archiver, but we
     // want to allow setting useRoot=false to eliminate the initial leading directory entry.
     private boolean useRoot = true;
@@ -59,11 +60,15 @@ public class ArchiveAction implements ProvisioningAction {
         SourceSpec runtime = SourceSpec.builder(Sources.directory(runtimeDirectory.toPath()))
                 .useRoot(useRoot)
                 .build();
-        execute(context, List.of(runtime));
+        execute(context, List.of(runtime), true);
     }
 
     /** Creates this action's archive from an already ordered streaming assembly plan. */
     public void execute(ProvisioningContext context, List<SourceSpec> sources) {
+        execute(context, sources, false);
+    }
+
+    private void execute(ProvisioningContext context, List<SourceSpec> sources, boolean materializedRuntime) {
         ArchiverBuilder builder = Archiver.builder();
         if (executable != null) {
             builder.executable(StringUtils.split(executable, ","));
@@ -98,7 +103,7 @@ public class ArchiveAction implements ProvisioningAction {
             // contents. For example if you want to make a Docker image using hardlinked contents. It might
             // be better to have the runtime directory be hardlinked before tarring it up.
             //
-            if (hardLinkIncludes != null) {
+            if (materializedRuntime && hardLinkIncludes != null) {
                 UnArchiver unArchiver = UnArchiver.builder().useRoot(false).build();
                 unArchiver.unarchive(archive.toPath(), new File(runtimeDirectory + "-hardlinks").toPath());
             }
@@ -124,6 +129,10 @@ public class ArchiveAction implements ProvisioningAction {
         this.name = name;
     }
 
+    public void setExecutable(String executable) {
+        this.executable = executable;
+    }
+
     private String[] split(String s) {
         if (s == null) {
             return new String[0];
@@ -137,5 +146,21 @@ public class ArchiveAction implements ProvisioningAction {
 
     public void setUseRoot(boolean useRoot) {
         this.useRoot = useRoot;
+    }
+
+    public boolean isStreaming() {
+        return streaming;
+    }
+
+    public void setStreaming(boolean streaming) {
+        this.streaming = streaming;
+    }
+
+    public void setHardLinkIncludes(String hardLinkIncludes) {
+        this.hardLinkIncludes = hardLinkIncludes;
+    }
+
+    public void setHardLinkExcludes(String hardLinkExcludes) {
+        this.hardLinkExcludes = hardLinkExcludes;
     }
 }
