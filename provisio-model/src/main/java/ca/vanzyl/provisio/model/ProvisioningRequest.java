@@ -16,7 +16,7 @@
 package ca.vanzyl.provisio.model;
 
 import java.io.File;
-import java.util.Collections;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -29,8 +29,8 @@ public class ProvisioningRequest {
     private String localRepository;
     private Runtime model;
     private Map<String, String> versionMap;
-    private List<String> managedDependencies = Collections.emptyList();
-    private Map<String, String> variables = Collections.emptyMap();
+    private List<String> managedDependencies = List.of();
+    private Map<String, String> variables = Map.of();
     //
     private RepositorySystemSession repositorySystemSession;
     private List<RemoteRepository> remoteRepositories;
@@ -40,7 +40,8 @@ public class ProvisioningRequest {
     }
 
     public ProvisioningRequest setOutputDirectory(File outputDirectory) {
-        this.outputDirectory = Objects.requireNonNullElseGet(outputDirectory, () -> new File(""))
+        this.outputDirectory = Objects.requireNonNullElseGet(
+                        outputDirectory, () -> Path.of("").toFile())
                 .getAbsoluteFile();
         return this;
     }
@@ -111,6 +112,6 @@ public class ProvisioningRequest {
     }
 
     public void setVariables(Map<String, String> variables) {
-        this.variables = variables != null ? variables : Collections.emptyMap();
+        this.variables = variables != null ? variables : Map.of();
     }
 }

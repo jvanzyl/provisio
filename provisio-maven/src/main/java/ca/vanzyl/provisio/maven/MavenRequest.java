@@ -16,6 +16,7 @@
 package ca.vanzyl.provisio.maven;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,15 +37,15 @@ public class MavenRequest {
     private List<String> goals;
 
     public MavenRequest() {
-        workDir = new File("").getAbsoluteFile();
-        File f = new File(System.getProperty("user.home"), ".m2/settings.xml");
+        workDir = Path.of("").toAbsolutePath().toFile();
+        File f = Path.of(System.getProperty("user.home"), ".m2/settings.xml").toFile();
         if (f.exists()) {
             userSettings = f;
         }
-        pomFile = new File("pom.xml");
+        pomFile = Path.of("pom.xml").toFile();
         String mlr = System.getProperty("maven.repo.local", "");
         if (!mlr.isEmpty()) {
-            localRepo = new File(mlr).getAbsoluteFile();
+            localRepo = Path.of(mlr).toAbsolutePath().toFile();
         }
     }
 
@@ -53,12 +54,13 @@ public class MavenRequest {
     }
 
     public MavenRequest setWorkDir(File workDir) {
-        this.workDir = Objects.requireNonNullElseGet(workDir, () -> new File("").getAbsoluteFile());
+        this.workDir = Objects.requireNonNullElseGet(
+                workDir, () -> Path.of("").toAbsolutePath().toFile());
         return this;
     }
 
     public MavenRequest setWorkDir(String workDir) {
-        return setWorkDir((workDir != null) ? new File(workDir) : null);
+        return setWorkDir((workDir != null) ? Path.of(workDir).toFile() : null);
     }
 
     public File getPomFile() {
@@ -71,7 +73,7 @@ public class MavenRequest {
     }
 
     public MavenRequest setPomFile(String pomFile) {
-        return setPomFile((pomFile != null) ? new File(pomFile) : null);
+        return setPomFile((pomFile != null) ? Path.of(pomFile).toFile() : null);
     }
 
     public File getUserSettings() {

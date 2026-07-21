@@ -19,9 +19,9 @@ import ca.vanzyl.provisio.Actions;
 import ca.vanzyl.provisio.model.Runtime;
 import ca.vanzyl.provisio.model.io.RuntimeReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -64,7 +64,7 @@ public class Provisio {
             try {
                 List<File> descriptors = FileUtils.getFiles(descriptorDirectory, "*.xml", null);
                 for (File descriptor : descriptors) {
-                    Runtime runtime = parseDescriptor(new FileInputStream(descriptor), project);
+                    Runtime runtime = parseDescriptor(Files.newInputStream(descriptor.toPath()), project);
                     runtimes.add(runtime);
                 }
             } catch (IOException e) {

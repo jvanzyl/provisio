@@ -19,9 +19,10 @@ import ca.vanzyl.provisio.model.ProvisioningResult;
 import ca.vanzyl.provisio.model.Runtime;
 import ca.vanzyl.provisio.model.io.RuntimeReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import org.codehaus.plexus.util.FileUtils;
 import org.junit.Before;
@@ -37,8 +38,8 @@ public class ProvisioTest {
 
     @Before
     public void prepare() {
-        basedir = new File(new File("").getAbsolutePath());
-        localRepository = new File(basedir, "target/localRepository");
+        basedir = Path.of("").toAbsolutePath().toFile();
+        localRepository = file(basedir, "target/localRepository");
     }
 
     private Map<String, String> enableGA() {
@@ -59,7 +60,7 @@ public class ProvisioTest {
 
     private ProvisioningResult provision(String name, Map<String, String> variables, String... remoteRepositories)
             throws Exception {
-        File localRepository = new File(basedir, "target/localRepository");
+        File localRepository = file(basedir, "target/localRepository");
         resolutionSystem = new ResolutionSystem(localRepository);
         if (remoteRepositories.length > 0) {
             for (String remoteRepository : remoteRepositories) {
@@ -88,7 +89,7 @@ public class ProvisioTest {
     public void validateAlterationOfJarWithInsert() throws Exception {
         String name = "it-0003";
         ProvisioningResult result = provision(name);
-        File war = new File(result.getOutputDirectory(), "lib/hudson-war-3.3.3.jar");
+        File war = file(result.getOutputDirectory(), "lib/hudson-war-3.3.3.jar");
         ArchiveValidator validator = new ZipArchiveValidator(war);
         validator.assertEntryExists("WEB-INF/lib/junit-4.12.jar");
     }
@@ -97,7 +98,7 @@ public class ProvisioTest {
     public void validateAlterationOfJarWithDelete() throws Exception {
         String name = "it-0004";
         ProvisioningResult result = provision(name);
-        File war = new File(result.getOutputDirectory(), "lib/hudson-war-3.3.3.jar");
+        File war = file(result.getOutputDirectory(), "lib/hudson-war-3.3.3.jar");
         ArchiveValidator validator = new ZipArchiveValidator(war);
         validator.assertEntryDoesntExist("WEB-INF/lib/hudson-core-3.3.3.jar");
     }
@@ -232,7 +233,7 @@ public class ProvisioTest {
         File projectBasedir = runtimeProject(name);
         // Check for prereq projects to run
         runMavenPrereqs(name);
-        File descriptor = new File(projectBasedir, "provisio.xml");
+        File descriptor = file(projectBasedir, "provisio.xml");
         File outputDirectory = outputDirectory(name);
         ProvisioningRequest request = new ProvisioningRequest();
         request.setOutputDirectory(outputDirectory);
@@ -242,12 +243,12 @@ public class ProvisioTest {
         }
         request.setRuntimeDescriptor(runtime);
         // If there is a provisio.properties file for inserting values use it
-        File propertiesFile = new File(projectBasedir, "provisio.properties");
+        File propertiesFile = file(projectBasedir, "provisio.properties");
         Map<String, String> provisioProperties =
                 new HashMap<>(runtime.getVariables() != null ? runtime.getVariables() : new HashMap<>());
         if (propertiesFile.exists()) {
             Properties properties = new Properties();
-            try (InputStream is = new FileInputStream(propertiesFile)) {
+            try (InputStream is = Files.newInputStream(propertiesFile.toPath())) {
                 properties.load(is);
                 properties.forEach((k, v) -> provisioProperties.put(String.valueOf(k), String.valueOf(v)));
             }
@@ -258,13 +259,13 @@ public class ProvisioTest {
     }
 
     protected void runMavenPrereqs(String name) throws Exception {
-        File prereqSource = new File(basedir, "src/test/runtimes/" + name + "/prereq");
+        File prereqSource = file(basedir, "src/test/runtimes/" + name + "/prereq");
         if (!prereqSource.exists()) {
             return;
         }
-        File prereqTarget = new File(basedir, "target/runtimes/" + name + "-prereq");
+        File prereqTarget = file(basedir, "target/runtimes/" + name + "-prereq");
         FileUtils.copyDirectoryStructure(prereqSource, prereqTarget);
-        File mavenHome = new File(basedir, "target/maven");
+        File mavenHome = file(basedir, "target/maven");
         MavenInstallationProvisioner provisioner = new MavenInstallationProvisioner();
         provisioner.provision("3.3.9", mavenHome);
         MavenRequest request = new MavenRequest()
@@ -279,7 +280,7 @@ public class ProvisioTest {
 
     public static Runtime parseDescriptor(File descriptor) throws Exception {
         RuntimeReader parser = new RuntimeReader(Actions.defaultActionDescriptors(), new HashMap<>());
-        try (InputStream is = new FileInputStream(descriptor)) {
+        try (InputStream is = Files.newInputStream(descriptor.toPath())) {
             return parser.read(is, Map.of("basedir", descriptor.getParentFile().getAbsolutePath()));
         }
     }
@@ -289,7 +290,7 @@ public class ProvisioTest {
     //
     protected void assertDirectoryExists(ProvisioningResult result, String directoryName) {
         File outputDirectory = result.getOutputDirectory();
-        File directory = new File(outputDirectory, directoryName);
+        File directory = file(outputDirectory, directoryName);
         assertTrue(
                 String.format(
                         "We expect to find the directory %s, but it doesn't exist or is not a directory.",
@@ -298,7 +299,7 @@ public class ProvisioTest {
     }
 
     protected void assertDirectoryDoesNotExist(File outputDirectory, String directoryName) {
-        File directory = new File(outputDirectory, directoryName);
+        File directory = file(outputDirectory, directoryName);
         assertFalse(
                 String.format("We expect not to find the directory %s, but it is there.", directoryName),
                 directory.exists() && directory.isDirectory());
@@ -306,7 +307,7 @@ public class ProvisioTest {
 
     protected void assertFileExists(ProvisioningResult result, String fileName) {
         File outputDirectory = result.getOutputDirectory();
-        File file = new File(outputDirectory, fileName);
+        File file = file(outputDirectory, fileName);
         assertTrue(
                 String.format("We expect to find the file %s, but it doesn't exist or is not a file.", fileName),
                 file.exists() && file.isFile());
@@ -314,7 +315,7 @@ public class ProvisioTest {
 
     protected void assertFileDoesntExists(ProvisioningResult result, String fileName) {
         File outputDirectory = result.getOutputDirectory();
-        File file = new File(outputDirectory, fileName);
+        File file = file(outputDirectory, fileName);
         assertFalse(
                 String.format("We don't expect to find the file %s, but it does exist.", fileName),
                 file.exists() && file.isFile());
@@ -328,7 +329,7 @@ public class ProvisioTest {
     }
 
     protected void assertPresenceAndSizeOf(File outputDirectory, String fileName, int size) {
-        File file = new File(outputDirectory, fileName);
+        File file = file(outputDirectory, fileName);
         assertPresenceAndSizeOf(file, size);
     }
 
@@ -344,12 +345,12 @@ public class ProvisioTest {
 
     protected void assertPresenceAndContentOf(File outputDirectory, String fileName, String expectedContent)
             throws IOException {
-        File file = new File(outputDirectory, fileName);
+        File file = file(outputDirectory, fileName);
         assertPresenceAndContentOf(file, expectedContent);
     }
 
     protected void assertFileIsExecutable(File outputDirectory, String fileName) {
-        File file = new File(outputDirectory, fileName);
+        File file = file(outputDirectory, fileName);
         assertTrue(
                 String.format("We expect to find the file %s, but it doesn't exist or is not executable.", fileName),
                 file.exists() && file.isFile() && file.canExecute());
@@ -359,9 +360,9 @@ public class ProvisioTest {
     // Helper methods for tests
     //
     protected Properties properties(ProvisioningResult result, String name) throws IOException {
-        File propertiesFile = new File(result.getOutputDirectory(), name);
+        File propertiesFile = file(result.getOutputDirectory(), name);
         Properties properties = new Properties();
-        try (InputStream is = new FileInputStream(propertiesFile)) {
+        try (InputStream is = Files.newInputStream(propertiesFile.toPath())) {
             properties.load(is);
         }
         return properties;
@@ -372,15 +373,15 @@ public class ProvisioTest {
     }
 
     protected File file(File outputDirectory, String fileName) {
-        return new File(outputDirectory, fileName);
+        return outputDirectory.toPath().resolve(fileName).toFile();
     }
 
     protected final File getOutputDirectory() {
-        return new File(getBasedir(), "target/archives");
+        return file(getBasedir(), "target/archives");
     }
 
     protected final File outputDirectory(String name) throws IOException {
-        File outputDirectory = new File(getBasedir(), "target/runtimes/" + name);
+        File outputDirectory = file(getBasedir(), "target/runtimes/" + name);
         if (outputDirectory.exists()) {
             FileUtils.deleteDirectory(outputDirectory);
         }
@@ -393,23 +394,23 @@ public class ProvisioTest {
     }
 
     protected final File getSourceArchiveDirectory() {
-        return new File(getBasedir(), "src/test/archives");
+        return file(getBasedir(), "src/test/archives");
     }
 
     protected final File getSourceArchive(String name) {
-        return new File(getSourceArchiveDirectory(), name);
+        return file(getSourceArchiveDirectory(), name);
     }
 
     protected final File getSourceFileDirectory() {
-        return new File(getBasedir(), "src/test/files");
+        return file(getBasedir(), "src/test/files");
     }
 
     protected final File getSourceFile(String name) {
-        return new File(getSourceFileDirectory(), name);
+        return file(getSourceFileDirectory(), name);
     }
 
     protected final File getTargetArchive(String name) {
-        File archive = new File(getOutputDirectory(), name);
+        File archive = file(getOutputDirectory(), name);
         if (!archive.getParentFile().exists()) {
             archive.getParentFile().mkdirs();
         }
@@ -417,6 +418,6 @@ public class ProvisioTest {
     }
 
     protected final File runtimeProject(String name) {
-        return new File(getBasedir(), String.format("src/test/runtimes/%s", name));
+        return file(getBasedir(), String.format("src/test/runtimes/%s", name));
     }
 }

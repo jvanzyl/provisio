@@ -86,7 +86,7 @@ public class GeneratorIntegrationTest {
                 .execute("provisio:generateDependencies")
                 .assertErrorFreeLog();
 
-        Model model = readModel(new File(basedir, "generated.xml"));
+        Model model = readModel(basedir.toPath().resolve("generated.xml").toFile());
         List<String> dependencies = flattenDependencies(model.getDependencies());
 
         String[] expected = {"org.scala-lang:scala-library:jar:2.13.6:runtime", "io.trino:trino-spi:jar:356:provided"};

@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +56,7 @@ public class StatProcessor implements UnarchivingEntryProcessor {
         if (delegate != null) {
             result = delegate.targetName(name);
         }
-        Path relative = Paths.get(result);
+        Path relative = Path.of(result);
         if (flatten) {
             relative = relative.getFileName();
         }

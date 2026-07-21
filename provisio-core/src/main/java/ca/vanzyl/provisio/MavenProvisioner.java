@@ -35,16 +35,16 @@ import ca.vanzyl.provisio.model.Resource;
 import ca.vanzyl.provisio.model.ResourceSet;
 import ca.vanzyl.provisio.model.Runtime;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -206,14 +206,15 @@ public class MavenProvisioner {
     private void resolveArtifactSetOutputDirectory(ProvisioningContext context, ArtifactSet artifactSet) {
         ArtifactSet parent = artifactSet.getParent();
         if (parent != null) {
-            artifactSet.setOutputDirectory(new File(parent.getOutputDirectory(), artifactSet.getDirectory()));
+            artifactSet.setOutputDirectory(
+                    ProvisioUtils.resolve(parent.getOutputDirectory(), artifactSet.getDirectory()));
         } else {
             if (artifactSet.getDirectory().equals("root")
                     || artifactSet.getDirectory().equals("/")) {
                 artifactSet.setOutputDirectory(context.getRequest().getOutputDirectory());
             } else {
                 artifactSet.setOutputDirectory(
-                        new File(context.getRequest().getOutputDirectory(), artifactSet.getDirectory()));
+                        ProvisioUtils.resolve(context.getRequest().getOutputDirectory(), artifactSet.getDirectory()));
             }
         }
         if (!artifactSet.getOutputDirectory().exists()) {
@@ -344,7 +345,7 @@ public class MavenProvisioner {
     }
 
     public Set<ProvisioArtifact> resolveArtifact(ProvisioningContext context, ProvisioArtifact artifact) {
-        return resolveArtifacts(context, Collections.singletonList(artifact), new HashSet<>(), new ArrayList<>());
+        return resolveArtifacts(context, List.of(artifact), new HashSet<>(), new ArrayList<>());
     }
 
     private Set<ProvisioArtifact> resolveArtifacts(
@@ -586,11 +587,11 @@ public class MavenProvisioner {
         if (resourceSets != null) {
             for (ResourceSet resourceSet : resourceSets) {
                 for (Resource resource : resourceSet.getResources()) {
-                    File source = new File(resource.getName());
+                    File source = Path.of(resource.getName()).toFile();
                     if (!source.exists()) {
                         throw new RuntimeException(String.format("The specified file %s does not exist.", source));
                     }
-                    File target = new File(context.getRequest().getOutputDirectory(), source.getName());
+                    File target = ProvisioUtils.resolve(context.getRequest().getOutputDirectory(), source.getName());
                     copy(source, target);
                 }
             }
@@ -612,20 +613,22 @@ public class MavenProvisioner {
                 //
                 for (ca.vanzyl.provisio.model.File file : fileSet.getFiles()) {
                     if (file.getTouch() != null) {
-                        File target = new File(
-                                new File(context.getRequest().getOutputDirectory(), fileSet.getDirectory()),
+                        File target = ProvisioUtils.resolve(
+                                ProvisioUtils.resolve(
+                                        context.getRequest().getOutputDirectory(), fileSet.getDirectory()),
                                 file.getTouch());
                         if (!target.getParentFile().exists()) {
                             target.getParentFile().mkdirs();
                         }
                         Files.createFile(target.toPath());
                     } else {
-                        File source = new File(file.getPath());
+                        File source = Path.of(file.getPath()).toFile();
                         if (!source.exists()) {
                             throw new RuntimeException(String.format("The specified file %s does not exist.", source));
                         }
-                        File target = new File(
-                                new File(context.getRequest().getOutputDirectory(), fileSet.getDirectory()),
+                        File target = ProvisioUtils.resolve(
+                                ProvisioUtils.resolve(
+                                        context.getRequest().getOutputDirectory(), fileSet.getDirectory()),
                                 source.getName());
                         copy(source, target);
                     }
@@ -634,8 +637,9 @@ public class MavenProvisioner {
                 // Directories
                 //
                 for (Directory directory : fileSet.getDirectories()) {
-                    File sourceDirectory = new File(directory.getPath());
-                    File targetDirectory = new File(context.getRequest().getOutputDirectory(), fileSet.getDirectory());
+                    File sourceDirectory = Path.of(directory.getPath()).toFile();
+                    File targetDirectory =
+                            ProvisioUtils.resolve(context.getRequest().getOutputDirectory(), fileSet.getDirectory());
                     copyDirectoryStructure(sourceDirectory, targetDirectory, directory, context);
                 }
             }
@@ -660,14 +664,14 @@ public class MavenProvisioner {
         if (directory.isFlatten()) {
             List<File> paths = FileUtils.getFiles(sourceDirectory, includesString, excludesString);
             for (File source : paths) {
-                File target = new File(targetDirectory, source.getName());
+                File target = ProvisioUtils.resolve(targetDirectory, source.getName());
                 copy(source, target, directory, context);
             }
         } else {
             List<String> relativePaths = FileUtils.getFileNames(sourceDirectory, includesString, excludesString, false);
             for (String relativePath : relativePaths) {
-                File source = new File(sourceDirectory, relativePath);
-                File target = new File(targetDirectory, relativePath);
+                File source = ProvisioUtils.resolve(sourceDirectory, relativePath);
+                File target = ProvisioUtils.resolve(targetDirectory, relativePath);
                 copy(source, target, directory, context);
             }
         }
@@ -708,8 +712,8 @@ public class MavenProvisioner {
         if (!target.getParentFile().exists()) {
             target.getParentFile().mkdirs();
         }
-        try (FileInputStream input = new FileInputStream(source);
-                FileOutputStream output = new FileOutputStream(target)) {
+        try (InputStream input = Files.newInputStream(source.toPath());
+                OutputStream output = Files.newOutputStream(target.toPath())) {
             processor.processStream(source.getName(), input, output);
         }
         target.setLastModified(source.lastModified());

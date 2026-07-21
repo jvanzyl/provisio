@@ -11,7 +11,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -58,7 +58,7 @@ public abstract class AbstractArchiveValidator implements ArchiveValidator {
 
     private String toString(Collection<String> strings) {
         List<String> sorted = new ArrayList<>(strings);
-        Collections.sort(sorted);
+        sorted.sort(Comparator.naturalOrder());
         StringBuilder sb = new StringBuilder();
         for (String string : sorted) {
             sb.append(string).append('\n');

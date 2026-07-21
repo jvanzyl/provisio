@@ -40,7 +40,6 @@ import com.thoughtworks.xstream.security.NoTypePermission;
 import com.thoughtworks.xstream.security.NullPermission;
 import com.thoughtworks.xstream.security.PrimitiveTypePermission;
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,11 +51,11 @@ public class RuntimeReader {
     private final Map<String, String> versionMap;
 
     public RuntimeReader() {
-        this(Collections.emptyList(), Collections.emptyMap());
+        this(List.of(), Map.of());
     }
 
     public RuntimeReader(List<ActionDescriptor> actions) {
-        this(actions, Collections.emptyMap());
+        this(actions, Map.of());
     }
 
     public RuntimeReader(List<ActionDescriptor> actions, Map<String, String> versionMap) {

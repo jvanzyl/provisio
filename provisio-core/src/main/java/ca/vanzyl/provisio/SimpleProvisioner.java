@@ -17,9 +17,10 @@ package ca.vanzyl.provisio;
 
 import ca.vanzyl.provisio.archive.UnArchiver;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import okhttp3.OkHttpClient;
@@ -30,7 +31,8 @@ import okhttp3.ResponseBody;
 public abstract class SimpleProvisioner {
 
     public static final String DEFAULT_REMOTE_REPO = "https://repo1.maven.org/maven2";
-    public static final File DEFAULT_LOCAL_REPO = new File(System.getProperty("user.home"), ".m2/repository");
+    public static final File DEFAULT_LOCAL_REPO =
+            Path.of(System.getProperty("user.home"), ".m2/repository").toFile();
 
     protected final UnArchiver unarchiver;
     protected final File localRepository;
@@ -64,7 +66,7 @@ public abstract class SimpleProvisioner {
 
     protected File resolveFromServer(String archiveUrl, String coordinate) throws IOException {
         String path = coordinateToPath(coordinate);
-        File file = new File(localRepository, path);
+        File file = localRepository.toPath().resolve(path).toFile();
         if (file.exists()) {
             return file;
         }
@@ -77,7 +79,7 @@ public abstract class SimpleProvisioner {
         if (!response.isSuccessful()) {
             throw new IOException("Unexpected code " + response);
         }
-        try (OutputStream os = new FileOutputStream(file);
+        try (OutputStream os = Files.newOutputStream(file.toPath());
                 ResponseBody body = response.body()) {
             body.byteStream().transferTo(os);
         }

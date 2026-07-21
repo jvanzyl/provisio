@@ -28,7 +28,7 @@ public class MavenInstallationProvisioner extends SimpleProvisioner {
             throw new IllegalArgumentException("Maven version not specified");
         }
 
-        File mvn = new File(installDirectory, "bin/mvn");
+        File mvn = installDirectory.toPath().resolve("bin/mvn").toFile();
         // If we're working with snapshot versions re-provision
         if (mvn.exists() && !mavenVersion.contains("SNAPSHOT")) {
             return installDirectory;

@@ -28,6 +28,7 @@
  */
 package ca.vanzyl.provisio.action.runtime;
 
+import ca.vanzyl.provisio.ProvisioUtils;
 import ca.vanzyl.provisio.model.ProvisioningAction;
 import ca.vanzyl.provisio.model.ProvisioningContext;
 import java.io.File;
@@ -38,7 +39,7 @@ public class MakeDirectoryAction implements ProvisioningAction {
     private String name;
 
     public void execute(ProvisioningContext context) {
-        File directoryToMake = new File(runtimeDirectory, name);
+        File directoryToMake = ProvisioUtils.resolve(runtimeDirectory, name);
         if (!directoryToMake.exists()) {
             if (!directoryToMake.mkdirs()) {
                 throw new RuntimeException(String.format("Unable to create the directory %s", directoryToMake));

@@ -18,6 +18,7 @@ package ca.vanzyl.provisio.action.artifact;
 import static ca.vanzyl.provisio.ProvisioUtils.targetArtifactFileName;
 import static java.util.Objects.requireNonNull;
 
+import ca.vanzyl.provisio.ProvisioUtils;
 import ca.vanzyl.provisio.ProvisioVariables;
 import ca.vanzyl.provisio.ProvisioningException;
 import ca.vanzyl.provisio.model.ProvisioArtifact;
@@ -25,7 +26,6 @@ import ca.vanzyl.provisio.model.ProvisioningAction;
 import ca.vanzyl.provisio.model.ProvisioningContext;
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import javax.inject.Named;
@@ -57,7 +57,7 @@ public class WriteToDiskAction implements ProvisioningAction {
     }
 
     private void write(ProvisioningContext context, ProvisioArtifact source, String targetPath) {
-        File target = new File(outputDirectory, targetPath).getAbsoluteFile();
+        File target = ProvisioUtils.resolve(outputDirectory, targetPath).getAbsoluteFile();
         if (!target.toPath().startsWith(outputDirectory.toPath())) {
             throw new IllegalArgumentException(
                     "Bad mapping of artifact " + source + "; would escape output directory: " + target);
@@ -73,8 +73,8 @@ public class WriteToDiskAction implements ProvisioningAction {
             }
             Files.createDirectories(target.getParentFile().toPath());
             try (CachingOutputStream outputStream = new CachingOutputStream(target.toPath());
-                    BufferedInputStream inputStream =
-                            new BufferedInputStream(new FileInputStream(artifact.getFile()))) {
+                    BufferedInputStream inputStream = new BufferedInputStream(
+                            Files.newInputStream(artifact.getFile().toPath()))) {
                 inputStream.transferTo(outputStream);
                 outputStream.close();
                 if (outputStream.isModified()) {

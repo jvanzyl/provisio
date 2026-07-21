@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
@@ -103,8 +102,7 @@ public class UnpackActionTest {
         Path first = zip("allowed-first.zip", entries("file.txt", "first"));
         Path second = zip("allowed-second.zip", entries("file.txt", "second"));
         Path output = temporary.newFolder("allowed-conflict-output").toPath();
-        ProvisioningContext context =
-                context(output, Collections.singletonMap(ProvisioVariables.ALLOW_TARGET_OVERWRITE, "true"));
+        ProvisioningContext context = context(output, Map.of(ProvisioVariables.ALLOW_TARGET_OVERWRITE, "true"));
 
         action(first, output).execute(context);
         action(second, output).execute(context);

@@ -40,6 +40,7 @@ import ca.vanzyl.provisio.model.ProvisioArchive;
 import ca.vanzyl.provisio.model.ProvisioningAction;
 import ca.vanzyl.provisio.model.ProvisioningContext;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -89,7 +90,8 @@ public class ArchiveAction implements ProvisioningAction {
                 .hardLinkExcludes(split(hardLinkExcludes))
                 .build();
         try {
-            File archive = new File(runtimeDirectory, "../" + name).getCanonicalFile();
+            File archive =
+                    runtimeDirectory.toPath().resolve("../" + name).toFile().getCanonicalFile();
             archiver.archive(archive.toPath(), sources.toArray(new SourceSpec[0]));
             //
             // Right now this action has some special meaning it maybe shouldn't, but we need to know what archives are
@@ -113,7 +115,7 @@ public class ArchiveAction implements ProvisioningAction {
             //
             if (materializedRuntime && hardLinkIncludes != null) {
                 UnArchiver unArchiver = UnArchiver.builder().useRoot(false).build();
-                unArchiver.unarchive(archive.toPath(), new File(runtimeDirectory + "-hardlinks").toPath());
+                unArchiver.unarchive(archive.toPath(), Path.of(runtimeDirectory + "-hardlinks"));
             }
 
         } catch (Exception e) {

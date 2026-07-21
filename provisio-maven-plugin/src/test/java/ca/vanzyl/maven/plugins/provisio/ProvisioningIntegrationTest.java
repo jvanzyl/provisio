@@ -49,11 +49,12 @@ public class ProvisioningIntegrationTest {
                 .execute("provisio:provision")
                 .assertErrorFreeLog();
 
-        File libdir = new File(basedir, "target/test-1.0/lib");
-        assertTrue("guice exists", new File(libdir, "guice-7.0.0.jar").isFile());
-        assertTrue("guava exists", new File(libdir, "guava-31.0.1-jre.jar").isFile());
-        assertFalse("slf4j-api not exists", new File(libdir, "slf4j-api-2.0.11.jar").isFile());
-        assertTrue("slf4j-simple exists", new File(libdir, "slf4j-simple-2.0.11.jar").isFile());
+        File libdir = file(basedir, "target/test-1.0/lib");
+        assertTrue("guice exists", file(libdir, "guice-7.0.0.jar").isFile());
+        assertTrue("guava exists", file(libdir, "guava-31.0.1-jre.jar").isFile());
+        assertFalse("slf4j-api not exists", file(libdir, "slf4j-api-2.0.11.jar").isFile());
+        assertTrue(
+                "slf4j-simple exists", file(libdir, "slf4j-simple-2.0.11.jar").isFile());
     }
 
     @Test
@@ -74,12 +75,18 @@ public class ProvisioningIntegrationTest {
                 .execute("provisio:provision")
                 .assertErrorFreeLog();
 
-        File libdir = new File(basedir, "target/test-1.0/lib");
+        File libdir = file(basedir, "target/test-1.0/lib");
         assertTrue(
                 "io.opentelemetry:opentelemetry-semconv exists",
-                new File(libdir, "io.opentelemetry_opentelemetry-semconv-1.27.0-alpha.jar").isFile());
+                file(libdir, "io.opentelemetry_opentelemetry-semconv-1.27.0-alpha.jar")
+                        .isFile());
         assertTrue(
                 "io.opentelemetry.semconv:opentelemetry-semconv exists too",
-                new File(libdir, "io.opentelemetry.semconv_opentelemetry-semconv-1.27.0-alpha.jar").isFile());
+                file(libdir, "io.opentelemetry.semconv_opentelemetry-semconv-1.27.0-alpha.jar")
+                        .isFile());
+    }
+
+    private static File file(File directory, String name) {
+        return directory.toPath().resolve(name).toFile();
     }
 }

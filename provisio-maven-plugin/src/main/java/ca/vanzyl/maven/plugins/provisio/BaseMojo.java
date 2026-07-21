@@ -23,7 +23,6 @@ import io.takari.incrementalbuild.Incremental;
 import io.takari.incrementalbuild.Incremental.Configuration;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -130,7 +129,7 @@ public abstract class BaseMojo extends AbstractMojo {
                 .map(d -> RepositoryUtils.toDependency(d, repositorySystemSession.getArtifactTypeRegistry()))
                 .filter(d -> !JavaScopes.TEST.equals(d.getScope()))
                 .collect(Collectors.toList());
-        List<org.eclipse.aether.graph.Dependency> managedDependencies = Collections.emptyList();
+        List<org.eclipse.aether.graph.Dependency> managedDependencies = List.of();
         if (project.getDependencyManagement() != null) {
             managedDependencies = project.getDependencyManagement().getDependencies().stream()
                     .map(d -> RepositoryUtils.toDependency(d, repositorySystemSession.getArtifactTypeRegistry()))
