@@ -9,6 +9,7 @@ A Maven-based provisioning mechanism and replacement for the maven-assembly-plug
 - [Support for building runtimes, like the maven-assembly-plugin, that are aware of their dependencies in a multi-module build](#feature0)
 - [Support for hardlinking in TAR archives with corresponding support for dereferencing hardlinks when unpacking archives](#feature1)
 - [Archive-only streaming assemblies](docs/streaming-assemblies.md)
+- [Streaming assembly release summary](docs/streaming-release-summary.md)
 - [Trino packaging performance-test design](docs/trino-performance-test.md)
 - [Support for excluding artifacts while resolving a specific artifact](#feature2)
 - [Support for globally excluding artifacts while transitively resolving artifacts](#feature3)
