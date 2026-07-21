@@ -245,6 +245,46 @@ public class MavenProvisionerStreamingTest {
     }
 
     @Test
+    public void zipEntryLinksToEarlierLooseArtifactAcrossIdentityMetadata() throws Exception {
+        Path workspace = temporary.newFolder("loose-before-zip").toPath();
+        Path loose = write(workspace.resolve("shared.jar"), "shared");
+        Path plugin = zip(workspace.resolve("plugin.zip"), entries("root/shared-copy.jar", "shared"));
+        Path output = workspace.resolve("target/distribution");
+        Runtime runtime = runtimeWithArchive(true);
+        runtime.addArtifactSet(looseArtifactSet("lib", "test:shared:jar:1", loose));
+        runtime.addArtifactSet(artifactSet("plugin/example", "test:plugin:zip:1", plugin));
+
+        provisioner()
+                .provision(
+                        new ProvisioningRequest().setRuntimeDescriptor(runtime).setOutputDirectory(output.toFile()));
+
+        Map<String, TarArchiveEntry> entries = entries(workspace.resolve("target/distribution.tar.gz"));
+        TarArchiveEntry duplicate = entries.get("distribution/plugin/example/shared-copy.jar");
+        assertTrue(duplicate.isLink());
+        assertEquals("distribution/lib/shared.jar", duplicate.getLinkName());
+    }
+
+    @Test
+    public void looseArtifactLinksToEarlierZipEntryAcrossIdentityMetadata() throws Exception {
+        Path workspace = temporary.newFolder("zip-before-loose").toPath();
+        Path plugin = zip(workspace.resolve("plugin.zip"), entries("root/shared.jar", "shared"));
+        Path loose = write(workspace.resolve("shared-copy.jar"), "shared");
+        Path output = workspace.resolve("target/distribution");
+        Runtime runtime = runtimeWithArchive(true);
+        runtime.addArtifactSet(artifactSet("plugin/example", "test:plugin:zip:1", plugin));
+        runtime.addArtifactSet(looseArtifactSet("lib", "test:shared:jar:1", loose));
+
+        provisioner()
+                .provision(
+                        new ProvisioningRequest().setRuntimeDescriptor(runtime).setOutputDirectory(output.toFile()));
+
+        Map<String, TarArchiveEntry> entries = entries(workspace.resolve("target/distribution.tar.gz"));
+        TarArchiveEntry duplicate = entries.get("distribution/lib/shared-copy.jar");
+        assertTrue(duplicate.isLink());
+        assertEquals("distribution/plugin/example/shared.jar", duplicate.getLinkName());
+    }
+
+    @Test
     public void sameSizeZipEntriesWithDifferentCrc32RemainIndependentFiles() throws Exception {
         Path workspace = temporary.newFolder("different-crc").toPath();
         Path first = zip(workspace.resolve("first.zip"), entries("root/first.jar", "first!"));

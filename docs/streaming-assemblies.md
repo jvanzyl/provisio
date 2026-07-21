@@ -90,11 +90,14 @@ read, decompression, and SHA-256 work in large distributions. This mode must not
 be treated as a security or authenticity check.
 
 When a source does not provide usable size and CRC32 metadata, the archiver
-falls back to verified SHA-256 identity. Loose files therefore remain
-content-verified before becoming hard links. ZIP payloads that are actually
-read are checked against their declared size and CRC32; a duplicate skipped
-solely because its metadata matches is deliberately trusted rather than
-independently validated.
+reads it once and calculates both CRC32 and SHA-256 while writing or spooling
+the entry. This allows loose files and TAR entries to share hard-link targets
+with ZIP entries instead of partitioning identity by source type. SHA-256 still
+distinguishes candidates when neither side supplied CRC32; a match against a
+source-reported CRC32 deliberately uses the selected CRC32 trust policy. ZIP
+payloads that are read are checked against their declared size and CRC32; a
+duplicate skipped solely because its metadata matches is deliberately trusted
+rather than independently validated.
 
 ## Failure and resource guarantees
 
