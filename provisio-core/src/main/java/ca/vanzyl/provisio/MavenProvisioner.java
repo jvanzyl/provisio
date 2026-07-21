@@ -96,15 +96,23 @@ public class MavenProvisioner {
         ProvisioningContext context = new ProvisioningContext(request, result);
 
         ArchiveAction streamingArchive = streamingArchive(context);
-        if (streamingArchive != null && ArchiveAssemblyPlan.isStructurallyEligible(context, streamingArchive)) {
-            resolveArtifactSetsForStreaming(context);
-            ArchiveAssemblyPlan plan = ArchiveAssemblyPlan.create(context, streamingArchive);
-            if (plan != null) {
-                configureArtifactSetAction(streamingArchive, request.getOutputDirectory());
-                streamingArchive.execute(context, plan.sources());
-                logCompletion(now, context, result);
-                return result;
+        if (streamingArchive != null) {
+            String fallbackReason = ArchiveAssemblyPlan.structuralFallbackReason(context, streamingArchive);
+            if (fallbackReason == null) {
+                resolveArtifactSetsForStreaming(context);
+                ArchiveAssemblyPlan plan = ArchiveAssemblyPlan.create(context, streamingArchive);
+                if (plan.isSupported()) {
+                    configureArtifactSetAction(streamingArchive, request.getOutputDirectory());
+                    streamingArchive.execute(context, plan.sources());
+                    logCompletion(now, context, result);
+                    return result;
+                }
+                fallbackReason = plan.fallbackReason();
             }
+            logger.info(
+                    "Streaming archive {} is using staged assembly because {}",
+                    streamingArchive.getName(),
+                    fallbackReason);
         }
 
         processArtifactSets(context);

@@ -39,12 +39,17 @@ import java.util.List;
 final class ArchiveAssemblyPlan {
 
     private final List<SourceSpec> sources = new ArrayList<>();
+    private String fallbackReason;
 
-    static boolean isStructurallyEligible(ProvisioningContext context, ArchiveAction archive) {
+    static String structuralFallbackReason(ProvisioningContext context, ArchiveAction archive) {
         Runtime runtime = context.getRequest().getRuntime();
-        return runtime.getActions().size() == 1
-                && runtime.getActions().get(0) == archive
-                && !ProvisioVariables.allowTargetOverwrite(context);
+        if (runtime.getActions().size() != 1 || runtime.getActions().get(0) != archive) {
+            return "the streaming archive must be the only runtime action";
+        }
+        if (ProvisioVariables.allowTargetOverwrite(context)) {
+            return ProvisioVariables.ALLOW_TARGET_OVERWRITE + " requires staged last-writer semantics";
+        }
+        return null;
     }
 
     static ArchiveAssemblyPlan create(ProvisioningContext context, ArchiveAction archive) throws IOException {
@@ -54,13 +59,21 @@ final class ArchiveAssemblyPlan {
                 : "";
         for (ArtifactSet artifactSet : context.getRequest().getRuntimeModel().getArtifactSets()) {
             if (!plan.addArtifactSet(context, artifactSet, root)) {
-                return null;
+                return plan;
             }
         }
         if (!plan.addResourceSets(context, root) || !plan.addFileSets(context, root)) {
-            return null;
+            return plan;
         }
         return plan;
+    }
+
+    boolean isSupported() {
+        return fallbackReason == null;
+    }
+
+    String fallbackReason() {
+        return fallbackReason;
     }
 
     List<SourceSpec> sources() {
@@ -87,7 +100,7 @@ final class ArchiveAssemblyPlan {
     private boolean addArtifact(ProvisioningContext context, ProvisioArtifact artifact, String destination) {
         Path file = artifact.getPath();
         if (file == null) {
-            return false;
+            return fallback("artifact " + artifact + " has no resolved file");
         }
         List<ProvisioningAction> actions = artifact.getActions();
         if (actions == null) {
@@ -103,7 +116,7 @@ final class ArchiveAssemblyPlan {
                 return true;
             }
         }
-        return false;
+        return fallback("artifact " + artifact + " uses actions that require staged materialization");
     }
 
     private boolean addResourceSets(ProvisioningContext context, String root) {
@@ -125,7 +138,7 @@ final class ArchiveAssemblyPlan {
             String destination = join(root, normalize(fileSet.getDirectory(), true));
             for (ca.vanzyl.provisio.model.File file : fileSet.getFiles()) {
                 if (file.getTouch() != null) {
-                    return false;
+                    return fallback("touch file " + file.getTouch() + " requires staged materialization");
                 }
                 Path source = Path.of(file.getPath());
                 sources.add(SourceSpec.of(Sources.file(
@@ -133,11 +146,11 @@ final class ArchiveAssemblyPlan {
             }
             for (Directory directory : fileSet.getDirectories()) {
                 if (directory.isFiltering() || directory.isMustache()) {
-                    return false;
+                    return fallback("directory " + directory.getPath() + " uses content filtering");
                 }
                 SelectedDirectorySource source = SelectedDirectorySource.create(directory);
                 if (source == null) {
-                    return false;
+                    return fallback("flattened directory " + directory.getPath() + " has colliding file names");
                 }
                 SourceSpec.Builder sourceSpec = SourceSpec.builder(source).flatten(directory.isFlatten());
                 if (!destination.isEmpty()) {
@@ -147,6 +160,11 @@ final class ArchiveAssemblyPlan {
             }
         }
         return true;
+    }
+
+    private boolean fallback(String reason) {
+        fallbackReason = reason;
+        return false;
     }
 
     private String artifactOrder(ProvisioningContext context, ProvisioArtifact artifact) {
