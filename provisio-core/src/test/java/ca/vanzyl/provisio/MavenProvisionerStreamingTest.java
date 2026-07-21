@@ -28,6 +28,8 @@ import ca.vanzyl.provisio.model.ProvisioArtifact;
 import ca.vanzyl.provisio.model.ProvisioningRequest;
 import ca.vanzyl.provisio.model.ProvisioningResult;
 import ca.vanzyl.provisio.model.Runtime;
+import ca.vanzyl.provisio.model.io.RuntimeReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Proxy;
@@ -101,6 +103,61 @@ public class MavenProvisionerStreamingTest {
                 Files.readAllBytes(workspace.resolve("repeat/distribution.tar.gz")));
     }
 
+    @Test
+    public void streamsSelectedDirectoriesLooseFilesAndResourcesFromTheDescriptor() throws Exception {
+        Path workspace = temporary.newFolder("file-sets").toPath();
+        Path directory = workspace.resolve("source-directory");
+        write(directory.resolve("config/app.properties"), "property=true");
+        write(directory.resolve("config/ignored.txt"), "ignored");
+        Path loose = write(workspace.resolve("loose.txt"), "loose");
+        Path notice = write(workspace.resolve("NOTICE"), "notice");
+        Path output = workspace.resolve("target/files-runtime");
+        String descriptor = "<runtime>"
+                + "<archive name=\"files-runtime.tar.gz\" streaming=\"true\"/>"
+                + "<resourceSet><resource name=\"" + notice + "\"/></resourceSet>"
+                + "<fileSet to=\"etc\"><file path=\"" + loose + "\"/>"
+                + "<directory path=\"" + directory + "\"><include>**/*.properties</include></directory>"
+                + "</fileSet></runtime>";
+        Runtime runtime = readRuntime(descriptor);
+        assertTrue(((ArchiveAction) runtime.getActions().get(0)).isStreaming());
+        ProvisioningRequest request =
+                new ProvisioningRequest().setRuntimeDescriptor(runtime).setOutputDirectory(output.toFile());
+
+        provisioner().provision(request);
+
+        assertFalse(Files.exists(output));
+        Path extracted = workspace.resolve("extracted");
+        extract(workspace.resolve("target/files-runtime.tar.gz"), extracted);
+        assertEquals("notice", Files.readString(extracted.resolve("NOTICE")));
+        assertEquals("loose", Files.readString(extracted.resolve("etc/loose.txt")));
+        assertEquals("property=true", Files.readString(extracted.resolve("etc/config/app.properties")));
+        assertFalse(Files.exists(extracted.resolve("etc/config/ignored.txt")));
+    }
+
+    @Test
+    public void transformingFileSetFallsBackToMaterializedAssembly() throws Exception {
+        Path workspace = temporary.newFolder("filter-fallback").toPath();
+        Path directory = workspace.resolve("templates");
+        write(directory.resolve("configuration.txt"), "value=${value}");
+        Path output = workspace.resolve("target/fallback-runtime");
+        String descriptor = "<runtime>"
+                + "<archive name=\"fallback-runtime.tar.gz\" streaming=\"true\"/>"
+                + "<fileSet to=\"etc\"><directory path=\"" + directory + "\" filtering=\"true\"/>"
+                + "</fileSet></runtime>";
+        ProvisioningRequest request = new ProvisioningRequest()
+                .setRuntimeDescriptor(readRuntime(descriptor))
+                .setOutputDirectory(output.toFile());
+        request.setVariables(Collections.singletonMap("value", "filtered"));
+
+        provisioner().provision(request);
+
+        assertTrue(Files.isDirectory(output));
+        assertEquals("value=filtered", Files.readString(output.resolve("etc/configuration.txt")));
+        Path extracted = workspace.resolve("extracted");
+        extract(workspace.resolve("target/fallback-runtime.tar.gz"), extracted);
+        assertEquals("value=filtered", Files.readString(extracted.resolve("etc/configuration.txt")));
+    }
+
     private ProvisioningResult provision(Path output, Path first, Path second, boolean streaming) throws Exception {
         Runtime runtime = new Runtime();
         runtime.addArtifactSet(artifactSet("plugin/first", "test:first:zip:1", first));
@@ -141,6 +198,17 @@ public class MavenProvisionerStreamingTest {
                     throw new UnsupportedOperationException(method.getName());
                 });
         return new MavenProvisioner(repositorySystem, null, Collections.emptyList());
+    }
+
+    private Runtime readRuntime(String descriptor) throws IOException {
+        RuntimeReader reader = new RuntimeReader(Actions.defaultActionDescriptors());
+        return reader.read(new ByteArrayInputStream(descriptor.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    private Path write(Path file, String content) throws IOException {
+        Files.createDirectories(file.getParent());
+        Files.writeString(file, content);
+        return file;
     }
 
     private Path zip(Path archive, Map<String, String> values) throws IOException {

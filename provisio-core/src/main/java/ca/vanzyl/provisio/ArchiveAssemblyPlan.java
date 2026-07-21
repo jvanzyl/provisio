@@ -22,10 +22,15 @@ import ca.vanzyl.provisio.action.runtime.ArchiveAction;
 import ca.vanzyl.provisio.archive.SourceSpec;
 import ca.vanzyl.provisio.archive.Sources;
 import ca.vanzyl.provisio.model.ArtifactSet;
+import ca.vanzyl.provisio.model.Directory;
+import ca.vanzyl.provisio.model.FileSet;
 import ca.vanzyl.provisio.model.ProvisioArtifact;
 import ca.vanzyl.provisio.model.ProvisioningAction;
 import ca.vanzyl.provisio.model.ProvisioningContext;
+import ca.vanzyl.provisio.model.Resource;
+import ca.vanzyl.provisio.model.ResourceSet;
 import ca.vanzyl.provisio.model.Runtime;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -39,12 +44,10 @@ final class ArchiveAssemblyPlan {
         Runtime runtime = context.getRequest().getRuntime();
         return runtime.getActions().size() == 1
                 && runtime.getActions().get(0) == archive
-                && runtime.getResourceSets().isEmpty()
-                && runtime.getFileSets().isEmpty()
                 && !ProvisioVariables.allowTargetOverwrite(context);
     }
 
-    static ArchiveAssemblyPlan create(ProvisioningContext context, ArchiveAction archive) {
+    static ArchiveAssemblyPlan create(ProvisioningContext context, ArchiveAction archive) throws IOException {
         ArchiveAssemblyPlan plan = new ArchiveAssemblyPlan();
         String root = archive.isUseRoot()
                 ? normalize(context.getRequest().getOutputDirectory().getName(), false)
@@ -53,6 +56,9 @@ final class ArchiveAssemblyPlan {
             if (!plan.addArtifactSet(context, artifactSet, root)) {
                 return null;
             }
+        }
+        if (!plan.addResourceSets(context, root) || !plan.addFileSets(context, root)) {
+            return null;
         }
         return plan;
     }
@@ -98,6 +104,49 @@ final class ArchiveAssemblyPlan {
             }
         }
         return false;
+    }
+
+    private boolean addResourceSets(ProvisioningContext context, String root) {
+        for (ResourceSet resourceSet : context.getRequest().getRuntime().getResourceSets()) {
+            if (resourceSet.getResources() == null) {
+                continue;
+            }
+            for (Resource resource : resourceSet.getResources()) {
+                Path file = Path.of(resource.getName());
+                sources.add(SourceSpec.of(
+                        Sources.file(join(root, normalize(file.getFileName().toString(), false)), file)));
+            }
+        }
+        return true;
+    }
+
+    private boolean addFileSets(ProvisioningContext context, String root) throws IOException {
+        for (FileSet fileSet : context.getRequest().getRuntime().getFileSets()) {
+            String destination = join(root, normalize(fileSet.getDirectory(), true));
+            for (ca.vanzyl.provisio.model.File file : fileSet.getFiles()) {
+                if (file.getTouch() != null) {
+                    return false;
+                }
+                Path source = Path.of(file.getPath());
+                sources.add(SourceSpec.of(Sources.file(
+                        join(destination, normalize(source.getFileName().toString(), false)), source)));
+            }
+            for (Directory directory : fileSet.getDirectories()) {
+                if (directory.isFiltering() || directory.isMustache()) {
+                    return false;
+                }
+                SelectedDirectorySource source = SelectedDirectorySource.create(directory);
+                if (source == null) {
+                    return false;
+                }
+                SourceSpec.Builder sourceSpec = SourceSpec.builder(source).flatten(directory.isFlatten());
+                if (!destination.isEmpty()) {
+                    sourceSpec.destinationPrefix(destination);
+                }
+                sources.add(sourceSpec.build());
+            }
+        }
+        return true;
     }
 
     private String artifactOrder(ProvisioningContext context, ProvisioArtifact artifact) {
