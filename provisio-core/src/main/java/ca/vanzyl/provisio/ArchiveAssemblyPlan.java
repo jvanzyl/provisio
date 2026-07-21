@@ -112,7 +112,7 @@ final class ArchiveAssemblyPlan {
         if (actions.size() == 1 && actions.get(0) instanceof UnpackAction) {
             UnpackAction unpack = (UnpackAction) actions.get(0);
             if (unpack.supportsStreaming()) {
-                sources.add(unpack.streamingSource(file, destination));
+                sources.add(unpack.streamingSource(file, destination, context.getVariables()));
                 return true;
             }
         }

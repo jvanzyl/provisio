@@ -25,7 +25,8 @@ result.
 A direct streaming assembly can contain:
 
 - resolved artifacts copied as loose files;
-- artifacts with exactly one non-transforming `unpack` action;
+- artifacts with exactly one `unpack` action, including standard filtering or
+  Mustache transformation;
 - ZIP-compatible inputs (`.zip`, `.jar`, `.war`, `.hpi`, and `.jpi`);
 - gzip-compressed TAR inputs (`.tar.gz` and `.tgz`), including safe symbolic
   and hard links;
@@ -44,7 +45,7 @@ Requesting streaming is an optimization request, not a change to the meaning of
 an existing descriptor. Provisio logs the concrete reason and uses the staged
 path when an assembly needs behavior that cannot yet be performed directly:
 
-- filtering or Mustache transformation;
+- filtering or Mustache transformation on a file-set directory;
 - hard-link dereferencing while unpacking;
 - multiple or otherwise unsupported artifact actions;
 - touch files;
@@ -101,7 +102,9 @@ The destination archive is written to a temporary sibling and moved into place
 only after every source, output entry, compression worker, and trailer completes
 successfully. A failed assembly preserves an existing destination and removes
 its partial temporary output. Direct source-order assembly does not create an
-entry-content sorting spool or an exploded runtime tree.
+entry-content sorting spool or an exploded runtime tree. Standard filtering and
+Mustache transformation use one bounded temporary file for the entry currently
+being transformed; it is removed before the source advances to the next entry.
 
 ## Future simplification
 

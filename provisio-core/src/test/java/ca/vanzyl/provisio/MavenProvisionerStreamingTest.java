@@ -159,9 +159,11 @@ public class MavenProvisionerStreamingTest {
     }
 
     @Test
-    public void transformingArtifactFallsBackToMaterializedAssembly() throws Exception {
-        Path workspace = temporary.newFolder("artifact-filter-fallback").toPath();
-        Path input = zip(workspace.resolve("input.zip"), entries("root/configuration.txt", "value=${value}"));
+    public void streamsFilteredTarArtifactWithoutMaterializingAssembly() throws Exception {
+        Path workspace = temporary.newFolder("artifact-filter-stream").toPath();
+        Path input = tarGz(
+                workspace.resolve("launcher-properties.tar.gz"),
+                entries("root/etc/launcher.properties", "node.environment=${environment}"));
         Path output = workspace.resolve("target/distribution");
         Runtime runtime = runtimeWithArchive(true);
         ArtifactSet artifactSet = artifactSet("etc", "test:filtered:zip:1", input);
@@ -169,12 +171,37 @@ public class MavenProvisionerStreamingTest {
         runtime.addArtifactSet(artifactSet);
         ProvisioningRequest request =
                 new ProvisioningRequest().setRuntimeDescriptor(runtime).setOutputDirectory(output.toFile());
-        request.setVariables(Collections.singletonMap("value", "filtered"));
+        request.setVariables(Collections.singletonMap("environment", "testing"));
 
         provisioner().provision(request);
 
-        assertTrue(Files.isDirectory(output));
-        assertEquals("value=filtered", Files.readString(output.resolve("etc/configuration.txt")));
+        assertFalse(Files.exists(output));
+        Path extracted = workspace.resolve("extracted");
+        extract(workspace.resolve("target/distribution.tar.gz"), extracted);
+        assertEquals("node.environment=testing", Files.readString(extracted.resolve("etc/etc/launcher.properties")));
+    }
+
+    @Test
+    public void streamsMustacheFilteredArtifactWithoutMaterializingAssembly() throws Exception {
+        Path workspace = temporary.newFolder("artifact-mustache-stream").toPath();
+        Path input = zip(
+                workspace.resolve("input.zip"),
+                entries("root/configuration.txt", "value={{value}};{{#enabled}}enabled{{/enabled}}"));
+        Path output = workspace.resolve("target/distribution");
+        Runtime runtime = runtimeWithArchive(true);
+        ArtifactSet artifactSet = artifactSet("etc", "test:mustache:zip:1", input);
+        ((UnpackAction) artifactSet.getArtifacts().get(0).getActions().get(0)).setMustache(true);
+        runtime.addArtifactSet(artifactSet);
+        ProvisioningRequest request =
+                new ProvisioningRequest().setRuntimeDescriptor(runtime).setOutputDirectory(output.toFile());
+        request.setVariables(entries("value", "filtered", "enabled", "true"));
+
+        provisioner().provision(request);
+
+        assertFalse(Files.exists(output));
+        Path extracted = workspace.resolve("extracted");
+        extract(workspace.resolve("target/distribution.tar.gz"), extracted);
+        assertEquals("value=filtered;enabled", Files.readString(extracted.resolve("etc/configuration.txt")));
     }
 
     @Test
@@ -551,6 +578,18 @@ public class MavenProvisionerStreamingTest {
             hardLink.setLinkName("root/lib/original.jar");
             tar.putArchiveEntry(hardLink);
             tar.closeArchiveEntry();
+        }
+        return archive;
+    }
+
+    private Path tarGz(Path archive, Map<String, String> values) throws IOException {
+        Files.createDirectories(archive.getParent());
+        try (OutputStream file = Files.newOutputStream(archive);
+                GzipCompressorOutputStream gzip = new GzipCompressorOutputStream(file);
+                TarArchiveOutputStream tar = new TarArchiveOutputStream(gzip)) {
+            for (Map.Entry<String, String> value : values.entrySet()) {
+                tarFile(tar, value.getKey(), value.getValue());
+            }
         }
         return archive;
     }

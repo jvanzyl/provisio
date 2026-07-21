@@ -18,16 +18,20 @@ package ca.vanzyl.provisio.action.artifact;
 import ca.vanzyl.provisio.action.artifact.filter.MustacheFilteringProcessor;
 import ca.vanzyl.provisio.action.artifact.filter.StandardFilteringProcessor;
 import ca.vanzyl.provisio.action.artifact.filter.StatProcessor;
+import ca.vanzyl.provisio.archive.Source;
 import ca.vanzyl.provisio.archive.SourceSpec;
 import ca.vanzyl.provisio.archive.Sources;
 import ca.vanzyl.provisio.archive.UnArchiver;
+import ca.vanzyl.provisio.archive.UnarchivingEntryProcessor;
 import ca.vanzyl.provisio.model.ProvisioArtifact;
 import ca.vanzyl.provisio.model.ProvisioningAction;
 import ca.vanzyl.provisio.model.ProvisioningContext;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Map;
 import javax.inject.Named;
+import org.codehaus.plexus.util.SelectorUtils;
 import org.codehaus.plexus.util.StringUtils;
 
 /**
@@ -175,21 +179,51 @@ public class UnpackAction implements ProvisioningAction {
     }
 
     public boolean supportsStreaming() {
-        return !filter && !mustache && !dereferenceHardlinks;
+        return !dereferenceHardlinks;
     }
 
-    public SourceSpec streamingSource(Path archive, String destinationPrefix) {
+    public SourceSpec streamingSource(Path archive, String destinationPrefix, Map<String, String> variables) {
         if (!supportsStreaming()) {
-            throw new IllegalStateException("Filtering and hard-link dereferencing require staged extraction");
+            throw new IllegalStateException("Hard-link dereferencing requires staged extraction");
         }
-        SourceSpec.Builder source = SourceSpec.builder(Sources.archive(archive))
-                .includes(split(includes))
-                .excludes(split(excludes))
+        String[] includes = split(this.includes);
+        String[] excludes = split(this.excludes);
+        Source archiveSource = Sources.archive(archive);
+        UnarchivingEntryProcessor processor = null;
+        if (filter) {
+            processor = new StandardFilteringProcessor(variables);
+        } else if (mustache) {
+            processor = new MustacheFilteringProcessor(variables);
+        }
+        if (processor != null) {
+            archiveSource = new TransformingSource(
+                    archiveSource, processor, name -> isSelected(name, includes, excludes), null);
+        }
+        SourceSpec.Builder source = SourceSpec.builder(archiveSource)
+                .includes(includes)
+                .excludes(excludes)
                 .useRoot(useRoot)
                 .flatten(flatten);
         if (destinationPrefix != null && !destinationPrefix.isEmpty()) {
             source.destinationPrefix(destinationPrefix);
         }
         return source.build();
+    }
+
+    private boolean isSelected(String name, String[] includes, String[] excludes) {
+        for (String exclude : excludes) {
+            if (SelectorUtils.match(exclude, name)) {
+                return false;
+            }
+        }
+        if (includes.length == 0) {
+            return true;
+        }
+        for (String include : includes) {
+            if (SelectorUtils.match(include, name)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
