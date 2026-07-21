@@ -23,9 +23,11 @@ import static org.junit.Assert.assertTrue;
 
 import ca.vanzyl.provisio.action.artifact.UnpackAction;
 import ca.vanzyl.provisio.action.runtime.ArchiveAction;
+import ca.vanzyl.provisio.action.runtime.MakeDirectoryAction;
 import ca.vanzyl.provisio.archive.UnArchiver;
 import ca.vanzyl.provisio.model.ArtifactSet;
 import ca.vanzyl.provisio.model.ProvisioArtifact;
+import ca.vanzyl.provisio.model.ProvisioningContext;
 import ca.vanzyl.provisio.model.ProvisioningRequest;
 import ca.vanzyl.provisio.model.ProvisioningResult;
 import ca.vanzyl.provisio.model.Runtime;
@@ -33,6 +35,7 @@ import ca.vanzyl.provisio.model.io.RuntimeReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Proxy;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -46,9 +49,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.archivers.tar.TarConstants;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResult;
@@ -212,6 +218,141 @@ public class MavenProvisionerStreamingTest {
     }
 
     @Test
+    public void sameSizeZipEntriesWithDifferentCrc32RemainIndependentFiles() throws Exception {
+        Path workspace = temporary.newFolder("different-crc").toPath();
+        Path first = zip(workspace.resolve("first.zip"), entries("root/first.jar", "first!"));
+        Path second = zip(workspace.resolve("second.zip"), entries("root/second.jar", "second"));
+        Path output = workspace.resolve("target/distribution");
+        Runtime runtime = runtimeWithArchive(true);
+        runtime.addArtifactSet(artifactSet("lib/first", "test:first:zip:1", first));
+        runtime.addArtifactSet(artifactSet("lib/second", "test:second:zip:1", second));
+        ProvisioningRequest request =
+                new ProvisioningRequest().setRuntimeDescriptor(runtime).setOutputDirectory(output.toFile());
+
+        provisioner().provision(request);
+
+        Map<String, TarArchiveEntry> entries = entries(workspace.resolve("target/distribution.tar.gz"));
+        assertFalse(entries.get("distribution/lib/first/first.jar").isLink());
+        assertFalse(entries.get("distribution/lib/second/second.jar").isLink());
+    }
+
+    @Test
+    public void streamsWithoutTheRuntimeRootWhenRequested() throws Exception {
+        Path workspace = temporary.newFolder("without-runtime-root").toPath();
+        Path input = zip(workspace.resolve("input.zip"), entries("root/bin/run", "run"));
+        Path output = workspace.resolve("target/distribution");
+        Runtime runtime = runtimeWithArchive(true);
+        ((ArchiveAction) runtime.getActions().get(0)).setUseRoot(false);
+        runtime.addArtifactSet(artifactSet("application", "test:application:zip:1", input));
+        ProvisioningRequest request =
+                new ProvisioningRequest().setRuntimeDescriptor(runtime).setOutputDirectory(output.toFile());
+
+        provisioner().provision(request);
+
+        Map<String, TarArchiveEntry> entries = entries(workspace.resolve("target/distribution.tar.gz"));
+        assertTrue(entries.containsKey("application/bin/run"));
+        assertFalse(entries.containsKey("distribution/"));
+        assertFalse(Files.exists(output));
+    }
+
+    @Test
+    public void streamsUnpackIncludesExcludesAndFlattening() throws Exception {
+        Path workspace = temporary.newFolder("unpack-selection").toPath();
+        Path input = zip(
+                workspace.resolve("input.zip"),
+                entries(
+                        "root/keep/alpha.txt",
+                        "alpha",
+                        "root/keep/ignored.properties",
+                        "ignored",
+                        "root/skip/beta.txt",
+                        "excluded"));
+        Path output = workspace.resolve("target/distribution");
+        Runtime runtime = runtimeWithArchive(true);
+        ArtifactSet artifactSet = artifactSet("selected", "test:selected:zip:1", input);
+        UnpackAction unpack =
+                (UnpackAction) artifactSet.getArtifacts().get(0).getActions().get(0);
+        unpack.setIncludes("**/*.txt");
+        unpack.setExcludes("**/skip/**");
+        unpack.setFlatten(true);
+        runtime.addArtifactSet(artifactSet);
+        ProvisioningRequest request =
+                new ProvisioningRequest().setRuntimeDescriptor(runtime).setOutputDirectory(output.toFile());
+
+        provisioner().provision(request);
+
+        Map<String, TarArchiveEntry> entries = entries(workspace.resolve("target/distribution.tar.gz"));
+        assertTrue(entries.containsKey("distribution/selected/alpha.txt"));
+        assertFalse(entries.containsKey("distribution/selected/ignored.properties"));
+        assertFalse(entries.containsKey("distribution/selected/beta.txt"));
+        assertFalse(Files.exists(output));
+    }
+
+    @Test
+    public void preservesTarSymbolicAndHardLinksWhileStreaming() throws Exception {
+        Path workspace = temporary.newFolder("tar-links").toPath();
+        Path input = tarGzWithLinks(workspace.resolve("input.tar.gz"));
+        Path output = workspace.resolve("target/distribution");
+        Runtime runtime = runtimeWithArchive(true);
+        runtime.addArtifactSet(artifactSet("application", "test:application:tar.gz:1", input));
+        ProvisioningRequest request =
+                new ProvisioningRequest().setRuntimeDescriptor(runtime).setOutputDirectory(output.toFile());
+
+        provisioner().provision(request);
+
+        Map<String, TarArchiveEntry> entries = entries(workspace.resolve("target/distribution.tar.gz"));
+        TarArchiveEntry symbolicLink = entries.get("distribution/application/bin/tool-link");
+        assertTrue(symbolicLink.isSymbolicLink());
+        assertEquals("tool", symbolicLink.getLinkName());
+        TarArchiveEntry hardLink = entries.get("distribution/application/lib/alias.jar");
+        assertTrue(hardLink.isLink());
+        assertEquals("distribution/application/lib/original.jar", hardLink.getLinkName());
+        assertFalse(Files.exists(output));
+    }
+
+    @Test
+    public void invalidStreamingDestinationPreservesExistingArchive() throws Exception {
+        Path workspace = temporary.newFolder("invalid-destination").toPath();
+        Path input = zip(workspace.resolve("input.zip"), entries("root/file.txt", "content"));
+        Path output = workspace.resolve("target/distribution");
+        Path archive = workspace.resolve("target/distribution.tar.gz");
+        write(archive, "existing archive");
+        Runtime runtime = runtimeWithArchive(true);
+        runtime.addArtifactSet(artifactSet("../outside", "test:escape:zip:1", input));
+        ProvisioningRequest request =
+                new ProvisioningRequest().setRuntimeDescriptor(runtime).setOutputDirectory(output.toFile());
+
+        IllegalArgumentException failure =
+                assertThrows(IllegalArgumentException.class, () -> provisioner().provision(request));
+
+        assertEquals("Archive destination escapes its root: ../outside", failure.getMessage());
+        assertEquals("existing archive", Files.readString(archive));
+        assertFalse(Files.exists(output));
+        assertFalse(Files.exists(workspace.resolve("target/outside")));
+        assertEquals(0, temporaryArchiveFiles(archive));
+    }
+
+    @Test
+    public void escapingStreamingEntryFailsTransactionally() throws Exception {
+        Path workspace = temporary.newFolder("escaping-entry").toPath();
+        Path input = zip(workspace.resolve("input.zip"), entries("../outside.txt", "escape"));
+        Path output = workspace.resolve("target/distribution");
+        Path archive = workspace.resolve("target/distribution.tar.gz");
+        write(archive, "existing archive");
+        Runtime runtime = runtimeWithArchive(true);
+        runtime.addArtifactSet(artifactSet("application", "test:escape:zip:1", input));
+        ProvisioningRequest request =
+                new ProvisioningRequest().setRuntimeDescriptor(runtime).setOutputDirectory(output.toFile());
+
+        assertThrows(RuntimeException.class, () -> provisioner().provision(request));
+
+        assertEquals("existing archive", Files.readString(archive));
+        assertFalse(Files.exists(output));
+        assertFalse(Files.exists(workspace.resolve("target/outside.txt")));
+        assertEquals(0, temporaryArchiveFiles(archive));
+    }
+
+    @Test
     public void streamsSelectedDirectoriesLooseFilesAndResourcesFromTheDescriptor() throws Exception {
         Path workspace = temporary.newFolder("file-sets").toPath();
         Path directory = workspace.resolve("source-directory");
@@ -264,6 +405,55 @@ public class MavenProvisionerStreamingTest {
         Path extracted = workspace.resolve("extracted");
         extract(workspace.resolve("target/fallback-runtime.tar.gz"), extracted);
         assertEquals("value=filtered", Files.readString(extracted.resolve("etc/configuration.txt")));
+    }
+
+    @Test
+    public void touchFileFallsBackToMaterializedAssembly() throws Exception {
+        Path workspace = temporary.newFolder("touch-fallback").toPath();
+        Path output = workspace.resolve("target/distribution");
+        String descriptor = "<runtime>"
+                + "<archive name=\"distribution.tar.gz\" streaming=\"true\"/>"
+                + "<fileSet to=\"state\"><file touch=\"ready\"/></fileSet>"
+                + "</runtime>";
+        Runtime runtime = readRuntime(descriptor);
+        ProvisioningRequest request =
+                new ProvisioningRequest().setRuntimeDescriptor(runtime).setOutputDirectory(output.toFile());
+        ProvisioningContext context = new ProvisioningContext(request, new ProvisioningResult(request));
+
+        ArchiveAssemblyPlan plan = ArchiveAssemblyPlan.create(
+                context, (ArchiveAction) runtime.getActions().get(0));
+        assertEquals("touch file ready requires staged materialization", plan.fallbackReason());
+
+        provisioner().provision(request);
+
+        assertTrue(Files.isRegularFile(output.resolve("state/ready")));
+        assertTrue(entries(workspace.resolve("target/distribution.tar.gz")).containsKey("distribution/state/ready"));
+    }
+
+    @Test
+    public void additionalRuntimeActionFallsBackToMaterializedAssembly() throws Exception {
+        Path workspace = temporary.newFolder("runtime-action-fallback").toPath();
+        Path output = workspace.resolve("target/distribution");
+        Runtime runtime = new Runtime();
+        MakeDirectoryAction makeDirectory = new MakeDirectoryAction();
+        makeDirectory.setName("generated");
+        runtime.addAction(makeDirectory);
+        ArchiveAction archive = new ArchiveAction();
+        archive.setName("distribution.tar.gz");
+        archive.setStreaming(true);
+        runtime.addAction(archive);
+        ProvisioningRequest request =
+                new ProvisioningRequest().setRuntimeDescriptor(runtime).setOutputDirectory(output.toFile());
+        ProvisioningContext context = new ProvisioningContext(request, new ProvisioningResult(request));
+
+        assertEquals(
+                "the streaming archive must be the only runtime action",
+                ArchiveAssemblyPlan.structuralFallbackReason(context, archive));
+
+        provisioner().provision(request);
+
+        assertTrue(Files.isDirectory(output.resolve("generated")));
+        assertTrue(entries(workspace.resolve("target/distribution.tar.gz")).containsKey("distribution/generated/"));
     }
 
     private ProvisioningResult provision(Path output, Path first, Path second, boolean streaming) throws Exception {
@@ -344,6 +534,34 @@ public class MavenProvisionerStreamingTest {
             }
         }
         return archive;
+    }
+
+    private Path tarGzWithLinks(Path archive) throws IOException {
+        Files.createDirectories(archive.getParent());
+        try (OutputStream file = Files.newOutputStream(archive);
+                GzipCompressorOutputStream gzip = new GzipCompressorOutputStream(file);
+                TarArchiveOutputStream tar = new TarArchiveOutputStream(gzip)) {
+            tarFile(tar, "root/bin/tool", "tool");
+            TarArchiveEntry symbolicLink = new TarArchiveEntry("root/bin/tool-link", TarConstants.LF_SYMLINK);
+            symbolicLink.setLinkName("tool");
+            tar.putArchiveEntry(symbolicLink);
+            tar.closeArchiveEntry();
+            tarFile(tar, "root/lib/original.jar", "content");
+            TarArchiveEntry hardLink = new TarArchiveEntry("root/lib/alias.jar", TarConstants.LF_LINK);
+            hardLink.setLinkName("root/lib/original.jar");
+            tar.putArchiveEntry(hardLink);
+            tar.closeArchiveEntry();
+        }
+        return archive;
+    }
+
+    private void tarFile(TarArchiveOutputStream tar, String name, String value) throws IOException {
+        byte[] content = value.getBytes(StandardCharsets.UTF_8);
+        TarArchiveEntry entry = new TarArchiveEntry(name);
+        entry.setSize(content.length);
+        tar.putArchiveEntry(entry);
+        tar.write(content);
+        tar.closeArchiveEntry();
     }
 
     private Map<String, String> entries(String... values) {
