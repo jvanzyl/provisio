@@ -22,6 +22,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import ca.vanzyl.provisio.archive.SourceSpec;
+import ca.vanzyl.provisio.archive.Sources;
 import ca.vanzyl.provisio.model.ProvisioArchive;
 import ca.vanzyl.provisio.model.ProvisioningContext;
 import ca.vanzyl.provisio.model.ProvisioningRequest;
@@ -97,6 +99,33 @@ public class ArchiveActionTest {
     }
 
     @Test
+    public void archivesOrderedSourcesWithoutMaterializingARuntimeDirectory() throws Exception {
+        Path workspace = temporary.newFolder("streamed").toPath();
+        Path runtime = workspace.resolve("runtime");
+        Path first = write(workspace, "sources/first.txt", "first");
+        Path second = write(workspace, "sources/second.txt", "second");
+        ProvisioningRequest request = request(runtime);
+        ProvisioningResult result = new ProvisioningResult(request);
+        ArchiveAction action = action(runtime, "streamed.tar.gz");
+        List<SourceSpec> sources = List.of(
+                SourceSpec.builder(Sources.file("first.txt", first))
+                        .destinationPrefix("runtime")
+                        .build(),
+                SourceSpec.builder(Sources.file("second.txt", second))
+                        .destinationPrefix("runtime/nested")
+                        .build());
+
+        action.execute(new ProvisioningContext(request, result), sources);
+
+        assertFalse(Files.exists(runtime));
+        Map<String, TarArchiveEntry> entries = entries(workspace.resolve("streamed.tar.gz"));
+        assertEquals(
+                list("runtime/", "runtime/first.txt", "runtime/nested/", "runtime/nested/second.txt"),
+                new ArrayList<>(entries.keySet()));
+        assertEquals(1, result.getArchives().size());
+    }
+
+    @Test
     public void failedArchiveIsNotCreatedOrRegistered() throws Exception {
         Path runtime = temporary.newFolder("failed-runtime").toPath();
         write(runtime, "file.txt", "content");
@@ -152,10 +181,11 @@ public class ArchiveActionTest {
         field.set(action, executable);
     }
 
-    private void write(Path root, String name, String content) throws IOException {
+    private Path write(Path root, String name, String content) throws IOException {
         Path file = root.resolve(name);
         Files.createDirectories(file.getParent());
         Files.write(file, content.getBytes(StandardCharsets.UTF_8));
+        return file;
     }
 
     private Map<String, TarArchiveEntry> entries(Path archive) throws IOException {

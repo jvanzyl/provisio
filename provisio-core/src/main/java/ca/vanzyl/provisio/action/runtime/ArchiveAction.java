@@ -40,6 +40,7 @@ import ca.vanzyl.provisio.model.ProvisioArchive;
 import ca.vanzyl.provisio.model.ProvisioningAction;
 import ca.vanzyl.provisio.model.ProvisioningContext;
 import java.io.File;
+import java.util.List;
 import org.codehaus.plexus.util.StringUtils;
 
 public class ArchiveAction implements ProvisioningAction {
@@ -53,7 +54,16 @@ public class ArchiveAction implements ProvisioningAction {
     // want to allow setting useRoot=false to eliminate the initial leading directory entry.
     private boolean useRoot = true;
 
+    @Override
     public void execute(ProvisioningContext context) {
+        SourceSpec runtime = SourceSpec.builder(Sources.directory(runtimeDirectory.toPath()))
+                .useRoot(useRoot)
+                .build();
+        execute(context, List.of(runtime));
+    }
+
+    /** Creates this action's archive from an already ordered streaming assembly plan. */
+    public void execute(ProvisioningContext context, List<SourceSpec> sources) {
         ArchiverBuilder builder = Archiver.builder();
         if (executable != null) {
             builder.executable(StringUtils.split(executable, ","));
@@ -67,10 +77,7 @@ public class ArchiveAction implements ProvisioningAction {
                 .build();
         try {
             File archive = new File(runtimeDirectory, "../" + name).getCanonicalFile();
-            SourceSpec runtime = SourceSpec.builder(Sources.directory(runtimeDirectory.toPath()))
-                    .useRoot(useRoot)
-                    .build();
-            archiver.archive(archive.toPath(), runtime);
+            archiver.archive(archive.toPath(), sources.toArray(new SourceSpec[0]));
             //
             // Right now this action has some special meaning it maybe shouldn't, but we need to know what archives are
             // produced
