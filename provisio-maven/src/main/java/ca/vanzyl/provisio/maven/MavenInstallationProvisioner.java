@@ -47,7 +47,7 @@ public class MavenInstallationProvisioner extends SimpleProvisioner {
             throw new IllegalStateException("Could not create Maven install directory " + installDirectory);
         }
 
-        unarchiver.unarchive(archive, installDirectory);
+        unarchiver.unarchive(archive.toPath(), installDirectory.toPath());
 
         if (!mvn.isFile()) {
             throw new IllegalStateException("Unpacking of Maven distro failed");

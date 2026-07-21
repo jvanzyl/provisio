@@ -15,14 +15,14 @@
  */
 package ca.vanzyl.provisio.action.artifact.filter;
 
-import ca.vanzyl.provisio.archive.UnarchivingEnhancedEntryProcessor;
+import ca.vanzyl.provisio.archive.UnarchivingEntryProcessor;
 import ca.vanzyl.provisio.model.io.InterpolatingInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
-public class StandardFilteringProcessor implements UnarchivingEnhancedEntryProcessor {
+public class StandardFilteringProcessor implements UnarchivingEntryProcessor {
 
     Map<String, String> variables;
 

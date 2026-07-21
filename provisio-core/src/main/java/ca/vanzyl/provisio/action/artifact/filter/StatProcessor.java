@@ -19,7 +19,7 @@ import static java.util.Objects.requireNonNull;
 
 import ca.vanzyl.provisio.ProvisioVariables;
 import ca.vanzyl.provisio.ProvisioningException;
-import ca.vanzyl.provisio.archive.UnarchivingEnhancedEntryProcessor;
+import ca.vanzyl.provisio.archive.UnarchivingEntryProcessor;
 import ca.vanzyl.provisio.model.ProvisioningContext;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,18 +29,15 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class StatProcessor implements UnarchivingEnhancedEntryProcessor {
+public class StatProcessor implements UnarchivingEntryProcessor {
     private static final Logger logger = LoggerFactory.getLogger(StatProcessor.class);
     private final ProvisioningContext context;
     private final Path archive;
     private final Path outputDirectory;
-    private final UnarchivingEnhancedEntryProcessor delegate;
+    private final UnarchivingEntryProcessor delegate;
 
     public StatProcessor(
-            ProvisioningContext context,
-            Path archive,
-            Path outputDirectory,
-            UnarchivingEnhancedEntryProcessor delegate) {
+            ProvisioningContext context, Path archive, Path outputDirectory, UnarchivingEntryProcessor delegate) {
         this.context = requireNonNull(context);
         this.archive = requireNonNull(archive);
         this.outputDirectory = requireNonNull(outputDirectory);

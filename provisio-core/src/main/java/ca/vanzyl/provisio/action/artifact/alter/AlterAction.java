@@ -21,6 +21,11 @@ import ca.vanzyl.provisio.MavenProvisioner;
 import ca.vanzyl.provisio.ProvisioVariables;
 import ca.vanzyl.provisio.ProvisioningException;
 import ca.vanzyl.provisio.archive.Archiver;
+import ca.vanzyl.provisio.archive.ContentIdentityMode;
+import ca.vanzyl.provisio.archive.EntryOrder;
+import ca.vanzyl.provisio.archive.ReproducibilityPolicy;
+import ca.vanzyl.provisio.archive.SourceSpec;
+import ca.vanzyl.provisio.archive.Sources;
 import ca.vanzyl.provisio.archive.UnArchiver;
 import ca.vanzyl.provisio.model.ProvisioArtifact;
 import ca.vanzyl.provisio.model.ProvisioningAction;
@@ -69,7 +74,7 @@ public class AlterAction implements ProvisioningAction {
             // Unpack the artifact in question
             UnArchiver unarchiver = UnArchiver.builder().build();
             File unpackDirectory = new File(outputDirectory, "unpack");
-            unarchiver.unarchive(archive, unpackDirectory);
+            unarchiver.unarchive(archive.toPath(), unpackDirectory.toPath());
 
             // Make any modifications to the archive
             if (inserts != null) {
@@ -120,11 +125,17 @@ public class AlterAction implements ProvisioningAction {
             // Set all the files readable so we can repack them
             setFilesReadable(unpackDirectory);
             // Pack the archive back up
-            Archiver archiver =
-                    Archiver.builder().normalize(true).useRoot(false).build();
+            Archiver archiver = Archiver.builder()
+                    .reproducibility(ReproducibilityPolicy.NORMALIZED)
+                    .entryOrder(EntryOrder.SOURCE)
+                    .contentIdentity(ContentIdentityMode.SIZE_AND_CRC32)
+                    .build();
             String artifactName = artifact.getName() != null ? artifact.getName() : coordinateToPath(artifact);
             File alteredArtifact = new File(outputDirectory, artifactName);
-            archiver.archive(alteredArtifact, unpackDirectory);
+            SourceSpec contents = SourceSpec.builder(Sources.directory(unpackDirectory.toPath()))
+                    .useRoot(false)
+                    .build();
+            archiver.archive(alteredArtifact.toPath(), contents);
             FileUtils.deleteDirectory(unpackDirectory);
         } catch (IOException e) {
             throw new RuntimeException(e);

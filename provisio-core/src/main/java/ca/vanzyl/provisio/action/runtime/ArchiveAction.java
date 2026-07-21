@@ -30,6 +30,11 @@ package ca.vanzyl.provisio.action.runtime;
 
 import ca.vanzyl.provisio.archive.Archiver;
 import ca.vanzyl.provisio.archive.Archiver.ArchiverBuilder;
+import ca.vanzyl.provisio.archive.ContentIdentityMode;
+import ca.vanzyl.provisio.archive.EntryOrder;
+import ca.vanzyl.provisio.archive.ReproducibilityPolicy;
+import ca.vanzyl.provisio.archive.SourceSpec;
+import ca.vanzyl.provisio.archive.Sources;
 import ca.vanzyl.provisio.archive.UnArchiver;
 import ca.vanzyl.provisio.model.ProvisioArchive;
 import ca.vanzyl.provisio.model.ProvisioningAction;
@@ -53,15 +58,19 @@ public class ArchiveAction implements ProvisioningAction {
         if (executable != null) {
             builder.executable(StringUtils.split(executable, ","));
         }
-        Archiver archiver = builder.posixLongFileMode(true)
-                .useRoot(useRoot)
-                .normalize(true)
+        Archiver archiver = builder.reproducibility(ReproducibilityPolicy.NORMALIZED)
+                .entryOrder(EntryOrder.SOURCE)
+                .contentIdentity(ContentIdentityMode.SIZE_AND_CRC32)
+                .posixLongFileMode(true)
                 .hardLinkIncludes(split(hardLinkIncludes))
                 .hardLinkExcludes(split(hardLinkExcludes))
                 .build();
         try {
             File archive = new File(runtimeDirectory, "../" + name).getCanonicalFile();
-            archiver.archive(archive, runtimeDirectory);
+            SourceSpec runtime = SourceSpec.builder(Sources.directory(runtimeDirectory.toPath()))
+                    .useRoot(useRoot)
+                    .build();
+            archiver.archive(archive.toPath(), runtime);
             //
             // Right now this action has some special meaning it maybe shouldn't, but we need to know what archives are
             // produced
@@ -84,7 +93,7 @@ public class ArchiveAction implements ProvisioningAction {
             //
             if (hardLinkIncludes != null) {
                 UnArchiver unArchiver = UnArchiver.builder().useRoot(false).build();
-                unArchiver.unarchive(archive, new File(runtimeDirectory + "-hardlinks"));
+                unArchiver.unarchive(archive.toPath(), new File(runtimeDirectory + "-hardlinks").toPath());
             }
 
         } catch (Exception e) {

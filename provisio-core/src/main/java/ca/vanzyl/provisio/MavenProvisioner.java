@@ -21,7 +21,7 @@ import static java.util.stream.Collectors.toSet;
 import ca.vanzyl.provisio.action.artifact.WriteToDiskAction;
 import ca.vanzyl.provisio.action.artifact.filter.MustacheFilteringProcessor;
 import ca.vanzyl.provisio.action.artifact.filter.StandardFilteringProcessor;
-import ca.vanzyl.provisio.archive.UnarchivingEnhancedEntryProcessor;
+import ca.vanzyl.provisio.archive.UnarchivingEntryProcessor;
 import ca.vanzyl.provisio.model.ArtifactSet;
 import ca.vanzyl.provisio.model.Directory;
 import ca.vanzyl.provisio.model.FileSet;
@@ -657,7 +657,7 @@ public class MavenProvisioner {
         copy(source, target);
     }
 
-    private void copy(File source, File target, UnarchivingEnhancedEntryProcessor processor) throws IOException {
+    private void copy(File source, File target, UnarchivingEntryProcessor processor) throws IOException {
         if (!target.getParentFile().exists()) {
             target.getParentFile().mkdirs();
         }

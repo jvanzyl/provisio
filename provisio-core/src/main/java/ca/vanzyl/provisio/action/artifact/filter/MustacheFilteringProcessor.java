@@ -15,7 +15,7 @@
  */
 package ca.vanzyl.provisio.action.artifact.filter;
 
-import ca.vanzyl.provisio.archive.UnarchivingEnhancedEntryProcessor;
+import ca.vanzyl.provisio.archive.UnarchivingEntryProcessor;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
@@ -28,7 +28,7 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MustacheFilteringProcessor implements UnarchivingEnhancedEntryProcessor {
+public class MustacheFilteringProcessor implements UnarchivingEntryProcessor {
 
     private final Map<String, Object> variables;
 
