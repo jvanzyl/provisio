@@ -18,6 +18,7 @@ package ca.vanzyl.provisio;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import ca.vanzyl.provisio.action.artifact.UnpackAction;
@@ -97,10 +98,117 @@ public class MavenProvisionerStreamingTest {
         assertTreesEqual(stagedTree, streamingTree);
 
         Path repeatOutput = workspace.resolve("repeat/distribution");
-        provision(repeatOutput, first, second, true);
+        Path reorderedFirst = zip(
+                workspace.resolve("reordered-first.zip"),
+                entries("first-root/lib/shared.jar", "shared", "first-root/bin/run", "run"));
+        Path reorderedSecond = zip(
+                workspace.resolve("reordered-second.zip"),
+                entries("second-root/plugin.txt", "plugin", "second-root/lib/other.jar", "shared"));
+        provision(repeatOutput, reorderedFirst, reorderedSecond, true);
         assertArrayEquals(
                 Files.readAllBytes(streamingArchive),
                 Files.readAllBytes(workspace.resolve("repeat/distribution.tar.gz")));
+    }
+
+    @Test
+    public void corruptStreamingInputPreservesExistingArchiveAndLeavesNoStagingTree() throws Exception {
+        Path workspace = temporary.newFolder("corrupt-stream").toPath();
+        Path corrupt = write(workspace.resolve("corrupt.zip"), "not a zip");
+        Path output = workspace.resolve("target/distribution");
+        Path archive = workspace.resolve("target/distribution.tar.gz");
+        write(archive, "existing archive");
+        Runtime runtime = runtimeWithArchive(true);
+        runtime.addArtifactSet(artifactSet("plugin/corrupt", "test:corrupt:zip:1", corrupt));
+        ProvisioningRequest request =
+                new ProvisioningRequest().setRuntimeDescriptor(runtime).setOutputDirectory(output.toFile());
+
+        assertThrows(RuntimeException.class, () -> provisioner().provision(request));
+
+        assertEquals("existing archive", Files.readString(archive));
+        assertFalse(Files.exists(output));
+        assertEquals(0, temporaryArchiveFiles(archive));
+    }
+
+    @Test
+    public void duplicateStreamingTargetsFailTransactionally() throws Exception {
+        Path workspace = temporary.newFolder("duplicate-stream").toPath();
+        Path first = zip(workspace.resolve("first.zip"), entries("first/a.txt", "first"));
+        Path second = zip(workspace.resolve("second.zip"), entries("second/a.txt", "second"));
+        Path output = workspace.resolve("target/distribution");
+        Path archive = workspace.resolve("target/distribution.tar.gz");
+        write(archive, "existing archive");
+        Runtime runtime = runtimeWithArchive(true);
+        runtime.addArtifactSet(artifactSet("same", "test:first:zip:1", first));
+        runtime.addArtifactSet(artifactSet("same", "test:second:zip:1", second));
+        ProvisioningRequest request =
+                new ProvisioningRequest().setRuntimeDescriptor(runtime).setOutputDirectory(output.toFile());
+
+        RuntimeException failure =
+                assertThrows(RuntimeException.class, () -> provisioner().provision(request));
+
+        assertTrue(failure.getCause().getMessage().contains("Duplicate archive entry distribution/same/a.txt"));
+        assertEquals("existing archive", Files.readString(archive));
+        assertFalse(Files.exists(output));
+        assertEquals(0, temporaryArchiveFiles(archive));
+    }
+
+    @Test
+    public void transformingArtifactFallsBackToMaterializedAssembly() throws Exception {
+        Path workspace = temporary.newFolder("artifact-filter-fallback").toPath();
+        Path input = zip(workspace.resolve("input.zip"), entries("root/configuration.txt", "value=${value}"));
+        Path output = workspace.resolve("target/distribution");
+        Runtime runtime = runtimeWithArchive(true);
+        ArtifactSet artifactSet = artifactSet("etc", "test:filtered:zip:1", input);
+        ((UnpackAction) artifactSet.getArtifacts().get(0).getActions().get(0)).setFilter(true);
+        runtime.addArtifactSet(artifactSet);
+        ProvisioningRequest request =
+                new ProvisioningRequest().setRuntimeDescriptor(runtime).setOutputDirectory(output.toFile());
+        request.setVariables(Collections.singletonMap("value", "filtered"));
+
+        provisioner().provision(request);
+
+        assertTrue(Files.isDirectory(output));
+        assertEquals("value=filtered", Files.readString(output.resolve("etc/configuration.txt")));
+    }
+
+    @Test
+    public void overwriteModeFallsBackAndPreservesLastWriterSemantics() throws Exception {
+        Path workspace = temporary.newFolder("overwrite-fallback").toPath();
+        Path first = zip(workspace.resolve("first.zip"), entries("first/value.txt", "first"));
+        Path second = zip(workspace.resolve("second.zip"), entries("second/value.txt", "second"));
+        Path output = workspace.resolve("target/distribution");
+        Runtime runtime = runtimeWithArchive(true);
+        runtime.addArtifactSet(artifactSet("same", "test:first:zip:1", first));
+        runtime.addArtifactSet(artifactSet("same", "test:second:zip:1", second));
+        ProvisioningRequest request =
+                new ProvisioningRequest().setRuntimeDescriptor(runtime).setOutputDirectory(output.toFile());
+        request.setVariables(Collections.singletonMap(ProvisioVariables.ALLOW_TARGET_OVERWRITE, "true"));
+
+        provisioner().provision(request);
+
+        assertTrue(Files.isDirectory(output));
+        assertEquals("second", Files.readString(output.resolve("same/value.txt")));
+    }
+
+    @Test
+    public void looseArtifactsWithoutCrcMetadataUseVerifiedHardLinkIdentity() throws Exception {
+        Path workspace = temporary.newFolder("loose-artifacts").toPath();
+        Path first = write(workspace.resolve("first.jar"), "shared");
+        Path second = write(workspace.resolve("second.jar"), "shared");
+        Path output = workspace.resolve("target/distribution");
+        Runtime runtime = runtimeWithArchive(true);
+        runtime.addArtifactSet(looseArtifactSet("lib/first", "test:first:jar:1", first));
+        runtime.addArtifactSet(looseArtifactSet("lib/second", "test:second:jar:1", second));
+        ProvisioningRequest request =
+                new ProvisioningRequest().setRuntimeDescriptor(runtime).setOutputDirectory(output.toFile());
+
+        provisioner().provision(request);
+
+        Map<String, TarArchiveEntry> entries = entries(workspace.resolve("target/distribution.tar.gz"));
+        assertTrue(entries.get("distribution/lib/second/second.jar").isLink());
+        assertEquals(
+                "distribution/lib/first/first.jar",
+                entries.get("distribution/lib/second/second.jar").getLinkName());
     }
 
     @Test
@@ -159,18 +267,23 @@ public class MavenProvisionerStreamingTest {
     }
 
     private ProvisioningResult provision(Path output, Path first, Path second, boolean streaming) throws Exception {
-        Runtime runtime = new Runtime();
+        Runtime runtime = runtimeWithArchive(streaming);
         runtime.addArtifactSet(artifactSet("plugin/first", "test:first:zip:1", first));
         runtime.addArtifactSet(artifactSet("plugin/second", "test:second:zip:1", second));
+        ProvisioningRequest request =
+                new ProvisioningRequest().setRuntimeDescriptor(runtime).setOutputDirectory(output.toFile());
+        return provisioner().provision(request);
+    }
+
+    private Runtime runtimeWithArchive(boolean streaming) {
+        Runtime runtime = new Runtime();
         ArchiveAction archive = new ArchiveAction();
         archive.setName("distribution.tar.gz");
         archive.setStreaming(streaming);
         archive.setExecutable("distribution/plugin/first/bin/run");
         archive.setHardLinkIncludes("**/*.jar");
         runtime.addAction(archive);
-        ProvisioningRequest request =
-                new ProvisioningRequest().setRuntimeDescriptor(runtime).setOutputDirectory(output.toFile());
-        return provisioner().provision(request);
+        return runtime;
     }
 
     private ArtifactSet artifactSet(String destination, String coordinate, Path archive) {
@@ -181,6 +294,13 @@ public class MavenProvisionerStreamingTest {
         ArtifactSet artifactSet = new ArtifactSet();
         artifactSet.setDirectory(destination);
         artifactSet.addArtifact(artifact.setFile(archive.toFile()));
+        return artifactSet;
+    }
+
+    private ArtifactSet looseArtifactSet(String destination, String coordinate, Path file) {
+        ArtifactSet artifactSet = new ArtifactSet();
+        artifactSet.setDirectory(destination);
+        artifactSet.addArtifact(new ProvisioArtifact(coordinate).setFile(file.toFile()));
         return artifactSet;
     }
 
@@ -271,6 +391,14 @@ public class MavenProvisionerStreamingTest {
                     .map(Path::toString)
                     .sorted()
                     .collect(Collectors.toCollection(ArrayList::new));
+        }
+    }
+
+    private long temporaryArchiveFiles(Path archive) throws IOException {
+        String prefix = ".provisio-" + archive.getFileName() + "-";
+        try (Stream<Path> paths = Files.list(archive.getParent())) {
+            return paths.filter(path -> path.getFileName().toString().startsWith(prefix))
+                    .count();
         }
     }
 }
