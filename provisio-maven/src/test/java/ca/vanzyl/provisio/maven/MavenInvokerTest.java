@@ -29,8 +29,8 @@ public class MavenInvokerTest extends InjectedTest {
     @Test
     public void testMavenExecution() throws Exception {
         FileUtils.deleteDirectory(mavenHome.getAbsolutePath());
-        File sourceProject = new File(basedir, "src/test/projects/maven");
-        File targetProject = new File(basedir, "target/projects/maven");
+        File sourceProject = basedir.toPath().resolve("src/test/projects/maven").toFile();
+        File targetProject = basedir.toPath().resolve("target/projects/maven").toFile();
         FileUtils.deleteDirectory(targetProject);
         FileUtils.copyDirectoryStructure(sourceProject, targetProject);
         provisioner.provision("3.6.3", mavenHome);

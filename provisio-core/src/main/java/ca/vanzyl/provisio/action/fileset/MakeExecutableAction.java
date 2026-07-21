@@ -19,6 +19,7 @@ import ca.vanzyl.provisio.model.ProvisioningAction;
 import ca.vanzyl.provisio.model.ProvisioningContext;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 import javax.inject.Named;
 import org.codehaus.plexus.util.FileUtils;
@@ -37,7 +38,7 @@ public class MakeExecutableAction implements ProvisioningAction {
             try {
                 List<String> filePaths = FileUtils.getFileNames(fileSetDirectory, includes, excludes, true);
                 for (String filePath : filePaths) {
-                    File file = new File(filePath);
+                    File file = Path.of(filePath).toFile();
                     file.setExecutable(true);
                 }
             } catch (IOException e) {

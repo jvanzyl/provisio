@@ -18,6 +18,7 @@ package ca.vanzyl.provisio.action.artifact.alter;
 import static ca.vanzyl.provisio.ProvisioUtils.coordinateToPath;
 
 import ca.vanzyl.provisio.MavenProvisioner;
+import ca.vanzyl.provisio.ProvisioUtils;
 import ca.vanzyl.provisio.ProvisioVariables;
 import ca.vanzyl.provisio.ProvisioningException;
 import ca.vanzyl.provisio.archive.Archiver;
@@ -73,7 +74,7 @@ public class AlterAction implements ProvisioningAction {
         try {
             // Unpack the artifact in question
             UnArchiver unarchiver = UnArchiver.builder().build();
-            File unpackDirectory = new File(outputDirectory, "unpack");
+            File unpackDirectory = ProvisioUtils.resolve(outputDirectory, "unpack");
             unarchiver.unarchive(archive.toPath(), unpackDirectory.toPath());
 
             // Make any modifications to the archive
@@ -82,7 +83,7 @@ public class AlterAction implements ProvisioningAction {
                     for (ProvisioArtifact insertArtifact : insert.getArtifacts()) {
                         Set<ProvisioArtifact> resolved = provisioner.resolveArtifact(context, insertArtifact);
                         File source = resolved.iterator().next().getFile();
-                        File target = new File(unpackDirectory, insertArtifact.getName());
+                        File target = ProvisioUtils.resolve(unpackDirectory, insertArtifact.getName());
                         if (!target.toPath().startsWith(outputDirectory.toPath())) {
                             throw new IllegalArgumentException("Bad mapping of insert " + insertArtifact.getName()
                                     + "; would escape output directory: " + outputDirectory);
@@ -107,7 +108,7 @@ public class AlterAction implements ProvisioningAction {
                 for (Delete delete : deletes) {
                     for (ca.vanzyl.provisio.model.File fileModel : delete.getFiles()) {
                         logger.info("Deleting file {} from {}", fileModel.getPath(), artifact);
-                        File target = new File(unpackDirectory, fileModel.getPath());
+                        File target = ProvisioUtils.resolve(unpackDirectory, fileModel.getPath());
                         if (!target.toPath().startsWith(outputDirectory.toPath())) {
                             throw new IllegalArgumentException("Bad mapping of delete " + fileModel.getPath()
                                     + "; would escape output directory: " + outputDirectory);
@@ -131,7 +132,7 @@ public class AlterAction implements ProvisioningAction {
                     .contentIdentity(ContentIdentityMode.SIZE_AND_CRC32)
                     .build();
             String artifactName = artifact.getName() != null ? artifact.getName() : coordinateToPath(artifact);
-            File alteredArtifact = new File(outputDirectory, artifactName);
+            File alteredArtifact = ProvisioUtils.resolve(outputDirectory, artifactName);
             SourceSpec contents = SourceSpec.builder(Sources.directory(unpackDirectory.toPath()))
                     .useRoot(false)
                     .build();

@@ -94,11 +94,17 @@ public class ProvisioningLifecycleParticipant extends AbstractMavenLifecyclePart
         File descriptorDirectory;
         Xpp3Dom configuration = getMojoConfiguration(plugin);
         if (configuration != null && configuration.getChild(DESCRIPTOR_DIRECTORY_CONFIG_ELEMENT) != null) {
-            descriptorDirectory = new File(
-                    project.getBasedir(),
-                    configuration.getChild(DESCRIPTOR_DIRECTORY_CONFIG_ELEMENT).getValue());
+            descriptorDirectory = project.getBasedir()
+                    .toPath()
+                    .resolve(configuration
+                            .getChild(DESCRIPTOR_DIRECTORY_CONFIG_ELEMENT)
+                            .getValue())
+                    .toFile();
         } else {
-            descriptorDirectory = new File(project.getBasedir(), DEFAULT_DESCRIPTOR_DIRECTORY);
+            descriptorDirectory = project.getBasedir()
+                    .toPath()
+                    .resolve(DEFAULT_DESCRIPTOR_DIRECTORY)
+                    .toFile();
         }
         //
         // For all our descriptors we need to find all the artifacts requested that might refer to projects

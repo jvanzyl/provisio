@@ -17,6 +17,7 @@ package ca.vanzyl.provisio;
 
 import ca.vanzyl.provisio.model.ProvisioArtifact;
 import ca.vanzyl.provisio.model.ProvisioningContext;
+import java.io.File;
 
 public class ProvisioUtils {
     private static final String ELLIPSIS = "...";
@@ -80,5 +81,22 @@ public class ProvisioUtils {
         } else {
             return str;
         }
+    }
+
+    /**
+     * Resolves {@code child} against {@code parent} using the same semantics as
+     * {@code new File(File, String)}: a child that starts with a separator is still treated as
+     * relative to the parent, unlike {@link java.nio.file.Path#resolve(String)} which would
+     * discard the parent entirely.
+     * <p>
+     * Assembly descriptors routinely use root-anchored destinations such as
+     * {@code <artifactSet to="/lib"/>}, which mean "lib inside the runtime directory".
+     */
+    public static File resolve(File parent, String child) {
+        String relative = child;
+        while (!relative.isEmpty() && (relative.charAt(0) == '/' || relative.charAt(0) == File.separatorChar)) {
+            relative = relative.substring(1);
+        }
+        return relative.isEmpty() ? parent : parent.toPath().resolve(relative).toFile();
     }
 }

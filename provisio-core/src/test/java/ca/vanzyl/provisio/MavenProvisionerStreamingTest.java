@@ -41,7 +41,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -171,7 +170,7 @@ public class MavenProvisionerStreamingTest {
         runtime.addArtifactSet(artifactSet);
         ProvisioningRequest request =
                 new ProvisioningRequest().setRuntimeDescriptor(runtime).setOutputDirectory(output.toFile());
-        request.setVariables(Collections.singletonMap("environment", "testing"));
+        request.setVariables(Map.of("environment", "testing"));
 
         provisioner().provision(request);
 
@@ -215,7 +214,7 @@ public class MavenProvisionerStreamingTest {
         runtime.addArtifactSet(artifactSet("same", "test:second:zip:1", second));
         ProvisioningRequest request =
                 new ProvisioningRequest().setRuntimeDescriptor(runtime).setOutputDirectory(output.toFile());
-        request.setVariables(Collections.singletonMap(ProvisioVariables.ALLOW_TARGET_OVERWRITE, "true"));
+        request.setVariables(Map.of(ProvisioVariables.ALLOW_TARGET_OVERWRITE, "true"));
 
         provisioner().provision(request);
 
@@ -467,7 +466,7 @@ public class MavenProvisionerStreamingTest {
         ProvisioningRequest request = new ProvisioningRequest()
                 .setRuntimeDescriptor(readRuntime(descriptor))
                 .setOutputDirectory(output.toFile());
-        request.setVariables(Collections.singletonMap("value", "filtered"));
+        request.setVariables(Map.of("value", "filtered"));
 
         provisioner().provision(request);
 
@@ -578,7 +577,7 @@ public class MavenProvisionerStreamingTest {
                     }
                     throw new UnsupportedOperationException(method.getName());
                 });
-        return new MavenProvisioner(repositorySystem, null, Collections.emptyList());
+        return new MavenProvisioner(repositorySystem, null, List.of());
     }
 
     private Runtime readRuntime(String descriptor) throws IOException {

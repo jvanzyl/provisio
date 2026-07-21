@@ -18,6 +18,7 @@ package ca.vanzyl.provisio.maven;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Path;
 import java.util.Map;
 import javax.inject.Named;
 import org.codehaus.plexus.util.cli.CommandLineException;
@@ -31,7 +32,8 @@ public class ForkedMavenInvoker implements MavenInvoker {
     public MavenResult invoke(MavenRequest request) {
         MavenResult result = new MavenResult();
 
-        File javaHome = new File(System.getProperty("java.home")).getAbsoluteFile();
+        File javaHome =
+                Path.of(System.getProperty("java.home")).toAbsolutePath().toFile();
         if (javaHome.getName().equals("jre")) {
             javaHome = javaHome.getParentFile();
         }
@@ -41,12 +43,12 @@ public class ForkedMavenInvoker implements MavenInvoker {
 
         File exec;
         if (File.pathSeparatorChar == ';') {
-            exec = new File(mavenHome, "bin/mvn.cmd");
+            exec = mavenHome.toPath().resolve("bin/mvn.cmd").toFile();
             if (!exec.exists()) {
-                exec = new File(mavenHome, "bin/mvn.bat");
+                exec = mavenHome.toPath().resolve("bin/mvn.bat").toFile();
             }
         } else {
-            exec = new File(mavenHome, "bin/mvn");
+            exec = mavenHome.toPath().resolve("bin/mvn").toFile();
         }
 
         cli.setExecutable(exec.getAbsolutePath());
