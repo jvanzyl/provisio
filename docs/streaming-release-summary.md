@@ -2,14 +2,13 @@
 
 This document tracks the coordinated Provisio Archiver 2.0.0 and Provisio
 2.0.0 streaming-assembly work for release notes and the follow-up Trino pull
-request update. Archiver 2.0.0 is published; Provisio 2.0.0 remains a release
-target until its artifacts are published.
+request update. Both releases are published on Maven Central.
 
 ## Release order
 
-1. Release `io.takari:takari-archiver:2.0.0`.
-2. Replace Provisio's `2.0.0-SNAPSHOT` Archiver dependency with the released
-   version, run the full Provisio test suite, and release Provisio 2.0.0.
+1. Released `io.takari:takari-archiver:2.0.0`.
+2. Replaced Provisio's snapshot Archiver dependency with the released version,
+   ran the full Provisio test suite, and released Provisio 2.0.0.
 3. Update Trino to the released Provisio version and rerun the focused server
    packaging correctness and reproducibility gates.
 4. Add the final released versions and performance summary to Trino PR 30400.
