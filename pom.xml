@@ -214,10 +214,6 @@
       <plugin>
         <groupId>org.gaul</groupId>
         <artifactId>modernizer-maven-plugin</artifactId>
-        <configuration>
-          <!-- TODO: fix MANY violations we have; then remove all this -->
-          <failOnViolations>false</failOnViolations>
-        </configuration>
       </plugin>
     </plugins>
   </build>
