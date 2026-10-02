@@ -1,0 +1,8 @@
+<runtime>
+  <archive name="${project.artifactId}-${project.version}.tar.gz"/>
+  <artifactSet to="/">
+    <artifact id="${project.groupId}:core:tar.gz:${project.version}">
+      <unpack/>
+    </artifact>
+  </artifactSet>
+</runtime>

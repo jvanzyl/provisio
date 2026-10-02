@@ -25,6 +25,7 @@ import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.MavenExecutionException;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Exclusion;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
@@ -65,25 +66,35 @@ public class ProvisioningLifecycleParticipant extends AbstractMavenLifecyclePart
                         //
                         for (String dependencyInGAForm : dependenciesInGAForm) {
                             if (projectMap.containsKey(dependencyInGAForm)) {
-                                MavenProject dependentProject = projectMap.get(dependencyInGAForm);
-                                Dependency dependency = new Dependency();
-                                dependency.setGroupId(dependentProject.getGroupId());
-                                dependency.setArtifactId(dependentProject.getArtifactId());
-                                dependency.setVersion(dependentProject.getVersion());
-                                dependency.setType(dependentProject.getPackaging());
-                                // It is expect that we are finding dependencies in the provisio descriptor and we want
-                                // a
-                                // contribution to the build order but we don't want it affecting the classpath of this
-                                // project. If it's not provided it's going to contribute to the runtime.classpath which
-                                // is not desired.
-                                dependency.setScope("provided");
-                                project.getDependencies().add(dependency);
+                                project.getDependencies().add(buildOrderDependency(projectMap.get(dependencyInGAForm)));
                             }
                         }
                     }
                 }
             }
         }
+    }
+
+    //
+    // The dependency only orders the reactor: the provision mojo resolves the descriptor's artifacts itself. Maven
+    // still resolves it for every mojo that requires dependency resolution, so it must resolve in any phase. A
+    // packaged type such as tar.gz only exists once the dependent project has run package, which fails builds that
+    // stop before package, like test-compile. Its POM always resolves from the reactor, and excluding everything
+    // keeps the dependent project's own dependencies out of this project. Provided keeps it off runtime.classpath.
+    //
+    private static Dependency buildOrderDependency(MavenProject dependentProject) {
+        Exclusion exclusion = new Exclusion();
+        exclusion.setGroupId("*");
+        exclusion.setArtifactId("*");
+
+        Dependency dependency = new Dependency();
+        dependency.setGroupId(dependentProject.getGroupId());
+        dependency.setArtifactId(dependentProject.getArtifactId());
+        dependency.setVersion(dependentProject.getVersion());
+        dependency.setType("pom");
+        dependency.setScope("provided");
+        dependency.addExclusion(exclusion);
+        return dependency;
     }
 
     //
