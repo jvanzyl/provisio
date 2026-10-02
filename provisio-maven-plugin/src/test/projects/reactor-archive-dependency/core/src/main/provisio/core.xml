@@ -1,0 +1,8 @@
+<runtime>
+  <archive name="${project.artifactId}-${project.version}.tar.gz"/>
+  <fileSet to="/">
+    <directory path="${basedir}/src/main/content">
+      <include>**</include>
+    </directory>
+  </fileSet>
+</runtime>

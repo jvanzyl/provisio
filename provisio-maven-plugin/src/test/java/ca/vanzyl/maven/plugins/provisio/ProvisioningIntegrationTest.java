@@ -86,6 +86,24 @@ public class ProvisioningIntegrationTest {
                         .isFile());
     }
 
+    @Test
+    public void testReactorArchiveDependencyResolvesBeforePackage() throws Exception {
+        File basedir = resources.getBasedir("reactor-archive-dependency");
+
+        maven.forProject(basedir).execute("clean", "test-compile").assertErrorFreeLog();
+    }
+
+    @Test
+    public void testReactorArchiveDependencyOrdersBuild() throws Exception {
+        File basedir = resources.getBasedir("reactor-archive-dependency");
+
+        maven.forProject(basedir).execute("package").assertErrorFreeLog();
+
+        assertTrue(
+                "core archive was unpacked into server",
+                file(basedir, "server/target/server-1.0/core.txt").isFile());
+    }
+
     private static File file(File directory, String name) {
         return directory.toPath().resolve(name).toFile();
     }
